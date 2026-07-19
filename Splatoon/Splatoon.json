@@ -1,8 +1,8 @@
 {
 		"Author": "NightmareXIV, Lother",
 		"Name": "Splatoon",
-		"Punchline": "Redefining FFXIV navigation with unlimited, precise waymarks.",
-		"Description": "Splatoon is a powerful accessibility tool. It revolutionizes gameplay with its custom waymark system, offering the ability to create unlimited grouped waymarks, labels, and actor indicators with exacting pixel precision. This feature empowers players by making crucial objects and events more visually discernible, thereby facilitating quicker reactions. However, it's important to note that the plugin does not come pre-loaded with presets. Players have the freedom to craft their own or import existing ones, offering a personalized touch to their gaming experience.",
+		"Punchline": "以無限、精準的路標重新定義 FFXIV 導航方式。",
+		"Description": "Splatoon 是一款強大的輔助工具。它以自訂路標系統徹底革新遊戲體驗，可建立無數量限制的成組路標、文字標籤與角色指示器，並具備精確到像素的定位能力。此功能讓玩家能更清楚辨識關鍵物件與事件，進而做出更快速的反應。請注意，此外掛本身不附帶任何預設檔，玩家可自行製作或匯入現成的預設檔，打造專屬於自己的遊戲體驗。",
 		"Tags": [
 				"Utility",
 				"Accessibility"
