@@ -186,14 +186,14 @@ public class P1_Fall_of_Faith : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGui.Text("General");
+        ImGui.Text("一般設定");
 
-        ImGuiEx.EnumCombo("Tether1Direction##Tether1", ref C.Tether1Direction);
-        ImGuiEx.EnumCombo("Tether2Direction##Tether2", ref C.Tether2Direction);
-        ImGuiEx.EnumCombo("Tether3Direction##Tether1", ref C.Tether3Direction);
-        ImGuiEx.EnumCombo("Tether4Direction##Tether1", ref C.Tether4Direction);
-        ImGuiEx.EnumCombo("NoTether12Direction##NoTether12", ref C.NoTether12Direction);
-        ImGuiEx.EnumCombo("NoTether34Direction##NoTether34", ref C.NoTether34Direction);
+        ImGuiEx.EnumCombo("連結1方向##Tether1", ref C.Tether1Direction);
+        ImGuiEx.EnumCombo("連結2方向##Tether2", ref C.Tether2Direction);
+        ImGuiEx.EnumCombo("連結3方向##Tether1", ref C.Tether3Direction);
+        ImGuiEx.EnumCombo("連結4方向##Tether1", ref C.Tether4Direction);
+        ImGuiEx.EnumCombo("無連結12方向##NoTether12", ref C.NoTether12Direction);
+        ImGuiEx.EnumCombo("無連結34方向##NoTether34", ref C.NoTether34Direction);
 
         ImGui.Separator();
 
@@ -201,12 +201,12 @@ public class P1_Fall_of_Faith : SplatoonScript
 
         ImGui.Separator();
 
-        ImGui.Text("RedTetherText:");
+        ImGui.Text("紅色連結文字：");
         ImGui.SameLine();
         var redTether = C.RedTetherText.Get();
         C.RedTetherText.ImGuiEdit(ref redTether);
 
-        ImGui.Text("BlueTetherText:");
+        ImGui.Text("藍色連結文字：");
         ImGui.SameLine();
         var blueTether = C.BlueTetherText.Get();
         C.BlueTetherText.ImGuiEdit(ref blueTether);
