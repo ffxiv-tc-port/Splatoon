@@ -73,16 +73,16 @@ public class PriorityPopupWindow : Window
         {
             Assignments.RemoveAt(Assignments.Count - 1);
         }
-        ImGuiEx.TextWrapped($"You have entered a zone for which you have enabled scripts that use priority lists. If you have any priority lists set to \"Placeholder\" mode, please configure them here.");
+        ImGuiEx.TextWrapped($"您已進入一個啟用了使用優先順序清單的腳本的區域。若您有任何優先順序清單設為「佔位符」模式，請在此進行設定。");
         if(IsZoneSupported(TerritoryType))
         {
-            ImGuiEx.CollectionCheckbox($"Display this popup in {ExcelTerritoryHelper.GetName(TerritoryType)}", TerritoryType, P.Config.NoPrioPopupTerritories, true);
+            ImGuiEx.CollectionCheckbox($"在 {ExcelTerritoryHelper.GetName(TerritoryType)} 顯示此彈出視窗", TerritoryType, P.Config.NoPrioPopupTerritories, true);
         }
         else
         {
-            ImGuiEx.TextWrapped(EColor.OrangeBright, $"Currently selected zone {ExcelTerritoryHelper.GetName(TerritoryType)} does not supports priority lists. You may still edit it, but you must select supported zone in order to save it.");
+            ImGuiEx.TextWrapped(EColor.OrangeBright, $"目前選擇的區域 {ExcelTerritoryHelper.GetName(TerritoryType)} 不支援優先順序清單。您仍可編輯它，但必須選擇受支援的區域才能儲存。");
         }
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.List, "Select different zone"))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.List, "選擇其他區域"))
         {
             new TerritorySelector(TerritoryType, (_, x) =>
             {
@@ -96,25 +96,25 @@ public class PriorityPopupWindow : Window
                 Mode = TerritorySelector.DisplayMode.PlaceNameDutyUnion,
             };
         }
-        ImGui.Checkbox("Display DPS as D1/D2/D3/D4", ref P.Config.PrioUnifyDps);
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.List, "Fill automatically", enabled: ImGuiEx.Ctrl || Assignments.All(x => x.IsPlayerEmpty())))
+        ImGui.Checkbox("以 D1/D2/D3/D4 顯示 DPS", ref P.Config.PrioUnifyDps);
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.List, "自動填入", enabled: ImGuiEx.Ctrl || Assignments.All(x => x.IsPlayerEmpty())))
         {
             Autofill();
         }
-        ImGuiEx.Tooltip("Hold CTRL and click");
+        ImGuiEx.Tooltip("按住 CTRL 並點擊");
         ImGui.SameLine();
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Ban, "Clear List", enabled: ImGuiEx.Ctrl || Assignments.All(x => x.IsPlayerEmpty())))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Ban, "清空清單", enabled: ImGuiEx.Ctrl || Assignments.All(x => x.IsPlayerEmpty())))
         {
             Assignments.Clear();
         }
-        ImGuiEx.Tooltip("Hold CTRL and click");
+        ImGuiEx.Tooltip("按住 CTRL 並點擊");
 
         DragDrop.Begin();
         if(ImGui.BeginTable("PrioAssTable", 3, ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
         {
-            ImGui.TableSetupColumn("Position");
+            ImGui.TableSetupColumn("位置");
             ImGui.TableSetupColumn("DragDrop");
-            ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("名稱", ImGuiTableColumnFlags.WidthStretch);
 
             for(var i = 0; i < Assignments.Count; i++)
             {
@@ -136,7 +136,7 @@ public class PriorityPopupWindow : Window
                     item.Jobs = [];
                     item.Name = "";
                 }
-                ImGuiEx.Tooltip("Clear this assignment");
+                ImGuiEx.Tooltip("清除此指派");
                 ImGui.PopID();
             }
 
@@ -146,20 +146,20 @@ public class PriorityPopupWindow : Window
 
         ImGuiEx.LineCentered("PrioPopupWindow1", () =>
         {
-            if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Check, "Apply".Loc()))
+            if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Check, "套用".Loc()))
             {
                 IsOpen = false;
             }
             if(IsZoneSupported(TerritoryType))
             {
                 ImGui.SameLine();
-                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Save, "Apply and save".Loc()))
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Save, "套用並儲存".Loc()))
                 {
                     IsOpen = false;
                     Save();
                 }
             }
-            ImGuiEx.Tooltip($"When you will join {ExcelTerritoryHelper.GetName(TerritoryType)} again with same players on same jobs, this priority list will be loaded again.");
+            ImGuiEx.Tooltip($"當您再次以相同玩家、相同職業進入 {ExcelTerritoryHelper.GetName(TerritoryType)} 時，此優先順序清單將會再次載入。");
         });
         S.InfoBar.Update(false);
     }

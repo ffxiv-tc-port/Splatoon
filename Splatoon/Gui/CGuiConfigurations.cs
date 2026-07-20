@@ -23,28 +23,28 @@ internal static class CGuiConfigurations
     public static void Draw()
     {
         string requestedConfiguration = null;
-        if(ImGui.RadioButton("All Zones".Loc(), SelectedZone == 0)) SelectedZone = 0;
+        if(ImGui.RadioButton("所有區域".Loc(), SelectedZone == 0)) SelectedZone = 0;
         var current = SelectedZone == 0 || SelectedZone == Player.Territory;
         ImGui.SameLine();
         if(ImGui.RadioButton(ExcelTerritoryHelper.GetName(Player.Territory), SelectedZone == Player.Territory)) SelectedZone = Player.Territory;
         ImGui.SameLine();
-        if(ImGui.RadioButton(current ? "Select Zone...".Loc() : ExcelTerritoryHelper.GetName(SelectedZone), SelectedZone != 0 && !current))
+        if(ImGui.RadioButton(current ? "選擇區域...".Loc() : ExcelTerritoryHelper.GetName(SelectedZone), SelectedZone != 0 && !current))
         {
             new TerritorySelector(current ? Player.Territory : SelectedZone, (selector, zone) =>
             {
                 SelectedZone = zone;
                 selector.Close();
-            }, "Select Zone".Loc())
+            }, "選擇區域".Loc())
             {
                 HiddenTerritories = Svc.Data.GetExcelSheet<TerritoryType>().Select(x => x.RowId).Where(t => !AvailableTerritories.Contains(t)).ToArray(),
                 SelectedCategory = TerritorySelector.Category.All,
             };
         }
-        ImGui.Checkbox("Hide disabled layouts/scripts".Loc(), ref P.Config.ConfigurationsHideDisabled);
+        ImGui.Checkbox("隱藏已停用的布局/腳本".Loc(), ref P.Config.ConfigurationsHideDisabled);
         ImGuiEx.SetNextItemFullWidth();
-        if(ImGui.BeginCombo("##switchAll", "Switch all displayed layouts/scripts to configuration, if supported:".Loc(), ImGuiComboFlags.HeightLarge))
+        if(ImGui.BeginCombo("##switchAll", "將所有顯示中的布局/腳本切換至此設定檔（若支援）:".Loc(), ImGuiComboFlags.HeightLarge))
         {
-            if(ImGui.Selectable("Default Configuration"))
+            if(ImGui.Selectable("預設設定檔"))
             {
                 requestedConfiguration = Guid.Empty.ToString();
             }
@@ -59,7 +59,7 @@ internal static class CGuiConfigurations
         }
         AvailableConfigurations.Clear();
         AvailableTerritories.Clear();
-        if(ImGuiEx.BeginDefaultTable("##Configurations", ["~" + "Layout Name".Loc(), "Zone".Loc(), "Selected Configuration".Loc()]))
+        if(ImGuiEx.BeginDefaultTable("##Configurations", ["~" + "布局名稱".Loc(), "區域".Loc(), "已選設定檔".Loc()]))
         {
             foreach(var layout in P.Config.LayoutsL)
             {
@@ -97,7 +97,7 @@ internal static class CGuiConfigurations
                     ImGui.TableNextColumn();
                     if(layout.ZoneLockH.Count == 0)
                     {
-                        ImGuiEx.TextV($"All Zones".Loc());
+                        ImGuiEx.TextV($"所有區域".Loc());
                     }
                     else if(layout.ZoneLockH.Count == 1)
                     {
@@ -119,7 +119,7 @@ internal static class CGuiConfigurations
         }
 
 
-        if(ImGuiEx.BeginDefaultTable("##ScriptConfigurations", ["~" + "Script Name".Loc(), "Zone".Loc(), "Selected Configuration".Loc()]))
+        if(ImGuiEx.BeginDefaultTable("##ScriptConfigurations", ["~" + "腳本名稱".Loc(), "區域".Loc(), "已選設定檔".Loc()]))
         {
             var toReload = new HashSet<SplatoonScript>();
             foreach(var script in ScriptingProcessor.Scripts.OrderBy(x => x.InternalData.Namespace).ThenBy(x => x.InternalData.Name))
@@ -170,7 +170,7 @@ internal static class CGuiConfigurations
                     ImGui.TableNextColumn();
                     if((script.ValidTerritories?.Count ?? 0) == 0)
                     {
-                        ImGuiEx.TextV($"All Zones".Loc());
+                        ImGuiEx.TextV($"所有區域".Loc());
                     }
                     else if(script.ValidTerritories.Count == 1)
                     {

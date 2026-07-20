@@ -19,13 +19,13 @@ internal partial class CGui
 {
     private void DisplayGeneralSettings()
     {
-        ImGuiEx.Text("Game version: ".Loc());
+        ImGuiEx.Text("遊戲版本: ".Loc());
         ImGui.SameLine(0, 0);
         ImGuiEx.TextCopy(p.loader.gVersion);
         new NuiBuilder().Section("Logging and Web API", collapsible: false)
             .Widget(() =>
             {
-                ImGuiUtils.SizedText("Use web API".Loc(), WidthLayout);
+                ImGuiUtils.SizedText("使用 Web API".Loc(), WidthLayout);
                 ImGui.SameLine();
                 if(ImGui.Checkbox("##usewebapi", ref p.Config.UseHttpServer))
                 {
@@ -46,48 +46,48 @@ internal partial class CGui
                 }
                 else
                 {
-                    ImGuiEx.Text("Port: ".Loc());
+                    ImGuiEx.Text("連接埠: ".Loc());
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(100f);
                     ImGui.DragInt("##webapiport", ref p.Config.port, float.Epsilon, 1, 65535);
                     if(ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip("Please only change if you have really good reason".Loc());
+                        ImGui.SetTooltip("請僅在有充分理由時才變更此設定".Loc());
                     }
                     if(p.Config.port < 1 || p.Config.port > 65535) p.Config.port = 47774;
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(100f);
-                    if(ImGui.Button("Default".Loc()))
+                    if(ImGui.Button("預設".Loc()))
                     {
                         p.Config.port = 47774;
                     }
                 }
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(250f);
-                if(ImGui.Button("Open web API guide".Loc()))
+                if(ImGui.Button("開啟 Web API 指南".Loc()))
                 {
                     Utils.ProcessStart("https://github.com/PunishXIV/Splatoon#web-api-beta");
                 }
 
-                if(ImGui.Checkbox("Enable logging".Loc(), ref P.Config.Logging))
+                if(ImGui.Checkbox("啟用記錄".Loc(), ref P.Config.Logging))
                 {
                     Logger.OnTerritoryChanged();
                 }
-                ImGuiComponents.HelpMarker("Enable logging, which will log chat messages, casts and VFX info into log files. ".Loc());
+                ImGuiComponents.HelpMarker("啟用記錄功能，會將聊天訊息、施法與 VFX 資訊寫入記錄檔。".Loc());
                 ImGui.SameLine();
-                ImGui.Checkbox("Log position".Loc(), ref P.Config.LogPosition);
-                ImGuiComponents.HelpMarker("Log object position in casting information log lines".Loc());
+                ImGui.Checkbox("記錄位置".Loc(), ref P.Config.LogPosition);
+                ImGuiComponents.HelpMarker("在施法資訊記錄行中記錄物件位置".Loc());
             })
 
             .Section("Language", collapsible: false)
             .Widget(() =>
             {
-                ImGuiEx.TextV("Splatoon language: ".Loc());
+                ImGuiEx.TextV("Splatoon 語言: ".Loc());
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(150f.Scale());
-                if(ImGui.BeginCombo("##langsel", P.Config.PluginLanguage == null ? "Game language".Loc() : P.Config.PluginLanguage.Loc()))
+                if(ImGui.BeginCombo("##langsel", P.Config.PluginLanguage == null ? "遊戲語言".Loc() : P.Config.PluginLanguage.Loc()))
                 {
-                    if(ImGui.Selectable("Game language".Loc()))
+                    if(ImGui.Selectable("遊戲語言".Loc()))
                     {
                         P.Config.PluginLanguage = null;
                         Localization.Init(GameLanguageString);
@@ -102,14 +102,14 @@ internal partial class CGui
                     }
                     ImGui.EndCombo();
                 }
-                ImGui.Checkbox("Localization logging".Loc(), ref Localization.Logging);
+                ImGui.Checkbox("本地化記錄".Loc(), ref Localization.Logging);
                 ImGui.SameLine();
                 if(ImGui.Button("Save entries: ??".Loc(P.Config.PluginLanguage ?? GameLanguageString)))
                 {
                     Localization.Save(P.Config.PluginLanguage ?? GameLanguageString);
                 }
                 ImGui.SameLine();
-                if(ImGui.Button("Rescan language files".Loc()))
+                if(ImGui.Button("重新掃描語言檔案".Loc()))
                 {
                     GetAvaliableLanguages(true);
                 }
@@ -118,17 +118,17 @@ internal partial class CGui
             .Section("UI settings", collapsible: false)
             .Widget(() =>
             {
-                ImGui.Checkbox("Use hexadecimal numbers".Loc(), ref p.Config.Hexadecimal);
-                ImGui.Checkbox("Enable tether on Splatoon find command".Loc(), ref p.Config.TetherOnFind);
-                ImGui.Checkbox("Force show Splatoon's UI when game UI is hidden".Loc(), ref p.Config.ShowOnUiHide);
+                ImGui.Checkbox("使用十六進位數字".Loc(), ref p.Config.Hexadecimal);
+                ImGui.Checkbox("在 Splatoon 尋找指令中啟用繩鏈".Loc(), ref p.Config.TetherOnFind);
+                ImGui.Checkbox("在遊戲 UI 隱藏時強制顯示 Splatoon UI".Loc(), ref p.Config.ShowOnUiHide);
             })
 
             .Section("Scripts configuration and priority lists", collapsible: false)
             .Widget(() =>
             {
-                ImGui.Checkbox("Disable script cache".Loc(), ref p.Config.DisableScriptCache);
+                ImGui.Checkbox("停用腳本快取".Loc(), ref p.Config.DisableScriptCache);
                 var state = DalamudReflector.GetDtrEntryState(InfoBar.EntryName);
-                if(ImGui.Checkbox("Enable info bar priority indicator", ref state))
+                if(ImGui.Checkbox("啟用資訊列優先度指示器", ref state))
                 {
                     DalamudReflector.SetDtrEntryState(InfoBar.EntryName, state);
                 }
@@ -214,12 +214,12 @@ internal partial class CGui
             .Section("Miscellaneous", collapsible: false)
             .Widget(() =>
             {
-                if(ImGui.Button("Open backup directory".Loc()))
+                if(ImGui.Button("開啟備份目錄".Loc()))
                 {
                     Utils.ProcessStart(Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "Backups"));
                 }
                 ImGui.Separator();
-                ImGuiEx.Text("Contact developer:".Loc());
+                ImGuiEx.Text("聯絡開發者:".Loc());
                 ImGui.SameLine();
                 if(ImGui.Button("Github".Loc()))
                 {
@@ -229,10 +229,10 @@ internal partial class CGui
                 if(ImGui.Button("Discord".Loc()))
                 {
                     ImGui.SetClipboardText(Splatoon.DiscordURL);
-                    Svc.Chat.Print("[Splatoon] Server invite link: ".Loc() + Splatoon.DiscordURL);
+                    Svc.Chat.Print("[Splatoon] 伺服器邀請連結: ".Loc() + Splatoon.DiscordURL);
                     Utils.ProcessStart(Splatoon.DiscordURL);
                 }
-                ImGui.Checkbox("Disable stream notice (effective only after restart)".Loc(), ref P.Config.NoStreamWarning);
+                ImGui.Checkbox("停用直播提示（僅重啟後生效）".Loc(), ref P.Config.NoStreamWarning);
             })
 
             .Section("Script auto-reloading (for developers)", collapsible: true)

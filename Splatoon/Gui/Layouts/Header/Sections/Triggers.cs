@@ -19,32 +19,32 @@ internal static class Triggers
                 {
                     new TickScheduler(() => layout.Triggers.Remove(trigger));
                 }
-                ImGuiEx.Tooltip("Hold CTRL + left click to delete".Loc());
+                ImGuiEx.Tooltip("按住 CTRL 並左鍵點擊以刪除".Loc());
                 ImGui.SameLine(0, 1);
                 if(ImGuiEx.IconButton(FontAwesomeIcon.Copy))
                 {
                     Copy(JsonConvert.SerializeObject((Trigger[])[trigger]));
                 }
-                ImGuiEx.Tooltip("Copy to clipboard");
+                ImGuiEx.Tooltip("複製到剪貼簿");
                 ImGui.SameLine();
                 ImGuiEx.SetNextItemFullWidth();
                 ImGui.Combo("##trigger", ref trigger.Type, Trigger.Types, Trigger.Types.Length);
 
-                ImGuiEx.TextV("Reset on:".Loc());
+                ImGuiEx.TextV("重置條件:".Loc());
                 ImGui.SameLine();
-                ImGui.Checkbox("Combat exit".Loc(), ref trigger.ResetOnCombatExit);
+                ImGui.Checkbox("退出戰鬥".Loc(), ref trigger.ResetOnCombatExit);
                 ImGui.SameLine();
-                ImGui.Checkbox("Territory change".Loc(), ref trigger.ResetOnTChange);
+                ImGui.Checkbox("區域切換".Loc(), ref trigger.ResetOnTChange);
                 ImGui.SameLine();
-                ImGuiEx.Text("State: ".Loc() + trigger.FiredState);
+                ImGuiEx.Text("狀態: ".Loc() + trigger.FiredState);
                 if(trigger.Disabled)
                 {
                     ImGui.SameLine();
-                    ImGuiEx.Text(ImGuiColors.DalamudRed, $"Disabled until reset");
+                    ImGuiEx.Text(ImGuiColors.DalamudRed, $"已停用，直到重置為止");
                 }
                 if(trigger.Type == 0 || trigger.Type == 1)
                 {
-                    ImGuiEx.TextV("Time: ".Loc());
+                    ImGuiEx.TextV("時間: ".Loc());
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(50f);
                     ImGui.DragFloat("##triggertime1", ref trigger.TimeBegin, 0.1f, 0, 3599, "%.1f");
@@ -55,7 +55,7 @@ internal static class Triggers
                 {
                     ImGuiEx.InputWithRightButtonsArea($"trigger{trigger.GUID}", delegate
                     {
-                        trigger.MatchIntl.ImGuiEdit(ref trigger.Match, "Case-insensitive (partial) message");
+                        trigger.MatchIntl.ImGuiEdit(ref trigger.Match, "不分大小寫（部分符合）訊息");
                     }, delegate
                     {
                         var col = trigger.IsRegex;
@@ -66,8 +66,8 @@ internal static class Triggers
                     //ImGui.InputTextWithHint("##textinput1", "Case-insensitive message", ref trigger.Match, 1000);
 
                     //ImGui.SameLine();
-                    ImGui.Checkbox($"Only fire once until reset", ref trigger.FireOnce);
-                    ImGuiEx.TextV("Delay: ".Loc());
+                    ImGui.Checkbox($"僅觸發一次，直到重置為止", ref trigger.FireOnce);
+                    ImGuiEx.TextV("延遲: ".Loc());
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(50f);
                     ImGui.DragFloat("##triggertime1", ref trigger.MatchDelay, 0.1f, 0, 3599, "%.1f");
@@ -77,12 +77,12 @@ internal static class Triggers
                     trigger.MatchIntl.RemoveSymbols(InvalidSymbols);
                 }
                 ImGui.SameLine();
-                ImGuiEx.TextV("Duration: ".Loc());
+                ImGuiEx.TextV("持續時間: ".Loc());
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(50f);
                 ImGui.DragFloat("##triggertime2", ref trigger.Duration, 0.1f, 0, 3599, "%.1f");
                 ImGui.SameLine();
-                ImGuiEx.Text(trigger.Duration == 0 ? "Infinite".Loc() : DateTimeOffset.FromUnixTimeMilliseconds((long)(trigger.Duration * 1000)).ToString("mm:ss.f"));
+                ImGuiEx.Text(trigger.Duration == 0 ? "無限".Loc() : DateTimeOffset.FromUnixTimeMilliseconds((long)(trigger.Duration * 1000)).ToString("mm:ss.f"));
                 ImGui.Separator();
                 ImGui.PopID();
             }

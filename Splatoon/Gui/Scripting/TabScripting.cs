@@ -18,18 +18,18 @@ internal static class TabScripting
         {
             ImGuiEx.LineCentered("ThreadCompilerRunning", delegate
             {
-                ImGuiEx.Text(GradientColor.Get(ImGuiColors.DalamudWhite, ImGuiColors.ParsedPink), "Scripts are being installed, please wait...".Loc());
+                ImGuiEx.Text(GradientColor.Get(ImGuiColors.DalamudWhite, ImGuiColors.ParsedPink), "腳本安裝中，請稍候...".Loc());
             });
         }
         else
         {
-            ImGuiEx.TextWrapped(ImGuiColors.DalamudOrange, "Please note that scripts have direct and unrestricted access to your PC and game. Ensure that you know what you're installing.".Loc());
+            ImGuiEx.TextWrapped(ImGuiColors.DalamudOrange, "請注意，腳本可直接且不受限制地存取您的電腦與遊戲。請確認您了解您正在安裝的內容。".Loc());
         }
         var force = ForceUpdate;
-        if(ImGui.Checkbox($"Force Update".Loc(), ref force)) ForceUpdate = force;
+        if(ImGui.Checkbox($"強制更新".Loc(), ref force)) ForceUpdate = force;
         ImGuiEx.Tooltip("Enable this checkbox and click \"Reload and Update\" button to forcibly redownload all scripts, even should they have no updates, that were installed from the Internet.");
         ImGui.SameLine();
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Undo, "Reload and Update".Loc()))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Undo, "重新載入並更新".Loc()))
         {
             var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "ScriptCache");
             foreach(var x in Directory.GetFiles(dir))
@@ -44,7 +44,7 @@ internal static class TabScripting
         }
         ImGuiEx.Tooltip("Clears cache, recompiles and reloads all scripts and checks them for updates immediately.");
         ImGui.SameLine();
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Paste, "Install from Clipboard".Loc()))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Paste, "從剪貼簿安裝".Loc()))
         {
             var text = ImGui.GetClipboardText();
             if(ScriptingProcessor.IsUrlTrusted(text))
@@ -56,12 +56,12 @@ internal static class TabScripting
                 ScriptingProcessor.CompileAndLoad(text, null, false);
             }
         }
-        ImGuiEx.Tooltip("Installs script from clipboard. Your clipboard should contain either code of the script or link to a trusted URL (a script from Splatoon repository)");
+        ImGuiEx.Tooltip("從剪貼簿安裝腳本。您的剪貼簿內容應為腳本原始碼，或指向可信任網址的連結（來自 Splatoon 倉庫的腳本）");
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 2.05f);
-        ImGui.InputTextWithHint("##search", "Search...", ref Search, 50);
+        ImGui.InputTextWithHint("##search", "搜尋...", ref Search, 50);
         ImGui.SameLine();
         ImGuiEx.SetNextItemFullWidth();
-        if(ImGui.BeginCombo("##switch", "Switch scripts to configuration profile"))
+        if(ImGui.BeginCombo("##switch", "將腳本切換至此設定檔"))
         {
             var confs = new HashSet<string>();
             var toReload = new HashSet<SplatoonScript>();
@@ -76,7 +76,7 @@ internal static class TabScripting
                     }
                 }
             }
-            if(ImGui.Selectable("Default Configuration"))
+            if(ImGui.Selectable("預設設定檔"))
             {
                 foreach(var s in ScriptingProcessor.Scripts)
                 {
@@ -219,28 +219,28 @@ internal static class TabScripting
 
                     if(script.InternalData.Blacklisted)
                     {
-                        ImGuiEx.TextV(ImGuiColors.DalamudGrey3, "Blacklisted".Loc());
-                        ImGuiComponents.HelpMarker("This script was blacklisted due to compatibility issues. Please wait for it's new version to be released.".Loc());
+                        ImGuiEx.TextV(ImGuiColors.DalamudGrey3, "已列入黑名單".Loc());
+                        ImGuiComponents.HelpMarker("此腳本因相容性問題已被列入黑名單。請等待其新版本發布。".Loc());
                     }
                     else if(!script.InternalData.Allowed)
                     {
-                        ImGuiEx.TextV(ImGuiColors.ParsedGold, "Preparing".Loc());
-                        ImGuiComponents.HelpMarker("This script is being prepared for enabling and will be available shortly.".Loc());
+                        ImGuiEx.TextV(ImGuiColors.ParsedGold, "準備中".Loc());
+                        ImGuiComponents.HelpMarker("此腳本正準備啟用中，即將可用。".Loc());
                     }
                     else if(script.IsDisabledByUser)
                     {
-                        ImGuiEx.TextV(ImGuiColors.DalamudRed, "Disabled".Loc());
-                        ImGuiComponents.HelpMarker("This script has been disabled by you.".Loc());
+                        ImGuiEx.TextV(ImGuiColors.DalamudRed, "已停用".Loc());
+                        ImGuiComponents.HelpMarker("此腳本已被您停用。".Loc());
                     }
                     else if(script.IsEnabled)
                     {
-                        ImGuiEx.TextV(ImGuiColors.ParsedGreen, "Active".Loc());
-                        ImGuiComponents.HelpMarker("This script is currently active and being executed.".Loc());
+                        ImGuiEx.TextV(ImGuiColors.ParsedGreen, "啟用中".Loc());
+                        ImGuiComponents.HelpMarker("此腳本目前為啟用中且正在執行。".Loc());
                     }
                     else
                     {
-                        ImGuiEx.TextV(ImGuiColors.DalamudYellow, "Inactive".Loc());
-                        ImGuiComponents.HelpMarker("This script is currently inactive because you're not in a zone for which it was designed.".Loc());
+                        ImGuiEx.TextV(ImGuiColors.DalamudYellow, "非活動中".Loc());
+                        ImGuiComponents.HelpMarker("此腳本目前為非活動狀態，因為您不在此腳本所設計的區域中。".Loc());
                     }
                     ImGui.TableNextColumn();
 
@@ -270,7 +270,7 @@ internal static class TabScripting
                             }
                             ScriptingProcessor.Scripts.Each(x => x.UpdateState());
                         }
-                        ImGuiEx.Tooltip(e ? "Enable script".Loc() : "Disable script".Loc());
+                        ImGuiEx.Tooltip(e ? "啟用腳本".Loc() : "停用腳本".Loc());
                     }
 
                     ImGui.TableNextColumn();
@@ -285,7 +285,7 @@ internal static class TabScripting
                             }
                             script.InternalData.ConfigOpen = !script.InternalData.ConfigOpen;
                         }
-                        ImGuiEx.Tooltip("Open script's settings".Loc());
+                        ImGuiEx.Tooltip("開啟腳本設定".Loc());
                     }
                     else if(script.Controller.GetRegisteredElements().Count > 0)
                     {
@@ -297,7 +297,7 @@ internal static class TabScripting
                             }
                             script.InternalData.ConfigOpen = !script.InternalData.ConfigOpen;
                         }
-                        ImGuiEx.Tooltip("Open element editor".Loc());
+                        ImGuiEx.Tooltip("開啟元素編輯器".Loc());
                     }
                     else
                     {
@@ -335,10 +335,10 @@ internal static class TabScripting
                         }
                         else
                         {
-                            Notify.Error("Error deleting".Loc());
+                            Notify.Error("刪除時發生錯誤".Loc());
                         }
                     }
-                    ImGuiEx.Tooltip("Delete script. Hold CTRL + click".Loc());
+                    ImGuiEx.Tooltip("刪除腳本。按住 CTRL 並點擊".Loc());
                     ImGui.PopID();
                 }
                 ImGui.EndTable();
@@ -353,7 +353,7 @@ internal static class TabScripting
             });
             ImGui.Separator();
             ImGuiEx.EzTabBar($"##scriptConfig",
-                (openConfig.InternalData.SettingsPresent ? "Configuration" : null, () =>
+                (openConfig.InternalData.SettingsPresent ? "設定" : null, () =>
                 {
                     try
                     {
@@ -364,13 +364,13 @@ internal static class TabScripting
                         ex.Log();
                     }
                 }, null, false),
-                (openConfig.Controller.GetRegisteredElements().Count > 0 ? "Registered elements" : null, openConfig.DrawRegisteredElements, null, false),
-                ("Saved Configurations", openConfig.DrawConfigurations, null, false)
+                (openConfig.Controller.GetRegisteredElements().Count > 0 ? "已註冊元素" : null, openConfig.DrawRegisteredElements, null, false),
+                ("已儲存設定檔", openConfig.DrawConfigurations, null, false)
                 );
 
             ImGuiEx.LineCentered("ScriptConfig", delegate
             {
-                if(ImGui.Button("Close and save configuration"))
+                if(ImGui.Button("關閉並儲存設定"))
                 {
                     openConfig.InternalData.ConfigOpen = false;
                     openConfig.Controller.SaveConfig();

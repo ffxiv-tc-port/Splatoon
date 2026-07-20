@@ -59,7 +59,7 @@ internal unsafe partial class CGui : IDisposable
             {
                 p.Config.Save();
                 WasOpen = false;
-                //Notify.Success("Configuration saved".Loc());
+                //Notify.Success("設定已儲存".Loc());
                 if(p.Config.verboselog) p.Log("Configuration saved");
                 P.SaveArchive();
                 ScriptingProcessor.Scripts.Each(x => x.InternalData.UnconditionalDraw = false);
@@ -82,7 +82,7 @@ internal unsafe partial class CGui : IDisposable
         ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, new Vector2(700, 200));
         var titleColored = false;
         var ctspan = TimeSpan.FromMilliseconds(Environment.TickCount64 - p.CombatStarted);
-        var title = $"Splatoon v{p.loader.splatoonVersion} | {GenericHelpers.GetTerritoryName(Svc.ClientState.TerritoryType).Replace("| ", "")} | {(p.CombatStarted == 0 ? "Not in combat".Loc() : $"{Loc("Combat")}: {ctspan.Minutes:D2}{(ctspan.Milliseconds < 500 ? ":" : " ")}{ctspan.Seconds:D2} ({(int)ctspan.TotalSeconds}.{(ctspan.Milliseconds / 100):D1}s)")} | {Loc("Phase")}: {p.Phase} | {Loc("Scene")}: {*Scene.ActiveScene} | {Loc("Layouts")}: {p.LayoutAmount} | {Loc("Elements")}: {p.ElementAmount} | {Utils.GetPlayerPositionXZY().X:F1}, {Utils.GetPlayerPositionXZY().Y:F1}###Splatoon";
+        var title = $"Splatoon v{p.loader.splatoonVersion} | {GenericHelpers.GetTerritoryName(Svc.ClientState.TerritoryType).Replace("| ", "")} | {(p.CombatStarted == 0 ? "非戰鬥中".Loc() : $"{Loc("Combat")}: {ctspan.Minutes:D2}{(ctspan.Milliseconds < 500 ? ":" : " ")}{ctspan.Seconds:D2} ({(int)ctspan.TotalSeconds}.{(ctspan.Milliseconds / 100):D1}s)")} | {Loc("Phase")}: {p.Phase} | {Loc("Scene")}: {*Scene.ActiveScene} | {Loc("Layouts")}: {p.LayoutAmount} | {Loc("Elements")}: {p.ElementAmount} | {Utils.GetPlayerPositionXZY().X:F1}, {Utils.GetPlayerPositionXZY().Y:F1}###Splatoon";
         if(ImGui.Begin(title, ref Open))
         {
             try
@@ -100,9 +100,9 @@ internal unsafe partial class CGui : IDisposable
                         ImGui.SetNextItemWidth(80f);
                         if(ImGui.BeginCombo("##phaseSelector", $"Phase ??".Loc(p.Phase)))
                         {
-                            if(ImGui.Selectable("Phase 1 (doorboss)".Loc())) p.Phase = 1;
-                            if(ImGui.Selectable("Phase 2 (post-doorboss)".Loc())) p.Phase = 2;
-                            ImGuiEx.Text("Manual phase selection:".Loc());
+                            if(ImGui.Selectable("第一階段（門王）".Loc())) p.Phase = 1;
+                            if(ImGui.Selectable("第二階段（門王之後）".Loc())) p.Phase = 2;
+                            ImGuiEx.Text("手動選擇階段:".Loc());
                             ImGui.SameLine();
                             ImGui.SetNextItemWidth(30f);
                             var ph = p.Phase;
@@ -118,28 +118,28 @@ internal unsafe partial class CGui : IDisposable
                     ImGui.SetCursorPos(curCursor);
 
                     ImGuiEx.EzTabBar("SplatoonSettings", null, TabRequest,
-                        ("General".Loc() + "###tab1", DisplayGeneralSettings, null, true),
-                        ("Render".Loc() + "###tab2", DisplayRenderers, null, true),
-                        ("Layouts".Loc(), DislayLayouts, Colors.Green.ToVector4(), true),
-                        ("Scripts".Loc(), TabScripting.Draw, Colors.Yellow.ToVector4(), true),
-                        ("Configurations".Loc(), CGuiConfigurations.Draw, EColor.PurpleBright, true),
-                        ("Mass Import".Loc(), RapidImport.Draw, null, true),
-                        ("Tools".Loc(), delegate
+                        ("一般".Loc() + "###tab1", DisplayGeneralSettings, null, true),
+                        ("渲染".Loc() + "###tab2", DisplayRenderers, null, true),
+                        ("布局".Loc(), DislayLayouts, Colors.Green.ToVector4(), true),
+                        ("腳本".Loc(), TabScripting.Draw, Colors.Yellow.ToVector4(), true),
+                        ("設定檔".Loc(), CGuiConfigurations.Draw, EColor.PurpleBright, true),
+                        ("批次匯入".Loc(), RapidImport.Draw, null, true),
+                        ("工具".Loc(), delegate
                         {
                             ImGuiEx.EzTabBar("Tools",
-                            ("Translator".Loc(), TabTranslator.Draw, null, true),
-                            ("Logger".Loc(), DisplayLogger, null, true),
-                            ("Explorer".Loc(), Explorer.Draw, null, true),
-                            ("Archive".Loc(), DrawArchive, null, true),
-                            ("Find".Loc(), TabFind.Draw, null, true),
-                            ("Debug".Loc(), DisplayDebug, null, true),
-                            ("Log".Loc(), InternalLog.PrintImgui, null, false),
-                            ("Dynamic".Loc(), DisplayDynamicElements, null, true),
-                            ("Trusted Repos".Loc(), TabTrustedRepos.Draw, null, true)
+                            ("翻譯器".Loc(), TabTranslator.Draw, null, true),
+                            ("記錄器".Loc(), DisplayLogger, null, true),
+                            ("檢視器".Loc(), Explorer.Draw, null, true),
+                            ("封存".Loc(), DrawArchive, null, true),
+                            ("尋找".Loc(), TabFind.Draw, null, true),
+                            ("偵錯".Loc(), DisplayDebug, null, true),
+                            ("記錄".Loc(), InternalLog.PrintImgui, null, false),
+                            ("動態".Loc(), DisplayDynamicElements, null, true),
+                            ("受信任倉庫".Loc(), TabTrustedRepos.Draw, null, true)
                             );
                         }, null, true),
-                        ("Contribute".Loc(), Contribute.Draw, null, true)
-                        //("Contributors".Loc(), TabContributors.Draw, null, true)
+                        ("貢獻".Loc(), Contribute.Draw, null, true)
+                        //("貢獻者".Loc(), TabContributors.Draw, null, true)
                         );
                     TabRequest = null;
                 }
@@ -163,7 +163,7 @@ internal unsafe partial class CGui : IDisposable
     private string lastContent = "";
     private void DisplayConversion()
     {
-        ImGui.Checkbox($"Convert clipboard content from github to wiki", ref Convert);
+        ImGui.Checkbox($"將剪貼簿內容從 github 轉換為 wiki 格式", ref Convert);
         if(Convert)
         {
             try

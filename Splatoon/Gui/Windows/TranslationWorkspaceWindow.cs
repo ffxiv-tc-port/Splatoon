@@ -35,19 +35,19 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
     {
         ImGuiEx.SetNextItemFullWidth();
         ImGui.InputText("##name", ref Page.Name, 100);
-        ImGuiEx.Tooltip("Workspace name. Just for your convenience, never exported.".Loc());
-        if(ImGuiEx.BeginDefaultTable("SelLang", ["Language", "~Select"], false))
+        ImGuiEx.Tooltip("工作區名稱，僅供您方便使用，不會被匯出。".Loc());
+        if(ImGuiEx.BeginDefaultTable("SelLang", ["語言", "~Select"], false))
         {
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
-            ImGuiEx.TextV("Source Language:".Loc());
+            ImGuiEx.TextV("來源語言:".Loc());
             ImGui.TableNextColumn();
             ImGuiEx.SetNextItemFullWidth();
             ImGuiEx.EnumCombo("##src", ref Page.SourceLanguage);
 
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
-            ImGuiEx.TextV("Target Language:".Loc());
+            ImGuiEx.TextV("目標語言:".Loc());
             ImGui.TableNextColumn();
             ImGuiEx.SetNextItemFullWidth();
             ImGuiEx.EnumCombo("##tar", ref Page.TargetLanguage);
@@ -56,11 +56,11 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
 
         if(Page.SourceLanguage == Page.TargetLanguage)
         {
-            ImGuiEx.Text(EColor.RedBright, "Source and Target languages can not be the same!".Loc());
+            ImGuiEx.Text(EColor.RedBright, "來源語言與目標語言不能相同！".Loc());
             return;
         }
 
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Copy, "Copy Result to Clipboard".Loc()))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Copy, "複製結果到剪貼簿".Loc()))
         {
             Copy(Page.Lines.Select(x =>
             {
@@ -70,12 +70,12 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
             }).Join("\n"));
         }
         ImGui.SameLine();
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Trash, "Delete Workspace".Loc(), enabled:ImGuiEx.Shift && ImGuiEx.Ctrl))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Trash, "刪除工作區".Loc(), enabled:ImGuiEx.Shift && ImGuiEx.Ctrl))
         {
             new TickScheduler(() => P.Config.TranslatorPages.Remove(Page));
             this.IsOpen = false;
         }
-        ImGuiEx.Text($"Hold SHIFT and CTRL and click this button to permanently delete this workspace. Only do it after you have sent pull request or committed and pushed changes to the repository.".Loc());
+        ImGuiEx.Text($"按住 SHIFT 與 CTRL 並點擊此按鈕以永久刪除此工作區。請務必在您已送出拉取請求，或已提交並推送變更到倉庫之後才這麼做。".Loc());
 
         if(ImGuiEx.BeginDefaultTable("Worktable", ["~Table"], false))
         {
@@ -105,7 +105,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
 
                     ImGui.Indent();
 
-                    ImGuiEx.Text($"Layout name:");
+                    ImGuiEx.Text($"布局名稱:");
                     ImGui.Indent();
                     EditField(l.InternationalName, l.Name);
                     ImGui.Unindent();
@@ -113,7 +113,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                     var triggers = l.Triggers.Where(x => x.Match != "" || !x.MatchIntl.IsEmpty()).ToArray();
                     if(triggers.Length > 0)
                     {
-                        ImGuiEx.Text("Triggers:");
+                        ImGuiEx.Text("觸發器:");
                         ImGui.Indent();
                         foreach(var x in triggers)
                         {
@@ -122,7 +122,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         ImGui.Unindent();
                     }
 
-                    ImGuiEx.Text($"Elements:");
+                    ImGuiEx.Text($"元素:");
                     ImGui.Indent();
 
                     for(int j = 0; j < l.ElementsL.Count; j++)
@@ -132,7 +132,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         if(e.Name != "" || !e.InternationalName.IsEmpty())
                         {
                             skipped = false;
-                            ImGuiEx.Text($"Element {j + 1} name:");
+                            ImGuiEx.Text($"元素 {j + 1} 名稱:");
                             ImGui.Indent();
                             EditField(e.InternationalName, e.Name);
                             ImGui.Unindent();
@@ -140,7 +140,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         if(e.IsActorNameUsed())
                         {
                             skipped = false;
-                            ImGuiEx.Text($"Element {j + 1} object name:");
+                            ImGuiEx.Text($"元素 {j + 1} 物件名稱:");
                             ImGui.Indent();
                             EditField(e.refActorNameIntl, e.refActorName);
                             ImGui.Unindent();
@@ -148,7 +148,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         if(e.overlayText != "" || !e.overlayTextIntl.IsEmpty())
                         {
                             skipped = false;
-                            ImGuiEx.Text($"Element {j + 1} overlay:");
+                            ImGuiEx.Text($"元素 {j + 1} 疊加文字:");
                             ImGui.Indent();
                             EditField(e.refActorNameIntl, e.refActorName);
                             ImGui.Unindent();
@@ -174,8 +174,8 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
         ImGui.PushID(internationalStr.guid);
         ImGuiEx.TextCopy(internationalStr.Get(str, Page.SourceLanguage));
         ImGuiEx.SetNextItemFullWidth();
-        ImGui.InputTextWithHint("##input", $"Use Global Value: {str}", ref internationalStr.GetRefString(Page.TargetLanguage), 2000);
-        ImGuiEx.Tooltip($"Entered text will be used with game clients using language: {Page.TargetLanguage}. If empty, global value will be used. Global value is:\n{str}");
+        ImGui.InputTextWithHint("##input", $"使用全域數值: {str}", ref internationalStr.GetRefString(Page.TargetLanguage), 2000);
+        ImGuiEx.Tooltip($"輸入的文字將用於語言為 {Page.TargetLanguage} 的遊戲客戶端。若留空，則會使用全域數值。全域數值為:\n{str}");
         ImGui.PopID();
     }
 }

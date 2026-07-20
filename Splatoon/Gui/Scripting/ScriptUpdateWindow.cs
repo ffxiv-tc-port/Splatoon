@@ -37,7 +37,7 @@ public class ScriptUpdateWindow : Window
         var i = 0;
         if(UpdatedScripts.Count > 0)
         {
-            ImGuiEx.TextWrapped($"The following scripts have been updated. Please check that your settings are intact, and if needed, reconfigure it.");
+            ImGuiEx.TextWrapped($"以下腳本已更新。請確認您的設定仍然完整，若有需要請重新設定。");
             if(ImGui.BeginTable("##table1", 2, ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
             {
                 ImGui.TableSetupColumn("1", ImGuiTableColumnFlags.WidthStretch);
@@ -63,7 +63,7 @@ public class ScriptUpdateWindow : Window
                         if(ImGuiEx.IconButton(FontAwesomeIcon.Cog))
                         {
                             P.ConfigGui.Open = true;
-                            P.ConfigGui.TabRequest = "Scripts".Loc();
+                            P.ConfigGui.TabRequest = "腳本".Loc();
                             Svc.Framework.RunOnTick(() =>
                             {
                                 TabScripting.RequestOpen = x.InternalData.FullName;
@@ -82,7 +82,7 @@ public class ScriptUpdateWindow : Window
         }
         if(FailedScripts.Count > 0)
         {
-            ImGuiEx.TextWrapped($"The following scripts have failed to load. ");
+            ImGuiEx.TextWrapped($"以下腳本載入失敗。");
             if(ImGui.BeginTable("##table1", 2, ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
             {
                 ImGui.TableSetupColumn("1", ImGuiTableColumnFlags.WidthStretch);
@@ -95,7 +95,7 @@ public class ScriptUpdateWindow : Window
                     ImGui.TableNextRow();
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
-                    ImGuiEx.TextWrapped($"{x?.Replace(rep, "..") ?? "Unknown"}");
+                    ImGuiEx.TextWrapped($"{x?.Replace(rep, "..") ?? "未知"}");
                     ImGui.TableNextColumn();
                     if(ImGuiEx.IconButton(FontAwesomeIcon.Trash))
                     {
@@ -105,7 +105,7 @@ public class ScriptUpdateWindow : Window
                             GenericHelpers.DeleteFileToRecycleBin(x);
                         });
                     }
-                    ImGuiEx.Tooltip("Delete this script");
+                    ImGuiEx.Tooltip("刪除此腳本");
                     ImGui.PopID();
                 }
                 ImGui.EndTable();

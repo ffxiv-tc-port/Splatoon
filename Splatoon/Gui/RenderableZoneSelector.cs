@@ -151,7 +151,7 @@ namespace Splatoon.Gui
 
                         HandlePopupMenu();
                         ImGui.Separator();
-                        if(ImGui.Selectable("Delete this zone"))
+                        if(ImGui.Selectable("刪除此區域"))
                         {
                             toRem = i;
                             //DuoLog.Information($"to remove: {toRem} ({i})");
@@ -221,7 +221,7 @@ namespace Splatoon.Gui
 
         private void HandlePopupMenu()
         {
-            if(ImGui.Selectable("Add new zone"))
+            if(ImGui.Selectable("新增區域"))
             {
                 P.Config.RenderableZones.Add(new(100, 100, 300, 300));
             }
@@ -231,7 +231,7 @@ namespace Splatoon.Gui
                 if(ImGui.Selectable($"Select zone {i}")) bringToFront = i;
             }
             ImGui.Separator();
-            if(ImGui.Selectable("Save configuration and exit"))
+            if(ImGui.Selectable("儲存設定並離開"))
             {
                 IsOpen = false;
                 P.Config.Save();
