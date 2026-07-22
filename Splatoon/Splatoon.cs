@@ -279,7 +279,7 @@ public unsafe class Splatoon : IDalamudPlugin
         InteropGenerator.Runtime.Resolver.GetInstance.Resolve();
 #endif
         var cfg = EzConfig.LoadConfiguration<Configuration>(EzConfig.DefaultConfigurationFileName);
-        Localization.Init(cfg.PluginLanguage);
+        Localization.Init(cfg.PluginLanguage ?? "ChineseTraditional"); // TC fork: default to zh-TW when no language is explicitly selected
         loader = new Loader(this);
     }
 

@@ -90,7 +90,7 @@ internal partial class CGui
                     if(ImGui.Selectable("遊戲語言".Loc()))
                     {
                         P.Config.PluginLanguage = null;
-                        Localization.Init(GameLanguageString);
+                        Localization.Init("ChineseTraditional"); // TC fork: game language is zh-TW; keep in sync with startup default in Splatoon.cs
                     }
                     foreach(var x in GetAvaliableLanguages())
                     {
@@ -104,9 +104,9 @@ internal partial class CGui
                 }
                 ImGui.Checkbox("本地化記錄".Loc(), ref Localization.Logging);
                 ImGui.SameLine();
-                if(ImGui.Button("Save entries: ??".Loc(P.Config.PluginLanguage ?? GameLanguageString)))
+                if(ImGui.Button("Save entries: ??".Loc(P.Config.PluginLanguage ?? "ChineseTraditional")))
                 {
-                    Localization.Save(P.Config.PluginLanguage ?? GameLanguageString);
+                    Localization.Save(P.Config.PluginLanguage ?? "ChineseTraditional");
                 }
                 ImGui.SameLine();
                 if(ImGui.Button("重新掃描語言檔案".Loc()))
