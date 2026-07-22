@@ -136,6 +136,9 @@
 	  <None Update="LanguageChinese.ini">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <None Update="LanguageChineseTraditional.ini">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	  <None Update="LanguageGerman.ini">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
