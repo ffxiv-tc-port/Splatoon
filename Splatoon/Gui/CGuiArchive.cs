@@ -12,11 +12,11 @@ internal unsafe partial class CGui
     internal void DrawArchive()
     {
         ImGuiEx.TextWrapped($"""
-            您可以封存不再使用的布局。已封存的布局：
-            - 不會被處理，也不會消耗任何資源；
-            - 會被包含在備份中；
-            - 無法編輯、檢視或重新排序；
-            - 可隨時匯出至剪貼簿或還原。
+            You may archive layouts that you are no longer using. Archived layouts:
+            - Are not processed and do not consume any resources;
+            - Are included into backups;
+            - Can not be edited, viewed, reordered;
+            - Can be exported to clipboard or restored at any time.
             """);
         var groups = P.Archive.LayoutsL.Select(x => x.Group).Distinct().Order();
 
@@ -26,12 +26,12 @@ internal unsafe partial class CGui
             if(ImGuiEx.TreeNode(group))
             {
                 var grp = P.Archive.LayoutsL.Where(x => x.Group == group);
-                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Copy, "複製群組"))
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Copy, "Copy group"))
                 {
                     Copy(grp.Select(x => EzConfig.DefaultSerializationFactory.Serialize(x, false)).Join("\n"));
                 }
                 ImGui.SameLine();
-                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.ArrowCircleLeft, "還原群組"))
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.ArrowCircleLeft, "Restore group"))
                 {
                     foreach(var x in grp)
                     {
@@ -40,7 +40,7 @@ internal unsafe partial class CGui
                     }
                 }
                 ImGui.SameLine();
-                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Trash, "刪除群組", ImGuiEx.Ctrl))
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Trash, "Delete group", ImGuiEx.Ctrl))
                 {
                     foreach(var x in grp)
                     {
@@ -61,9 +61,9 @@ internal unsafe partial class CGui
     {
         if(ImGui.BeginTable("EntryArchive", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
         {
-            ImGui.TableSetupColumn("名稱", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("資訊");
-            ImGui.TableSetupColumn("控制");
+            ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("Info");
+            ImGui.TableSetupColumn("Control");
 
             foreach(var x in layouts)
             {
@@ -75,22 +75,22 @@ internal unsafe partial class CGui
 
                 ImGui.TableNextColumn();
 
-                ImGuiEx.TextV($"{x.ElementsL.Count} 個元素");
+                ImGuiEx.TextV($"{x.ElementsL.Count} elements");
 
                 ImGui.TableNextColumn();
 
-                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Copy, "複製"))
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Copy, "Copy"))
                 {
                     Copy(EzConfig.DefaultSerializationFactory.Serialize(x, false));
                 }
                 ImGui.SameLine();
-                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.ArrowCircleLeft, "還原"))
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.ArrowCircleLeft, "Restore"))
                 {
                     P.Config.LayoutsL.Add(x.JSONClone());
                     new TickScheduler(() => P.Archive.LayoutsL.Remove(x));
                 }
                 ImGui.SameLine();
-                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Trash, "刪除", ImGuiEx.Ctrl))
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Trash, "Delete", ImGuiEx.Ctrl))
                 {
                     new TickScheduler(() => P.Archive.LayoutsL.Remove(x));
                 }

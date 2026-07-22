@@ -89,7 +89,7 @@ internal partial class CGui
             NuiTools.ButtonTabs("LayoutsButtonTabsCategory", [ContentCategoryTab], child: false);
             if(ImGui.BeginTable("LayoutsTable", 2, ImGuiTableFlags.Resizable))
             {
-                ImGui.TableSetupColumn("布局清單".Loc() + "###Layout id", ImGuiTableColumnFlags.None, 200);
+                ImGui.TableSetupColumn("Layout list".Loc() + "###Layout id", ImGuiTableColumnFlags.None, 200);
                 ImGui.TableSetupColumn($"{(CurrentLayout == null ? "" : $"{CurrentLayout.GetName()}") + (CurrentElement == null ? "" : $" | {CurrentElement.GetName()}")}###Layout edit", ImGuiTableColumnFlags.None, 600);
 
                 //ImGui.TableHeadersRow();
@@ -97,29 +97,29 @@ internal partial class CGui
                 ImGui.TableNextColumn();
                 ImGuiEx.InputWithRightButtonsArea("Search layouts", delegate
                 {
-                    ImGui.InputTextWithHint("##layoutFilter", "搜尋布局...".Loc(), ref LayoutFilter, 100);
+                    ImGui.InputTextWithHint("##layoutFilter", "Search layouts...".Loc(), ref LayoutFilter, 100);
                 }, delegate
                 {
                     if(ImGuiEx.IconButton(FontAwesomeIcon.Plus))
                     {
                         ImGui.OpenPopup("Add layout");
                     }
-                    ImGuiEx.Tooltip("新增布局...".Loc());
+                    ImGuiEx.Tooltip("Add new layout...".Loc());
                     ImGui.SameLine(0, 1);
                     if(ImGuiEx.IconButton(P.Config.FocusMode ? FontAwesomeIcon.SearchMinus : FontAwesomeIcon.SearchPlus))
                     {
                         P.Config.FocusMode = !P.Config.FocusMode;
                     }
-                    ImGuiEx.Tooltip("切換聚焦模式。\n聚焦模式：選取布局時，隱藏其他所有布局。".Loc());
+                    ImGuiEx.Tooltip("Toggle focus mode.\nFocus mode: when layout is selected, hide all other layouts.".Loc());
                     ImGui.SameLine(0, 2);
                     if(ImGuiEx.IconButton(FontAwesomeIcon.Sort))
                     {
                         P.Config.GroupOrder.Sort();
                     }
-                    ImGuiEx.Tooltip("依字母順序排序群組。".Loc());
+                    ImGuiEx.Tooltip("Sorts groups alphabetically.".Loc());
                 });
                 ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, Vector2.Zero);
-                if(ImGui.Button("從剪貼簿匯入".Loc(), new(ImGui.GetContentRegionAvail().X, ImGui.CalcTextSize("A").Y)))
+                if(ImGui.Button("Import from clipboard".Loc(), new(ImGui.GetContentRegionAvail().X, ImGui.CalcTextSize("A").Y)))
                 {
                     Safe(() =>
                     {
@@ -138,14 +138,14 @@ internal partial class CGui
                 ImGui.PopStyleVar();
                 if(ImGui.BeginPopup("Add layout"))
                 {
-                    ImGui.InputTextWithHint("", "布局名稱".Loc(), ref NewLayoytName, 100);
+                    ImGui.InputTextWithHint("", "Layout name".Loc(), ref NewLayoytName, 100);
                     ImGui.SameLine();
-                    if(ImGui.Button("新增".Loc()))
+                    if(ImGui.Button("Add".Loc()))
                     {
                         if(CGui.AddEmptyLayout(out var newLayout))
                         {
                             ImGui.CloseCurrentPopup();
-                            Notify.Success($"已建立布局: ??".Loc(newLayout.GetName()));
+                            Notify.Success($"Layout created: ??".Loc(newLayout.GetName()));
                             ScrollTo = newLayout;
                             CurrentLayout = newLayout;
                         }
@@ -173,7 +173,7 @@ internal partial class CGui
                 }
                 else
                 {
-                    ImGuiEx.Text("UI 說明:\n- 左側面板包含群組、布局與元素。\n- 您可以拖曳布局、元素及群組來重新排序。\n- 右鍵點擊群組可重新命名或刪除。\n- 右鍵點擊布局/元素可刪除。\n- 中鍵點擊布局/元素可快速啟用/停用".Loc());
+                    ImGuiEx.Text("UI Help:\n- Left panel contains groups, layouts and elements.\n- You can drag and drop layouts, elements and groups to reorder them.\n- Right click on a group to rename or delete it.\n- Right click on a layout/element to delete it.\n- Middle click on layout/element for quick enable/disable".Loc());
                 }
                 ImGui.EndChild();
 
@@ -315,18 +315,18 @@ internal partial class CGui
                 {
                     ImGuiEx.Text($"[{g}]");
                     ImGui.SetNextItemWidth(200f);
-                    var result = ImGui.InputTextWithHint("##GroupRename", "輸入新名稱...".Loc(), ref PopupRename, 100, ImGuiInputTextFlags.EnterReturnsTrue);
+                    var result = ImGui.InputTextWithHint("##GroupRename", "Enter new name...".Loc(), ref PopupRename, 100, ImGuiInputTextFlags.EnterReturnsTrue);
                     PopupRename = PopupRename.SanitizeName();
                     ImGui.SameLine();
-                    if(ImGui.Button("確定".Loc()) || result)
+                    if(ImGui.Button("OK".Loc()) || result)
                     {
                         if(P.Config.GroupOrder.Contains(PopupRename))
                         {
-                            Notify.Error("錯誤: 此名稱已存在".Loc());
+                            Notify.Error("Error: this name is already exists".Loc());
                         }
                         else if(PopupRename.Length == 0)
                         {
-                            Notify.Error("錯誤: 名稱不可為空".Loc());
+                            Notify.Error("Error: empty names are not allowed".Loc());
                         }
                         else
                         {
@@ -346,7 +346,7 @@ internal partial class CGui
                             PopupRename = "";
                         }
                     }
-                    if(ImGui.Selectable("封存群組".Loc()) && ImGui.GetIO().KeyCtrl)
+                    if(ImGui.Selectable("Archive group".Loc()) && ImGui.GetIO().KeyCtrl)
                     {
                         foreach(var l in P.Config.LayoutsL)
                         {
@@ -361,9 +361,9 @@ internal partial class CGui
                         new TickScheduler(() => P.Config.GroupOrder.RemoveAt(index));
                         P.SaveArchive();
                     }
-                    ImGuiEx.Tooltip("按住 CTRL+點擊".Loc());
+                    ImGuiEx.Tooltip("Hold CTRL+click".Loc());
                     ImGui.Separator();
-                    if(ImGui.Selectable("移除群組並解散布局".Loc()) && ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift)
+                    if(ImGui.Selectable("Remove group and disband layouts".Loc()) && ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift)
                     {
                         foreach(var l in P.Config.LayoutsL)
                         {
@@ -375,8 +375,8 @@ internal partial class CGui
                         var index = i;
                         new TickScheduler(() => P.Config.GroupOrder.RemoveAt(index));
                     }
-                    ImGuiEx.Tooltip("按住 CTRL+SHIFT+點擊".Loc());
-                    if(ImGui.Selectable("移除群組及其布局".Loc()) && ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift)
+                    ImGuiEx.Tooltip("Hold CTRL+SHIFT+click".Loc());
+                    if(ImGui.Selectable("Remove group and it's layouts".Loc()) && ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift)
                     {
                         foreach(var l in P.Config.LayoutsL)
                         {
@@ -389,8 +389,8 @@ internal partial class CGui
                         var index = i;
                         new TickScheduler(() => P.Config.GroupOrder.RemoveAt(index));
                     }
-                    ImGuiEx.Tooltip("按住 CTRL+SHIFT+點擊".Loc());
-                    if(ImGui.Selectable("匯出群組".Loc()))
+                    ImGuiEx.Tooltip("Hold CTRL+SHIFT+click".Loc());
+                    if(ImGui.Selectable("Export Group".Loc()))
                     {
                         List<string> Export = [];
                         foreach(var l in P.Config.LayoutsL)

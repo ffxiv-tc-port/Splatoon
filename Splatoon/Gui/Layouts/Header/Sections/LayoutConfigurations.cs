@@ -38,7 +38,7 @@ internal static class LayoutConfigurations
             {
                 if(ImGui.BeginCombo("##layoutConfiguration", selectedConf.GetName(layout), ImGuiComboFlags.HeightLarge))
                 {
-                    if(ImGui.Selectable(layout.DefaultConfigurationName.NullWhenEmpty() ?? $"預設設定檔", selectedConf == null))
+                    if(ImGui.Selectable(layout.DefaultConfigurationName.NullWhenEmpty() ?? $"Default Configuration", selectedConf == null))
                     {
                         layout.SelectedSubconfigurationID = Guid.Empty;
                     }
@@ -67,7 +67,7 @@ internal static class LayoutConfigurations
                         ImGui.Separator();
                         ImGuiEx.Text(UiBuilder.IconFont, FontAwesomeIcon.Plus.ToIconString());
                         ImGui.SameLine();
-                        if(ImGui.Selectable($"以「{layout.DefaultConfigurationName.NullWhenEmpty() ?? $"預設設定檔"}」為基礎新增"))
+                        if(ImGui.Selectable($"Add New based on {layout.DefaultConfigurationName.NullWhenEmpty() ?? $"Default Configuration"}"))
                         {
                             var newConf = new LayoutSubconfiguration
                             {
@@ -81,7 +81,7 @@ internal static class LayoutConfigurations
                             ImGuiEx.Text(UiBuilder.IconFont, FontAwesomeIcon.Clone.ToIconString());
                             ImGui.SameLine();
 
-                            if(ImGui.Selectable($"以「{selectedConf.GetName(layout)}」為基礎新增"))
+                            if(ImGui.Selectable($"Add New based on {selectedConf.GetName(layout)}"))
                             {
                                 var newConf = selectedConf.JSONClone();
                                 newConf.Guid = Guid.NewGuid();
@@ -112,7 +112,7 @@ internal static class LayoutConfigurations
                     {
                         new TickScheduler(() => layout.Subconfigurations.Remove(selectedConf));
                     }
-                    ImGuiEx.Tooltip(selectedConf == null ? "無法移除預設設定檔" : "按住 CTRL 並點擊以移除此設定檔");
+                    ImGuiEx.Tooltip(selectedConf == null ? "Default Configuration can not be removed" : "Hold CTRL and click to remove configuration");
                 }
             });
         }
@@ -134,7 +134,7 @@ internal static class LayoutConfigurations
             }
             else
             {
-                ImGui.InputTextWithHint("##confName", "重新命名預設設定檔", ref layout.DefaultConfigurationName, 100);
+                ImGui.InputTextWithHint("##confName", "Rename Default Configuration", ref layout.DefaultConfigurationName, 100);
             }
         }
         catch(Exception e)

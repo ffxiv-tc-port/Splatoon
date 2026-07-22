@@ -30,14 +30,14 @@ namespace Splatoon.Gui
             }
             else
             {
-                ImGuiEx.Text($"發生錯誤。");
+                ImGuiEx.Text($"An error has occurred.");
             }
         }
 
         public override void OnClose()
         {
             Script.Controller.SaveOverrides();
-            Notify.Info("覆寫已儲存");
+            Notify.Info("Override saved");
             Script.Controller.ApplyOverrides();
             EditingElement = null;
             Script = null;

@@ -9,33 +9,33 @@ internal static class Freezing
     {
         if(layout.Freezing)
         {
-            ImGuiEx.Text("凍結時間:".Loc());
+            ImGuiEx.Text("Freeze for:".Loc());
             ImGui.SameLine();
             ImGui.SetNextItemWidth(50f);
             ImGui.DragFloat("##freezeTime", ref layout.FreezeFor, 0.1f, 0.1f, 99999f, $"{layout.FreezeFor:F1}");
-            ImGuiEx.HelpMarker("顯示凍結元素的持續秒數。".Loc());
+            ImGuiEx.HelpMarker("Duration in seconds to display frozen elements.".Loc());
 
-            ImGuiEx.Text("重新凍結間隔:".Loc());
+            ImGuiEx.Text("Refreeze interval:".Loc());
             ImGui.SameLine();
             ImGui.SetNextItemWidth(50f);
             ImGui.DragFloat("##freezeInt", ref layout.IntervalBetweenFreezes, 0.1f, 0.1f, 99999f, $"{layout.IntervalBetweenFreezes:F1}");
-            ImGuiEx.HelpMarker("產生新凍結元素之間的秒數間隔。\n數值越低，產生的元素越多。".Loc());
+            ImGuiEx.HelpMarker("Interval in seconds between creation of new frozen elements.\nA lower number means more elements spawned.".Loc());
             if(layout.IntervalBetweenFreezes < 0.5f)
             {
                 ImGuiEx.HelpMarker("Warning: your interval between freezes is very low. Please ensure that this is intentional.", EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString());
             }
 
-            ImGuiEx.Text("顯示延遲:".Loc());
+            ImGuiEx.Text("Display delay:".Loc());
             ImGui.SameLine();
             ImGui.SetNextItemWidth(50f);
             ImGui.DragFloat("##freezeDD", ref layout.FreezeDisplayDelay, 0.1f, 0, 99999, $"{layout.FreezeDisplayDelay:F1}");
-            ImGuiEx.HelpMarker("新建立的凍結元素顯示前的延遲秒數。".Loc());
+            ImGuiEx.HelpMarker("The delay in seconds before a newly created frozen element will be displayed.".Loc());
 
-            ImGuiEx.Text("重置條件:".Loc());
+            ImGuiEx.Text("Reset on:".Loc());
             ImGui.SameLine();
-            ImGui.Checkbox("戰鬥結束".Loc(), ref layout.FreezeResetCombat);
+            ImGui.Checkbox("Combat end".Loc(), ref layout.FreezeResetCombat);
             ImGui.SameLine();
-            ImGui.Checkbox("區域切換".Loc(), ref layout.FreezeResetTerr);
+            ImGui.Checkbox("Zone change".Loc(), ref layout.FreezeResetTerr);
         }
     }
 }

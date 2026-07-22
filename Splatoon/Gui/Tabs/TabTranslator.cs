@@ -13,11 +13,11 @@ public unsafe static class TabTranslator
     public static void Draw()
     {
         ImGuiEx.TextWrapped($"""
-            Beta 功能 - 可能存在問題。請謹慎操作，並以小批次進行翻譯與提交 PR。
-            要開始使用翻譯工具，請複製整份 GitHub .md 檔案的文字並按下「從剪貼簿匯入頁面」按鈕，或選擇先前匯入的頁面。
-            翻譯完成後，請使用「複製結果到剪貼簿」按鈕複製文字，並向原始倉庫提交拉取請求。
+            Beta feature - may contain issues. Please proceed with caution, translate and submit PRs in small batches.
+            To begin working with translator, copy the text of the whole GitHub .md file and press "Import Page from Clipboard" button, or select previously imported page.
+            When you have finished translating, copy text with "Copy Result to Clipboard" button and submit a pull request to the original repository.
             """);
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Paste, "從剪貼簿匯入頁面".Loc()))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Paste, "Import Page from Clipboard".Loc()))
         {
             try
             {
@@ -25,7 +25,7 @@ public unsafe static class TabTranslator
                 if(page != null)
                 {
                     P.Config.TranslatorPages.Add(page);
-                    new TranslationWorkspaceWindow($"翻譯工作區".Loc() + $"##{page.ID}", page);
+                    new TranslationWorkspaceWindow($"Translation Workspace".Loc() + $"##{page.ID}", page);
                 }
             }
             catch(Exception e)
@@ -40,7 +40,7 @@ public unsafe static class TabTranslator
             {
                 try
                 {
-                    new TranslationWorkspaceWindow($"翻譯工作區".Loc() + $"##{page.ID}", page);
+                    new TranslationWorkspaceWindow($"Translation Workspace".Loc() + $"##{page.ID}", page);
                 }
                 catch(Exception e)
                 {

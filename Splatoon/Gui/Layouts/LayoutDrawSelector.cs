@@ -106,14 +106,14 @@ internal static class LayoutDrawSelector
             if(ImGui.BeginPopup("LayoutContext"))
             {
                 ImGuiEx.Text($"Layout ??".Loc(layout.GetName()));
-                if(ImGui.Selectable("封存布局".Loc()))
+                if(ImGui.Selectable("Archive layout".Loc()))
                 {
                     P.Archive.LayoutsL.Add(layout.JSONClone());
                     P.SaveArchive();
                     new TickScheduler(() => P.Config.LayoutsL.Remove(layout));
                 }
                 ImGui.Separator();
-                if(ImGui.Selectable("刪除布局".Loc()))
+                if(ImGui.Selectable("Delete layout".Loc()))
                 {
                     new TickScheduler(() => P.Config.LayoutsL.Remove(layout));
                 }
@@ -179,8 +179,8 @@ internal static class LayoutDrawSelector
                 }
                 if(ImGui.BeginPopup("ElementContext"))
                 {
-                    ImGuiEx.Text($"{"布局".Loc()} {layout.GetName()}\n{"元素".Loc()} {e.GetName()}");
-                    if(ImGui.Selectable("刪除元素".Loc()))
+                    ImGuiEx.Text($"{"Layout".Loc()} {layout.GetName()}\n{"Element".Loc()} {e.GetName()}");
+                    if(ImGui.Selectable("Delete element".Loc()))
                     {
                         var l = layout.GetElementsWithSubconfiguration();
                         new TickScheduler(() => l.Remove(e));
@@ -191,12 +191,12 @@ internal static class LayoutDrawSelector
             }
             ImGuiEx.LineCentered("AddElement", delegate
             {
-                if(ImGui.SmallButton("新增元素".Loc()))
+                if(ImGui.SmallButton("Add element".Loc()))
                 {
                     layout.GetElementsWithSubconfiguration().Add(new(0));
                 }
                 ImGui.SameLine();
-                if(ImGui.SmallButton("貼上".Loc()))
+                if(ImGui.SmallButton("Paste".Loc()))
                 {
                     try
                     {

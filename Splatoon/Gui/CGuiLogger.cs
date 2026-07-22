@@ -12,35 +12,35 @@ internal partial class CGui
     private bool IsViewer = false;
     private void DisplayLogger()
     {
-        ImGui.Checkbox("啟用記錄器".Loc(), ref p.LogObjects);
+        ImGui.Checkbox("Enable logger".Loc(), ref p.LogObjects);
         ImGui.SameLine();
-        ImGui.Checkbox("檢視模式".Loc(), ref IsViewer);
-        ImGuiComponents.HelpMarker("啟用後，僅顯示目前存在的物件".Loc());
+        ImGui.Checkbox("Viewer mode".Loc(), ref IsViewer);
+        ImGuiComponents.HelpMarker("When enabled, only currently present objects are displayed".Loc());
         ImGui.SameLine();
-        if(ImGui.Button("清空清單".Loc()))
+        if(ImGui.Button("Clear list".Loc()))
         {
             p.loggedObjectList.Clear();
         }
         ImGui.SameLine();
-        ImGuiEx.Text("篩選:".Loc());
+        ImGuiEx.Text("Filter:".Loc());
         ImGui.SameLine();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         ImGui.InputText("##filterLog", ref LoggerSearch, 100);
         ImGui.BeginTable("##logObjects", 14, ImGuiTableFlags.BordersInner | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit);
-        ImGui.TableSetupColumn("物件名稱".Loc(), ImGuiTableColumnFlags.WidthStretch);
-        ImGui.TableSetupColumn("類型".Loc());
-        ImGui.TableSetupColumn("物件 ID".Loc());
+        ImGui.TableSetupColumn("Object name".Loc(), ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableSetupColumn("Type".Loc());
+        ImGui.TableSetupColumn("Object ID".Loc());
         ImGui.TableSetupColumn("OID Long".Loc());
         ImGui.TableSetupColumn("Data ID".Loc());
-        ImGui.TableSetupColumn("模型 ID".Loc());
+        ImGui.TableSetupColumn("Model ID".Loc());
         ImGui.TableSetupColumn("NPC ID".Loc());
         ImGui.TableSetupColumn("Name ID".Loc());
-        ImGui.TableSetupColumn("目標 %".Loc());
-        ImGui.TableSetupColumn("可視 %".Loc());
-        ImGui.TableSetupColumn("存在".Loc());
-        ImGui.TableSetupColumn("距離".Loc());
-        ImGui.TableSetupColumn("碰撞箱".Loc());
-        ImGui.TableSetupColumn("存在時間".Loc());
+        ImGui.TableSetupColumn("Tar. %".Loc());
+        ImGui.TableSetupColumn("Vis. %".Loc());
+        ImGui.TableSetupColumn("Exist".Loc());
+        ImGui.TableSetupColumn("Dist.".Loc());
+        ImGui.TableSetupColumn("Hibox".Loc());
+        ImGui.TableSetupColumn("Life".Loc());
         ImGui.TableHeadersRow();
         var i = 0;
         foreach(var x in p.loggedObjectList)
@@ -77,7 +77,7 @@ internal partial class CGui
                 }
             }
             ImGui.SameLine();
-            if(ImGui.SmallButton("尋找".Loc() + "##" + i))
+            if(ImGui.SmallButton("Find".Loc() + "##" + i))
             {
                 p.SFind.Clear();
                 p.SFind.Add(new()

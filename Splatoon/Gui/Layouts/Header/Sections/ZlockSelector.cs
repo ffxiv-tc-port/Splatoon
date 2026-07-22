@@ -16,16 +16,16 @@ internal static class ZlockSelector
         if(colorZLock) ImGui.PushStyleColor(ImGuiCol.Text, Colors.Red);
         layout.ZoneLockH.RemoveWhere(el => !P.Zones.ContainsKey(el));
         ImGuiEx.SetNextItemFullWidth();
-        if(ImGui.BeginCombo("##zlk", layout.ZoneLockH.Count == 0 ? "所有區域".Loc() :
+        if(ImGui.BeginCombo("##zlk", layout.ZoneLockH.Count == 0 ? "All zones".Loc() :
             layout.ZoneLockH.Count == 1 ? GenericHelpers.GetTerritoryName(layout.ZoneLockH.First()) :
             "?? zones".Loc(layout.ZoneLockH.Count)
             ))
         {
             if(colorZLock) ImGui.PopStyleColor();
             ImGui.SetNextItemWidth(100f);
-            ImGui.InputTextWithHint("##zfltr", "篩選".Loc(), ref zlockf, 100);
+            ImGui.InputTextWithHint("##zfltr", "Filter".Loc(), ref zlockf, 100);
             ImGui.SameLine();
-            ImGui.Checkbox("僅限選取項目".Loc(), ref zlockcur);
+            ImGui.Checkbox("Only selected".Loc(), ref zlockcur);
             if(P.Zones.ContainsKey(Svc.ClientState.TerritoryType))
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, Colors.Yellow);

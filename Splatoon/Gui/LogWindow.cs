@@ -26,7 +26,7 @@ public class LogWindow : Window
 
     public override void Draw()
     {
-        NuiTools.ButtonTabs([[new("標準記錄", InternalLog.PrintImgui), new("篩選記錄", PrintFiltered)]]);
+        NuiTools.ButtonTabs([[new("Standard log", InternalLog.PrintImgui), new("Filtered log", PrintFiltered)]]);
     }
 
     private bool Autoscroll = true;
@@ -35,21 +35,21 @@ public class LogWindow : Window
     private void PrintFiltered()
     {
         ImGui.Checkbox("##Autoscroll", ref Autoscroll);
-        ImGuiEx.Tooltip("自動捲動");
+        ImGuiEx.Tooltip("Autoscroll");
         ImGui.SameLine();
-        if(ImGui.Button("全部複製"))
+        if(ImGui.Button("Copy all"))
         {
 #pragma warning disable
             GenericHelpers.Copy(FilteredLog.Select(x => $"[{x.Level}@{x.Time}] {x.Message}").Join("\n"));
 #pragma warning restore
         }
         ImGui.SameLine();
-        if(ImGui.Button("清除"))
+        if(ImGui.Button("Clear"))
         {
             FilteredLog.Clear();
         }
         ImGui.SameLine();
-        ImGui.InputTextWithHint("##Filter", "篩選...", ref Search, 100);
+        ImGui.InputTextWithHint("##Filter", "Filter...", ref Search, 100);
 
         ImGui.BeginChild($"Plugin_log{DalamudReflector.GetPluginName()}");
         foreach(var x in FilteredLog)

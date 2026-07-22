@@ -20,11 +20,11 @@ internal partial class CGui
     {
         if(NewLayoytName.Contains("~"))
         {
-            Notify.Error("名稱不可包含保留字元: ~".Loc());
+            Notify.Error("Name can't contain reserved characters: ~".Loc());
         }
         else if(NewLayoytName.Contains(","))
         {
-            Notify.Error("名稱不可包含保留字元: ,".Loc());
+            Notify.Error("Name can't contain reserved characters: ,".Loc());
         }
         else
         {
@@ -44,13 +44,13 @@ internal partial class CGui
     private static void DrawRotationSelector(Element el)
     {
         ImGui.SameLine();
-        ImGuiEx.Text("加入角度:".Loc());
+        ImGuiEx.Text("Add angle:".Loc());
         ImGui.SameLine();
         var angleDegrees = el.AdditionalRotation.RadiansToDegrees();
         ImGui.SameLine();
         ImGui.SetNextItemWidth(50f);
         ImGui.DragFloat("##ExtraAngle", ref angleDegrees, 0.1f, 0f, 360f);
-        if(ImGui.IsItemHovered()) ImGui.SetTooltip("按住 shift 加快調整速度；\n雙擊以手動輸入。".Loc());
+        if(ImGui.IsItemHovered()) ImGui.SetTooltip("Hold shift for faster changing;\ndouble-click to enter manually.".Loc());
         if(angleDegrees < 0f || angleDegrees > 360f) angleDegrees = 0f;
         el.AdditionalRotation = angleDegrees.DegreesToRadians();
         if(el.type != 1)

@@ -6,7 +6,7 @@ internal partial class CGui
 {
     private void DisplayDynamicElements()
     {
-        if(ImGui.Button("全部銷毀".Loc()))
+        if(ImGui.Button("Destroy all".Loc()))
         {
             p.dynamicElements.Clear();
         }
@@ -22,7 +22,7 @@ internal partial class CGui
                 p.dynamicElements.RemoveAt(i);
             }
             ImGui.SameLine();
-            if(ImGui.SmallButton("銷毀命名空間".Loc() + "##" + i))
+            if(ImGui.SmallButton("Destroy namespace".Loc() + "##" + i))
             {
                 p.dynamicElements.RemoveAll(e => e.Name == dynElem.Name);
                 break;

@@ -14,20 +14,20 @@ public static class TabTrustedRepos
         var display = pass || P.Config.ExtraTrustedRepos != "" || P.Config.ExtraUpdateLinks != "";
         if(!display)
         {
-            ImGuiEx.TextWrapped(EColor.RedBright, "您即將存取「極度危險的選項」。正常情況下，只有開發者才會需要使用它。".Loc());
-            ImGui.Checkbox($"我了解不當使用這些功能可能導致無法復原的損害。", ref pass);
+            ImGuiEx.TextWrapped(EColor.RedBright, "You are about to access EXTRAORDINARELY DANGEROUS OPTIONS. Normally, the ONLY time you'd want to use it if you are the developer. ".Loc());
+            ImGui.Checkbox($"I understand that improper use of these functions may result in irrecoverable damages.", ref pass);
         }
         if(!pass) return;
         pass = true;
-        ImGuiEx.Text($"額外信任來源");
+        ImGuiEx.Text($"Extra trusted sources");
         ImGui.Indent();
-        ImGuiEx.TextWrapped($"新增您想從中匯入腳本的額外信任來源，每行一項。任何以您新增的字串開頭的網址都會被視為可信任。請謹慎選擇。若您不當使用此功能，Splatoon 開發者與發布者將不對您的遊戲、角色、個人資料、作業系統與電腦所發生的任何可能損害負責。".Loc());
+        ImGuiEx.TextWrapped($"Add extra trusted sources from which you would like to import scripts. One per line. Any URL that starts with any of the lines you add will be considered trusted. You should choose wisely. Splatoon developers and publishers are NOT responsible for any possible damage that will happen to your game, characters, personal data, operating system, and PC if you will use this function incorrectly.".Loc());
         ImGui.Unindent();
         ImGuiEx.InputTextMultilineExpanding("trustSource", ref P.Config.ExtraTrustedRepos, 2000, 5);
         ImGui.Separator();
-        ImGuiEx.Text($"額外更新來源");
+        ImGuiEx.Text($"Extra update sources");
         ImGui.Indent();
-        ImGuiEx.TextWrapped(EColor.RedBright, $"除官方 Splatoon 倉庫外，Splatoon 還會從以下清單檢查腳本更新，每行一項。警告：在此新增額外清單，即代表您允許該清單的維護者在您的電腦上「不受任何限制地執行任意程式碼」。若您不當使用此功能，Splatoon 開發者與發布者將不對您的遊戲、角色、個人資料、作業系統與電腦所發生的任何可能損害負責。".Loc());
+        ImGuiEx.TextWrapped(EColor.RedBright, $"In addition to official Splatoon repo, Splatoon will check scripts for updates from the following lists, one per line. WARNING. By adding an extra list here you will allow maintainer of such list to run ANY CODE ON YOUR COMPUTER, without any restrictions. Splatoon developers and publishers are NOT responsible for any possible damage that will happen to your game, characters, personal data, operating system, and PC if you will use this function incorrectly.".Loc());
         ImGui.Unindent();
         ImGuiEx.InputTextMultilineExpanding("trustRepo", ref P.Config.ExtraUpdateLinks, 2000, 5);
     }

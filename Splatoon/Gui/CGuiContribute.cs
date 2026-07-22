@@ -7,13 +7,13 @@ internal class Contribute
     internal static void OpenGithubPresetSubmit()
     {
         var url = "https://github.com/PunishXIV/Splatoon/tree/main/Presets#adding-your-preset";
-        Svc.Chat.Print("[Splatoon] 如何提交您的預設: ".Loc() + url);
+        Svc.Chat.Print("[Splatoon] How to submit your preset: ".Loc() + url);
         Utils.ProcessStart(url);
     }
 
     internal static void OpenDiscordLink()
     {
-        Svc.Chat.Print("[Splatoon] 伺服器邀請連結: ".Loc() + Splatoon.DiscordURL);
+        Svc.Chat.Print("[Splatoon] Server invite link: ".Loc() + Splatoon.DiscordURL);
         Utils.ProcessStart(Splatoon.DiscordURL);
     }
 
@@ -21,47 +21,47 @@ internal class Contribute
     {
         ImGui.PushID("contribute");
         ImGui.PushTextWrapPos();
-        ImGuiEx.Text("如果您喜歡 Splatoon，可以考慮以下列任一方式做出貢獻:".Loc());
+        ImGuiEx.Text("If you like Splatoon, you may consider contributing in any following way:".Loc());
         ImGui.Separator();
-        ImGuiEx.Text("- 提供新戰鬥的戰鬥資料".Loc());
-        ImGuiEx.Text("每當新戰鬥推出時，取得其戰鬥資料對我幫助很大。如果您搶先體驗這些戰鬥並願意貢獻戰鬥資料，請透過 Discord 聯絡我以取得相關說明。".Loc());
-        if(ImGui.Button("開啟 Discord 伺服器##2".Loc()))
+        ImGuiEx.Text("- Contributing combat data of new battles".Loc());
+        ImGuiEx.Text("When a new battle comes, I would greatly benefit from obtaining it's combat data. If you are doing these battles early and wish to contribute combat data, please contact me via Discord to receive instructions on how to do so.".Loc());
+        if(ImGui.Button("Open Discord server##2".Loc()))
         {
             OpenDiscordLink();
         }
         ImGui.Separator();
-        ImGuiEx.Text("- 將你自己的預設公開分享".Loc());
-        ImGuiEx.Text("Splatoon 有幫助你打過團本、解決過機制，或以任何方式改善你的遊戲體驗嗎？請考慮將您的預設公開分享，讓其他人也能受益！".Loc());
-        ImGuiEx.Text("如果您有帳號，可以將其送至 Github，或傳送到我的 Discord 伺服器。".Loc());
-        if(ImGui.Button("開啟 Github 頁面".Loc()))
+        ImGuiEx.Text("- Sending your own presets to public".Loc());
+        ImGuiEx.Text("Did Splatoon helped you to clear a raid, to resolve a mechanic, to improve your gameplay in any way? Please consider submitting your preset to the public so others may enjoy it as well!".Loc());
+        ImGuiEx.Text("You may send it to Github if you have account or to my Discord server.".Loc());
+        if(ImGui.Button("Open Github page".Loc()))
         {
             OpenGithubPresetSubmit();
         }
         ImGui.SameLine();
-        if(ImGui.Button("開啟 Discord 伺服器".Loc()))
+        if(ImGui.Button("Open Discord server".Loc()))
         {
             OpenDiscordLink();
         }
         ImGui.Separator();
-        ImGuiEx.Text("- 給倉庫加個星星".Loc());
-        ImGuiEx.Text("沒有任何預設可以分享？您仍然可以透過為 Splatoon 及我的其他外掛倉庫加星星來提供幫助！".Loc());
-        ImGuiEx.Text("若要這麼做，您只需要一個 Github 帳號。登入後，前往下方連結並點擊頁面右上角的「Star」按鈕即可。".Loc());
-        if(ImGui.Button("開啟 Splatoon 倉庫".Loc()))
+        ImGuiEx.Text("- Adding a star to the repo".Loc());
+        ImGuiEx.Text("Don't have any presets to send? You may still help by simply adding a star to Splatoon and my plugins' repo!".Loc());
+        ImGuiEx.Text("To do so, all you need is Github account. After logging in, proceed to the links below and click \"Star\" button in top right corner of the page.".Loc());
+        if(ImGui.Button("Open Splatoon repo".Loc()))
         {
             var url = "https://github.com/PunishXIV/Splatoon";
-            Svc.Chat.Print("[Splatoon] Splatoon 倉庫: ".Loc() + url);
+            Svc.Chat.Print("[Splatoon] Splatoon repo: ".Loc() + url);
             Utils.ProcessStart(url);
         }
         /*ImGui.SameLine();
-        if (ImGui.Button("開啟 NightmareXIV 外掛倉庫".Loc()))
+        if (ImGui.Button("Open NightmareXIV plugins repo".Loc()))
         {
             var url = "https://github.com/NightmareXIV/MyDalamudPlugins";
-            Svc.Chat.Print("[Splatoon] NightmareXIV 外掛倉庫: ".Loc() + url);
+            Svc.Chat.Print("[Splatoon] NightmareXIV plugin repo: ".Loc() + url);
             ProcessStart(url);
         }*/
         ImGui.Separator();
-        ImGuiEx.Text("- 財務支持".Loc());
-        ImGuiEx.Text("如果您想在財務上支持我，可以使用 Patreon、Ko-Fi 或加密貨幣。財務支持能讓我投入更多時間開發外掛！".Loc());
+        ImGuiEx.Text("- Financial".Loc());
+        ImGuiEx.Text("If you would like to financially support me, you may use Patreon, Ko-Fi or cryptocurrency. Financial support allows me to put extra time into plugin!".Loc());
 
         if(ImGui.Button("Patreon"))
         {
@@ -73,12 +73,12 @@ internal class Contribute
             ShellStart("https://donate.nightmarexiv.com/");
         }
         ImGui.SameLine();
-        if(ImGui.Button("加密貨幣"))
+        if(ImGui.Button("Crypto"))
         {
             ShellStart("https://crypto.nightmarexiv.com/");
         }
 
-        ImGuiEx.Text("感謝您的貢獻！".Loc());
+        ImGuiEx.Text("Thank you for your contributions!".Loc());
         ImGui.PopTextWrapPos();
         ImGui.PopID();
     }

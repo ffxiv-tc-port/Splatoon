@@ -17,11 +17,11 @@ internal static class JlockSelector
         {
             if(layout.JobLockH.Count == 0 || layout.JobLockH.Contains(Player.Job))
             {
-                ImGuiEx.HelpMarker("玩家職業符合此選項".Loc(), EColor.GreenBright, FontAwesomeIcon.Check.ToIconString(), false);
+                ImGuiEx.HelpMarker("Player's job matches this selection".Loc(), EColor.GreenBright, FontAwesomeIcon.Check.ToIconString(), false);
             }
             else
             {
-                ImGuiEx.HelpMarker("玩家職業與此選項不符".Loc(), EColor.RedBright, FontAwesomeIcon.Times.ToIconString(), false);
+                ImGuiEx.HelpMarker("Player's job does not matches this selection".Loc(), EColor.RedBright, FontAwesomeIcon.Times.ToIconString(), false);
             }
             ImGui.SameLine();
         }

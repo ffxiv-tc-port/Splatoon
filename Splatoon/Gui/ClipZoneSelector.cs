@@ -108,7 +108,7 @@ internal class ClipZoneSelector : Window
 
                     HandlePopupMenu();
                     ImGui.Separator();
-                    if(ImGui.Selectable("刪除此區域"))
+                    if(ImGui.Selectable("Delete this zone"))
                     {
                         toRem = i;
                         //DuoLog.Information($"to remove: {toRem} ({i})");
@@ -167,7 +167,7 @@ internal class ClipZoneSelector : Window
     {
         if(P.Config.ClipZones.Count < MAX_CONFIGURABLE_CLIP_ZONES)
         {
-            if(ImGui.Selectable("新增區域"))
+            if(ImGui.Selectable("Add new zone"))
             {
                 P.Config.ClipZones.Add(new(100, 100, 300, 300));
             }
@@ -178,7 +178,7 @@ internal class ClipZoneSelector : Window
             if(ImGui.Selectable($"Select zone {i}")) bringToFront = i;
         }
         ImGui.Separator();
-        if(ImGui.Selectable("儲存設定並離開"))
+        if(ImGui.Selectable("Save configuration and exit"))
         {
             IsOpen = false;
             P.Config.Save();

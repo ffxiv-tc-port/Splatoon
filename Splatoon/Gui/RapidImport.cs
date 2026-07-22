@@ -9,11 +9,11 @@ internal static class RapidImport
     internal static bool RapidImportEnabled = false;
     internal static void Draw()
     {
-        if(ImGui.Checkbox("啟用快速匯入", ref RapidImportEnabled))
+        if(ImGui.Checkbox("Enable Rapid Import", ref RapidImportEnabled))
         {
             ImGui.SetClipboardText("");
         }
-        ImGuiEx.TextWrapped("只需複製即可輕鬆匯入多個預設。Splatoon 會讀取您的剪貼簿並嘗試匯入您複製的內容。啟用後您的剪貼簿內容會被清空。".Loc());
+        ImGuiEx.TextWrapped("Import multiple presets with ease by simply copying them. Splatoon will read your clipboard and attempt to import whatever you copy. Your clipboard will be cleared upon enabling.".Loc());
         if(RapidImportEnabled)
         {
             try
@@ -23,18 +23,18 @@ internal static class RapidImport
                 {
                     if(ScriptingProcessor.IsUrlTrusted(text))
                     {
-                        TryNotify("正在從可信任網址下載腳本".Loc());
+                        TryNotify("Downloading script from trusted URL".Loc());
                         ScriptingProcessor.DownloadScript(text, false);
                     }
                     else
                     {
                         if(CGui.ImportFromClipboard())
                         {
-                            TryNotify("匯入成功".Loc());
+                            TryNotify("Import success".Loc());
                         }
                         else
                         {
-                            TryNotify("匯入失敗".Loc());
+                            TryNotify("Import failed".Loc());
                         }
                     }
                     ImGui.SetClipboardText("");

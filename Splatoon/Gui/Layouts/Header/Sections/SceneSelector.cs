@@ -12,12 +12,12 @@ namespace Splatoon.Gui.Layouts.Header.Sections
         internal static void DrawSceneSelector(this Layout l)
         {
             ImGuiEx.SetNextItemFullWidth();
-            if(ImGui.BeginCombo("##SceneSelector", l.Scenes.Count > 0 ? l.Scenes.Print() : "任意場景"))
+            if(ImGui.BeginCombo("##SceneSelector", l.Scenes.Count > 0 ? l.Scenes.Print() : "Any scene"))
             {
                 ImGui.SetNextItemWidth(150f);
                 ImGui.InputInt("##scenenum", ref NewScene, 1, 1);
                 ImGui.SameLine();
-                if(ImGui.Button("新增"))
+                if(ImGui.Button("Add"))
                 {
                     l.Scenes.Add(NewScene);
                 }
@@ -26,7 +26,7 @@ namespace Splatoon.Gui.Layouts.Header.Sections
                 {
                     ImGuiEx.Text($"{sc}");
                     ImGui.SameLine();
-                    if(ImGui.SmallButton("刪除##scdel" + sc))
+                    if(ImGui.SmallButton("Delete##scdel" + sc))
                     {
                         toRem = sc;
                     }
