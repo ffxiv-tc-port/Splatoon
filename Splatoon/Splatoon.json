@@ -8,14 +8,14 @@
 				"Accessibility"
 		],
 		"InternalName": "Splatoon",
-		"RepoUrl": "https://github.com/Lother/Splatoon",
+		"RepoUrl": "https://github.com/ffxiv-tc-port/Splatoon",
 		"ApplicableVersion": "any",
 		"LastUpdate": 1684437468,
 		"DownloadLinkInstall": "https://love.puni.sh/plugins/Splatoon/latest.zip",
 		"DownloadLinkUpdate": "https://love.puni.sh/plugins/Splatoon/latest.zip",
 		"DownloadLinkTesting": "https://love.puni.sh/plugins/Splatoon/latest.zip",
 		"AcceptsFeedback": true,
-		"IconUrl": "https://raw.githubusercontent.com/Lother/DalamudPluginsTC/main/icons/Splatoon.png",
+		"IconUrl": "https://raw.githubusercontent.com/ffxiv-tc-port/DalamudPluginsTC/main/icons/Splatoon.png",
 		"DalamudApiLevel": 12
 }
 
