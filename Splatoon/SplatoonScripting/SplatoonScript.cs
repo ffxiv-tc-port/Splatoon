@@ -242,7 +242,9 @@ public abstract class SplatoonScript
             ClientLanguage.Japanese => jp,
             ClientLanguage.German => de,
             ClientLanguage.French => fr,
-            (ClientLanguage)4 => cn,
+            // TC(台服)客戶端在 Dalamud 13.0.0.16 之後回報 ClientLanguage 7(TraditionalChinese),
+            // 舊版回報 4(ChineseSimplified)。用數值比較才能同時相容 CI 釘的 13.0.0.6(列舉沒有 7 這個名字)與執行期新版。
+            (ClientLanguage)4 or (ClientLanguage)5 or (ClientLanguage)7 => cn,
             _ => null,
         } ?? en ?? jp ?? de ?? fr ?? cn ?? "<null>";
     }
