@@ -70,7 +70,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="DalamudPackager" Version="12.0.0" />
+	  <PackageReference Include="DalamudPackager" Version="13.0.0" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
 	  <PackageReference Include="NotificationMasterAPI" Version="1.0.0.1" />
 	</ItemGroup>
