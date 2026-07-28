@@ -28,7 +28,7 @@ internal class Loader
             Timeout = TimeSpan.FromSeconds(10)
         };
         this.p = p;
-        Svc.Commands.AddHandler("/loadsplatoon", new(delegate { Load(Svc.Framework); }) { HelpMessage = "Manually load Splatoon" });
+        Svc.Commands.AddHandler("/loadsplatoon", new(delegate { Load(Svc.Framework); }) { HelpMessage = "Manually load Splatoon".Loc() });
         splatoonVersion = p.GetType().Assembly.GetName().Version;
         file = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "safeVersion.nfo");
         if(DalamudReflector.TryGetDalamudStartInfo(out var startInfo, Svc.PluginInterface))

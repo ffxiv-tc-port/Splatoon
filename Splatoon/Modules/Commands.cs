@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.Command;
 using ECommons;
 using ECommons.GameFunctions;
+using ECommons.LanguageHelpers;
 using Splatoon.Memory;
 using Splatoon.Structures;
 
@@ -117,12 +118,12 @@ internal class Commands : IDisposable
         })
         {
             HelpMessage = """
-            open Splatoon configuration menu 
-            /splatoon toggle <PresetName> → toggle specified preset 
-            /splatoon disable <PresetName> → disable specified preset 
+            open Splatoon configuration menu
+            /splatoon toggle <PresetName> → toggle specified preset
+            /splatoon disable <PresetName> → disable specified preset
             /splatoon enable <PresetName> → enable specified preset
             /splatoon p → open script priority editor
-            """
+            """.Loc()
         });
 
         Svc.Commands.AddHandler("/sf", new CommandInfo(delegate (string command, string args)
@@ -183,7 +184,7 @@ internal class Commands : IDisposable
             }
         })
         {
-            HelpMessage = "highlight objects containing specified phrase"
+            HelpMessage = "highlight objects containing specified phrase".Loc()
         });
     }
 
