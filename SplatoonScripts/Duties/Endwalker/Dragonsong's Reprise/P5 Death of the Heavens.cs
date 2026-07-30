@@ -21,7 +21,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
@@ -608,7 +608,7 @@ public unsafe class P5_Death_of_the_Heavens : SplatoonScript
 
         public PrioData PriorityData = new();
 
-        public bool LockFace = true;
+        public bool LockFace = false;
         public bool LockFaceEnableWhenNotMoving = true;
         public Direction OrientationBase = Direction.North;
         public PrePlaystationSplit PrePlaystationSplit = PrePlaystationSplit.Horizontal;

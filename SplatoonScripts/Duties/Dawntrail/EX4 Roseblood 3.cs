@@ -7,7 +7,7 @@ using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.Interop;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SharpDX.Direct3D11;
 using Splatoon.SplatoonScripting;
 using Splatoon.Utility;
@@ -19,6 +19,8 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1271];
+
+    public override Metadata? Metadata => new(2, "NightmareXIV");
 
     bool? IsDropper = null;
     List<InnerTile>? Tiles = null;
@@ -72,7 +74,7 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
         ImGuiEx.EnumCombo("Tower taking position", ref C.Position);
         if(ImGui.CollapsingHeader("Debug"))
         {
-            ImGui.Checkbox("IsDropped", ref this.IsDropped);
+            //ImGui.Checkbox("IsDropped", ref this.IsDropped);
             ImGuiEx.Checkbox("IsDropper", ref this.IsDropper);
             ImGuiEx.TextWrappedCopy($"""
             GetFilledTiles: {GetFilledTiles().Print()}
@@ -97,7 +99,7 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
     }
 
     //  Magic Vulnerability Up (3414), Remains = 8.1, Param = 0, Count = 0
-    bool IsDropped = Svc.Objects.OfType<IPlayerCharacter>().Any(x => x.StatusList.Any(s => s.StatusId == 3414));
+    bool IsDropped => Svc.Objects.OfType<IPlayerCharacter>().Any(x => x.StatusList.Any(s => s.StatusId == 3414));
 
     public override void OnVFXSpawn(uint target, string vfxPath)
     {
