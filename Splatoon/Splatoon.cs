@@ -456,6 +456,7 @@ public unsafe class Splatoon : IDalamudPlugin
             S.RenderManager.ClearDisplayObjects();
             if(Svc.ClientState.LocalPlayer != null)
             {
+                PhaseUpdater.UpdatePhaseIfNeeded();
                 if(ChatMessageQueue.Count > 5 * dequeueConcurrency)
                 {
                     dequeueConcurrency++;
