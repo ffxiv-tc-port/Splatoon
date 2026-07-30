@@ -857,7 +857,10 @@ internal static partial class ScriptingProcessor
         {
             Scripts[i].Disable();
         }
-        ClearScripts();
+        // 上游 446567f5 用 Svc.Framework.Run 包住;我方改用 RunOnFrameworkThread——
+        // 已在 framework thread 時 inline 執行(正常卸載路徑行為不變),
+        // 跨執行緒呼叫時才 marshal,避免 Run 一律延到下一 tick(可能落在卸載之後)。
+        Svc.Framework.RunOnFrameworkThread(ClearScripts);
     }
 
     internal static void LogError(this SplatoonScript s, Exception e, string methodName)

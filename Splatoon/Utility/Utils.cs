@@ -127,7 +127,7 @@ public static unsafe class Utils
             var list = details.Length == 2 
                 ? Splatoon.CapturedPositions.SafeSelect(layout.GetName())?.SafeSelect(details[1])
                 : Splatoon.CapturedPositions.SafeSelect(details[1])?.SafeSelect(details[2]);
-            return list;
+            return list ?? [];
         }
         if(placeholder == "<tethered>")
         {
@@ -173,7 +173,7 @@ public static unsafe class Utils
         {
             return [obj->Position];
         }
-        return null;
+        return [];
     }
 
     public static string GetShortName(this Expansion ex)
