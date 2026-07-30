@@ -1,14 +1,10 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Plugin.Services;
 using ECommons;
-using ECommons.Automation;
 using ECommons.Automation.NeoTaskManager;
-using ECommons.CircularBuffers;
 using ECommons.Configuration;
 using ECommons.Events;
 using ECommons.GameFunctions;
@@ -16,7 +12,6 @@ using ECommons.Hooks;
 using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using ECommons.ObjectLifeTracker;
-using ECommons.Reflection;
 using ECommons.SimpleGui;
 using ECommons.Singletons;
 using ECommons.WindowsFormsReflector;
@@ -35,6 +30,7 @@ using Splatoon.Structures;
 using System.Net.Http;
 using Colors = Splatoon.Utility.Colors;
 using Localization = ECommons.LanguageHelpers.Localization;
+using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 
 namespace Splatoon;
 public unsafe class Splatoon : IDalamudPlugin
@@ -608,6 +604,7 @@ public unsafe class Splatoon : IDalamudPlugin
             CurrentChatMessages.Clear();
             BuffEffectProcessor.ActorEffectUpdate();
             ScriptingProcessor.OnUpdate();
+            CapturedPositions.Clear();
         }
         catch(Exception e)
         {
@@ -663,6 +660,8 @@ public unsafe class Splatoon : IDalamudPlugin
             }
         }
     }
+
+    internal static Dictionary<string, Dictionary<string, List<Vector3>>> CapturedPositions = [];
 
     internal static void ProcessElementsOfLayout(Layout l)
     {
