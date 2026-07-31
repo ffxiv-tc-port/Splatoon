@@ -91,7 +91,9 @@ internal class TargetCircle : SplatoonScript
     {
         if(obj == null) return false;
         if(TargetHasEffect(obj, 3808)) return false; // Directional Disregard Effect (Patch 7.01)
-        if(Svc.Data.GetExcelSheet<BNpcBase>().TryGetFirst(x => x.RowId == obj.DataId, out var bnpc))
+        // 原本是 TryGetFirst(x => x.RowId == obj.DataId, …) —— 對整張 BNpcBase 表做 O(n) 線性
+        // 走訪找主鍵,而本方法由同檔 OnUpdate() 每幀呼叫。TryGetRow 是索引查詢 O(1),語意等價。
+        if(Svc.Data.GetExcelSheet<BNpcBase>().TryGetRow(obj.DataId, out var bnpc))
             return !bnpc.IsOmnidirectional;
         return true;
     }
