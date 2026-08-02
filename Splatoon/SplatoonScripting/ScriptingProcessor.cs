@@ -17,8 +17,23 @@ internal static partial class ScriptingProcessor
     internal static IReadOnlyList<SplatoonScript> Scripts => ScriptsInternal;
     internal static ConcurrentQueue<(string code, string path)> LoadScriptQueue = new();
     internal static volatile bool ThreadIsRunning = false;
+
+    /// <summary>
+    /// 台服分支的腳本策展來源。上游的腳本版本閘門只比對「同名腳本的遠端版本較大」,
+    /// 完全不檢查 API 世代,而覆寫是就地寫檔不留備份 —— 指向上游會讓我們針對台服
+    /// 修過的腳本被國際服版本靜默蓋掉(例如讀錯 AtkArrayData 索引 = 任意記憶體讀取)。
+    ///
+    /// 刻意使用 "HEAD" 而不是寫死分支名:HEAD 永遠跟著 repo 的預設分支走。
+    /// 寫死分支在改名/換版本分支之後會 404,而這裡的下載失敗只會被 e.Log() 吞掉,
+    /// 使用者看不到任何徵兆 —— 那是靜默失效,比噴錯更糟。
+    /// </summary>
+    internal const string ScriptRepoBaseURL = "https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts";
+
     internal static readonly string[] TrustedURLs =
     [
+        "https://github.com/ffxiv-tc-port/",
+        "https://www.github.com/ffxiv-tc-port/",
+        "https://raw.githubusercontent.com/ffxiv-tc-port/",
         "https://github.com/NightmareXIV/",
         "https://www.github.com/NightmareXIV/",
         "https://raw.githubusercontent.com/NightmareXIV/",
@@ -105,7 +120,7 @@ internal static partial class ScriptingProcessor
             try
             {
                 PluginLog.Debug($"Starting downloading blacklist...");
-                var result = P.HttpClient.GetAsync("https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/blacklist.csv").Result;
+                var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/blacklist.csv").Result;
                 result.EnsureSuccessStatusCode();
                 PluginLog.Debug($"Blacklist download complete");
                 var blacklist = result.Content.ReadAsStringAsync().Result;
@@ -149,7 +164,7 @@ internal static partial class ScriptingProcessor
             try
             {
                 PluginLog.Debug($"Starting downloading update list...");
-                var result = P.HttpClient.GetAsync("https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/update.csv").Result;
+                var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/update.csv").Result;
                 result.EnsureSuccessStatusCode();
                 PluginLog.Debug($"Update list downloaded");
                 var updateList = result.Content.ReadAsStringAsync().Result;
