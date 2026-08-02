@@ -6,7 +6,7 @@
 
 [International] [Script] Tank tethers. Shows them more visible and changes color based on whether it's taken by a tank or not. 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Stormblood/UCOB%20Tethers.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Stormblood/UCOB%20Tethers.cs
 ```
 # Twintania phase
 [International] Twisters: Show their location as soon as they appear
@@ -28,11 +28,11 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Stormblood
 # Nael phase
 [International] [Script] Dragon baits (5 dragons charging towards marked players)
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Stormblood/UCOB%20dragon%20baits.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Stormblood/UCOB%20dragon%20baits.cs
 ```
 [International] [Script] Draws spread/stack and in/out in time for Nael's quotes
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Stormblood/UCOB%20Nael%20Quotes.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Stormblood/UCOB%20Nael%20Quotes.cs
 ```
 [International] Hypernova: Draw red circles on top of Hypernovas to make them visible through VFX
 ```
@@ -57,7 +57,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Stormblood
 
 [Script] [Configuration required] Heavensfall Trio 8 towers resolver 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Stormblood/UCOB%20Heavensfall%20Trio%20Towers.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Stormblood/UCOB%20Heavensfall%20Trio%20Towers.cs
 ```
 
 [EN] After dodging the dives a ring will appear in the center, stand in the circle to reach the perfect knockback range without taking lethal damage from the heavensfall tower.

@@ -1,21 +1,21 @@
 [International] [Script] Wings unsafe spots. Accurately accounts for snapshot. Now with accurate pixel perfect line.
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P12S%20Wing%20Cleaves.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P12S%20Wing%20Cleaves.cs
 ```
 
 [Internaltional] [Script] Limit Cut helper. Shows you when you're baiting puddles (assuming you're taking them in pairs, 13 24 57 68), and shows you when to go out for laser bait.
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P12S%20Limit%20Cut.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P12S%20Limit%20Cut.cs
 ```
 
 [International] [Script] Superchain Theory visualiser. CLUTTTERS SCREEN HEAVILY. Includes spread buff visualisation (can be disabled).
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P12S%20Superchain.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P12S%20Superchain.cs
 ```
 
 [International] [Script] Tether visualiser for Paradeigma 2/3 (Engravement 1/3), comes with 3 color modes (Dark/Light, Unstretched vs Stretched and 4 different colors).
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P12S%20Tethers.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P12S%20Tethers.cs
 ```
 
 [International] Adds line AOE

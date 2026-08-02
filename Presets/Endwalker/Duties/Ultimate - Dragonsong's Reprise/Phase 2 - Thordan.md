@@ -99,7 +99,7 @@ ZephiranFaceToFace
 ```
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P2%20Sanctity%20Of%20The%20Ward%20First.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P2%20Sanctity%20Of%20The%20Ward%20First.cs
 ```
 
 [International][Beta][Untested] DSR P2 Sanctity Second
@@ -111,7 +111,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/
 > The gaze-locking feature is unstable. If you can manage it yourself, it is recommended to turn it off.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P2%20Sanctity%20Of%20The%20Ward%20Second.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P2%20Sanctity%20Of%20The%20Ward%20Second.cs
 ```
 
 ## Final phase

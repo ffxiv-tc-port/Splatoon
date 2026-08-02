@@ -1,14 +1,14 @@
 # Scripts
 [International] [Script] Based on Dylan Luxor's toolbox: https://ff14.toolboxgaming.space/?id=788186687294761&preview=1
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Dynamis%20Delta.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Dynamis%20Delta.cs
 ```
 
 [International] [Script] This script makes up for the shortcomings of the above script.
 The last standing position will be displayed as Japanese strat.
 Please check the setting to make it perfectly synchronized with the above script.
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/refs/heads/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/P5%20Delta%20Hello%20Guide.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/P5%20Delta%20Hello%20Guide.cs
 ```
 
 # Layouts

@@ -1,6 +1,6 @@
 [Script] Fix crashes during duty recorder replay
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Generic/CloseReplayWindows.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CloseReplayWindows.cs
 ```
 
 # Magitaur

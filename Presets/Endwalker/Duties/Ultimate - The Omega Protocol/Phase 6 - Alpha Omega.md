@@ -1,18 +1,18 @@
 [International] [Script] Exasquares.
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Exasquares.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Exasquares.cs
 ```
 
 [International] [Script] MultiScript.
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/refs/heads/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/P6%20MultiScript.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/P6%20MultiScript.cs
 ```
 
 [International] [Script] CosmoMeteorAdjuster.
 Set them clockwise from North.
 Then set the person in the Range Role as the first person in the list.
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/refs/heads/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Cosmo%20Meteor%20Adjuster.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Cosmo%20Meteor%20Adjuster.cs
 ```
 
 [International] Exaflare predictions. Import all presets.
