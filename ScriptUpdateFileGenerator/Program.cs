@@ -97,7 +97,11 @@ internal partial class Program
     [GeneratedRegex("namespace[\\s]+([a-z0-9_\\.]+)", RegexOptions.IgnoreCase, "en-US")]
     private static partial Regex NamespaceRegex();
 
-    [GeneratedRegex("([a-z0-9_\\.]+)\\s*:\\s*SplatoonScript", RegexOptions.IgnoreCase, "en-US")]
+    // 類別名用 \w 而不是 [a-z0-9_] —— .NET 的 \w 認得 Unicode 文字字元。
+    // 上游寫死 ASCII,於是 TEA P4 Fate Projection α / β 這兩支(類別名結尾是希臘字母)
+    // 整條比對失敗、從來沒有進過 update.csv,也就是說它們自始至終無法被自動更新,
+    // 而且失敗是完全靜默的:產生器只是「跳過」,不會報錯。
+    [GeneratedRegex("([\\w\\.]+)\\s*:\\s*SplatoonScript", RegexOptions.IgnoreCase, "en-US")]
     private static partial Regex ClassRegex();
     [GeneratedRegex(@"override.+Metadata.+Metadata.+new\D+([0-9]+)")]
     private static partial Regex VersionRegex();

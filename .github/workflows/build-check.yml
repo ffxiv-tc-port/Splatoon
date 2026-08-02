@@ -26,5 +26,9 @@ jobs:
           Invoke-WebRequest -Uri https://github.com/ffxiv-tc-port/DalamudPluginsTC/releases/download/dalamud-pin-v13.0.0.16/dalamud-api13-net9.zip -OutFile dalamud-pinned.zip
           Expand-Archive -Force dalamud-pinned.zip "$env:AppData\FFXIVSimpleLauncher\Dalamud\Injector\"
           Expand-Archive -Force dalamud-pinned.zip "$env:AppData\xivlauncher\Addon\Hooks\dev\"
+      # 這裡建「整個方案」是刻意的,而且是 246 支腳本唯一的編譯期把關 ——
+      # release.yml 只建外掛專案,好讓腳本壞掉不會擋發版。
+      # 所以這一步紅掉代表腳本(或外掛)有問題;
+      # ⚠️ 不要為了讓它變綠而把腳本專案移出方案,那會退回「腳本零編譯期把關」。
       - name: Build with dotnet
         run: dotnet build Splatoon.sln --configuration Release
