@@ -16,7 +16,10 @@ internal unsafe class RedmoonTest3 :SplatoonScript
     IBattleChara?[] GetEnemyList()
     {
         var list = new IBattleChara?[8];
-        var array = AtkStage.Instance()->AtkArrayDataHolder->NumberArrays[21];
+        // 7.2 → 7.3 在 CastBarEnemy 處插入一項，之後每個 NumberArray 索引都 +1：EnemyList 21 → 22。
+        // 🔴 原生取陣列函式對 index 完全沒有邊界檢查，索引寫錯＝任意記憶體讀取 → AVE，攔不到。
+        // 用具名列舉而不是魔術數字，下次再位移時會自己跟著動。
+        var array = AtkStage.Instance()->AtkArrayDataHolder->NumberArrays[(int)NumberArrayType.EnemyList];
         var characters = Svc.Objects.OfType<IBattleChara>().ToArray();
         for (int i = 0; i < 8; i++)
         {
@@ -32,7 +35,8 @@ internal unsafe class RedmoonTest3 :SplatoonScript
     public override void OnSettingsDraw()
     {
         var list = new IBattleChara?[8];
-        var array = AtkStage.Instance()->AtkArrayDataHolder->NumberArrays[21];
+        // 同上：EnemyList 在 7.3 世代是 22，不是 21。
+        var array = AtkStage.Instance()->AtkArrayDataHolder->NumberArrays[(int)NumberArrayType.EnemyList];
         var characters = Svc.Objects.OfType<IBattleChara>().ToArray();
         for (int i = 0; i < 8; i++)
         {
