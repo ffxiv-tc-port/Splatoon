@@ -1,0 +1,51 @@
+# 暫時性的驗證用 workflow —— 驗完就會連同 ci-verify-script-decoupling 分支一起刪掉。
+#
+# 目的:證明「腳本編譯失敗不會擋發版」這件事在 CI 上真的成立,而不只是本機推論。
+# 這裡跑的建置指令與 release.yml 的 Build with dotnet 那一步完全相同,
+# 但刻意不做版本計算、不打包、不建立 Release —— 只要證明建置本身會過。
+#
+# 這個分支上的 SplatoonScripts/Generic/AetherSight.cs 是故意寫壞的。
+# 預期結果:本 workflow 綠(外掛照樣建得起來),Build Check 紅(腳本把關有作用)。
+
+name: zz verify release build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.x
+      - name: Download Dalamud (pinned TC-compatible build)
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/ffxiv-tc-port/DalamudPluginsTC/releases/download/dalamud-pin-v13.0.0.16/dalamud-api13-net9.zip -OutFile dalamud-pinned.zip
+          Expand-Archive -Force dalamud-pinned.zip "$env:AppData\FFXIVSimpleLauncher\Dalamud\Injector\"
+          Expand-Archive -Force dalamud-pinned.zip "$env:AppData\xivlauncher\Addon\Hooks\dev\"
+      - name: Confirm the script really is broken on this branch
+        shell: pwsh
+        run: |
+          $hit = Select-String -Path "SplatoonScripts/Generic/AetherSight.cs" -Pattern "ThisMethodDoesNotExist_DeliberateBuildBreak"
+          if (-not $hit) { throw "測試前提不成立:這個分支上的腳本並沒有被寫壞,本次驗證無效" }
+          Write-Host "確認腳本已寫壞:$($hit.Line.Trim())"
+      # 與 release.yml 的 Build with dotnet 完全相同的指令(版本號用固定值代入)
+      - name: Build with dotnet (same command as release.yml)
+        run: dotnet build Splatoon/Splatoon.csproj --configuration Release -p:Platform=x64 -p:Version=7.20.0.99 -p:AssemblyVersion=7.20.0.99 -p:FileVersion=7.20.0.99
+      - name: Confirm the plugin artifact was produced
+        shell: pwsh
+        run: |
+          $dll = "./Splatoon/bin/Release/Splatoon.dll"
+          if (-not (Test-Path $dll)) { throw "建置宣稱成功但沒有產出 Splatoon.dll" }
+          Write-Host "產出 Splatoon.dll，大小 $((Get-Item $dll).Length) bytes"
+          Get-ChildItem ./Splatoon/bin/Release | Measure-Object | ForEach-Object { Write-Host "發版輸出檔案數 $($_.Count)" }
