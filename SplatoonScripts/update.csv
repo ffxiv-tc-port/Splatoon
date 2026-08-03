@@ -190,7 +190,7 @@ SplatoonScriptsOfficial.Generic@ScriptEventLogger,9,https://raw.githubuserconten
 SplatoonScriptsOfficial.Generic@ShowEmote,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ShowEmote.cs
 SplatoonScriptsOfficial.Generic@ShowInfo,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ShowInfo.cs
 SplatoonScriptsOfficial.Generic@ShowTooltipOnKey,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ShowTooltipOnKey.cs
-SplatoonScriptsOfficial.Generic@SimpleMitigations,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/SimpleMitigations.cs
+SplatoonScriptsOfficial.Generic@SimpleMitigations,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/SimpleMitigations.cs
 SplatoonScriptsOfficial.Generic@StatusbarFpsSwitcher,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/StatusbarFpsSwitcher.cs
 SplatoonScriptsOfficial.Generic@TargetCircle,0,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/TargetCircle.cs
 SplatoonScriptsOfficial.Generic@TargetingMe,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/TargetingMe.cs
