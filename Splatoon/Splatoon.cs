@@ -103,6 +103,10 @@ public unsafe class Splatoon : IDalamudPlugin
         }
         Loaded = true;
         ECommonsMain.Init(pluginInterface, this, Module.ObjectLife, Module.ObjectFunctions, Module.DalamudReflector);
+        // 讓「呼叫了對方沒有的 IPC 方法」不再完全靜默。
+        // ⚠️ 這也涵蓋 SplatoonScripts：腳本是執行期編譯進同一個 ALC，
+        // 用的是同一份 ECommons.dll，所以 EzIPC 的靜態事件是同一個。
+        EzIpcFailureLog.Enable();
         Svc.Commands.RemoveHandler("/loadsplatoon");
         EzConfig.Migrate<Configuration>();
         Config = EzConfig.Init<Configuration>() ?? new();
@@ -253,6 +257,7 @@ public unsafe class Splatoon : IDalamudPlugin
         Safe(AttachedInfo.Dispose);
         Safe(ScriptingProcessor.Dispose);
         Safe(BuffEffectProcessor.Dispose);
+        Safe(EzIpcFailureLog.Disable);
         ECommonsMain.Dispose();
         P = null;
         //Svc.Chat.Print("Disposing");

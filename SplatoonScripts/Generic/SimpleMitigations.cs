@@ -27,7 +27,7 @@ using Action = System.Action;
 namespace SplatoonScriptsOfficial.Generic;
 public sealed class SimpleMitigations : SplatoonScript
 {
-    public override Metadata Metadata { get; } = new(1, "NightmareXIV");
+    public override Metadata Metadata { get; } = new(2, "NightmareXIV");
     public override HashSet<uint>? ValidTerritories { get; } = [];
 
     Dictionary<string, long> TrackedTimes = [];
@@ -46,7 +46,19 @@ public sealed class SimpleMitigations : SplatoonScript
 
     public override void OnSetup()
     {
-        EzIPC.Init(this);
+        // ⚠️ 原本是 EzIPC.Init(this)，也就是 SafeWrapper.None。
+        // 下面三個訂閱端指向的 WrathCombo.ActionRequest.* 在我們出貨的 WrathCombo 裡**完全不存在**
+        // （WrathCombo 只提供 WrathCombo.* 的租約／設定類 IPC，沒有任何 ActionRequest 命名空間），
+        // 所以每次呼叫都會丟 IpcNotReadyError。
+        //
+        // 更糟的是 ProcessActionBlock() 裡的 ResetBlacklist(ActionType.Action, 25788) 那條路徑
+        // **沒有節流**，只要場上有「Fatebreaker」或「Striking Dummy」可選取就每幀丟一次，
+        // 而 Splatoon 的腳本框架會每幀 catch + LogError —— 啟用這個腳本就等於洗爆 log。
+        //
+        // 改成 AnyException：例外交給 Splatoon 自己的 EzIpcFailureLog 觀測網，
+        // 節流後只會印出一行帶方法名的 Information，而腳本不靠 WrathCombo 的那半邊功能
+        // （直接施放減傷）照常運作。
+        EzIPC.Init(this, safeWrapper: SafeWrapper.AnyException);
     }
 
     public override void OnCombatStart()
