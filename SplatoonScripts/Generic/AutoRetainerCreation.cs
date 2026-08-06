@@ -59,8 +59,20 @@ public unsafe class AutoRetainerCreation : SplatoonScript
         {
             if(EzThrottler.Throttle(InternalData.FullName + addonName))
             {
-                if(addon->GetComponentButtonById(buttonId)->IsEnabled && addon->GetComponentButtonById(buttonId)->AtkResNode->IsVisible())
-                    addon->GetComponentButtonById(buttonId)->ClickAddonButton(addon);
+                // 🔴 GetComponentButtonById 找不到節點會回 null;而 AtkComponentButton.IsEnabled
+                // 在 FFXIVClientStructs 解的是 OwnerNode->AtkResNode.NodeFlags,對 OwnerNode
+                // 零空指標檢查。AtkComponentBase 有兩個指標欄位:[0xA0] 的 AtkResNode 與
+                // [0xA8] 的 OwnerNode,IsEnabled 解的是後者 —— 原本的寫法先讀 IsEnabled 才驗
+                // AtkResNode,既驗錯欄位、順序上又太晚。同一幀呼叫三次也是 TOCTOU。
+                // AVE 是 corrupted-state exception,try/catch 攔不到,只能在讀取前逐層擋。
+                // 指標先取到區域變數;任一層為空就這一幀不點,下一輪重來。
+                var button = addon->GetComponentButtonById(buttonId);
+                if(button == null) return;
+                var ownerNode = button->OwnerNode;
+                var buttonResNode = button->AtkResNode;
+                if(ownerNode == null || buttonResNode == null) return;
+                if(button->IsEnabled && buttonResNode->IsVisible())
+                    button->ClickAddonButton(addon);
             }
         }
     }
