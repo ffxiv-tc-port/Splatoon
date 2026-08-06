@@ -24,7 +24,7 @@ namespace SplatoonScriptsOfficial.Tests;
 public unsafe class GenericTest4 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => new();
-    public override Metadata? Metadata { get; } = new(4, "NightmareXIV");
+    public override Metadata? Metadata { get; } = new(5, "NightmareXIV");
     int a1;
     string Filter = "";
 

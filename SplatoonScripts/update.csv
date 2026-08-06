@@ -157,7 +157,7 @@ SplatoonScriptsOfficial.Generic@ArtisanCraftCommand,2,https://raw.githubusercont
 SplatoonScriptsOfficial.Generic@AutoDutyEnableTankStance,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoDutyEnableTankStance.cs
 SplatoonScriptsOfficial.Generic@AutoExec,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoExec.cs
 SplatoonScriptsOfficial.Generic@AutoFateSync,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoFateSync.cs
-SplatoonScriptsOfficial.Generic@AutoRetainerCreation,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoRetainerCreation.cs
+SplatoonScriptsOfficial.Generic@AutoRetainerCreation,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoRetainerCreation.cs
 SplatoonScriptsOfficial.Generic@AutoTargetSwitcher,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoTargetSwitcher.cs
 SplatoonScriptsOfficial.Generic@AutoTeleport,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoTeleport.cs
 SplatoonScriptsOfficial.Generic@AutoUseItem,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoUseItem.cs
@@ -215,7 +215,7 @@ SplatoonScriptsOfficial.Tests@FaceLockTest,1,https://raw.githubusercontent.com/f
 SplatoonScriptsOfficial.Tests@GenericTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest.cs
 SplatoonScriptsOfficial.Tests@GenericTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest2.cs
 SplatoonScriptsOfficial.Tests@GenericTest3,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest3.cs
-SplatoonScriptsOfficial.Tests@GenericTest4,4,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest4.cs
+SplatoonScriptsOfficial.Tests@GenericTest4,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest4.cs
 SplatoonScriptsOfficial.Tests@GenericTest5,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest5.cs
 SplatoonScriptsOfficial.Tests@GenericTest6,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest6.cs
 SplatoonScriptsOfficial.Tests@GenericTest7,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest7.cs
