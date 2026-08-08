@@ -101,7 +101,7 @@ public static unsafe class AttachedInfo
         {
             e.Log();
         }
-        return ActorVfxCreateHook!.Original(a1, a2, a3, a4, a5, a6, a7);
+        return ActorVfxCreateHook!.OriginalDisposeSafe(a1, a2, a3, a4, a5, a6, a7);
     }
 
     public static bool TryGetVfx(this IGameObject go, out Dictionary<string, VFXInfo>? fx)
@@ -145,7 +145,7 @@ public static unsafe class AttachedInfo
         VFXInfos.Remove(ptr);
         ObjectEffectInfos.Remove(ptr);
         TetherInfos.Remove(ptr);
-        return GameObject_ctor_hook!.Original(ptr);
+        return GameObject_ctor_hook!.OriginalDisposeSafe(ptr);
     }
     private static void Tick(object _)
     {
