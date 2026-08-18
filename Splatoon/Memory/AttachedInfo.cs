@@ -32,7 +32,25 @@ public static unsafe class AttachedInfo
     public static Dictionary<nint, List<CachedObjectEffectInfo>> ObjectEffectInfos = [];
     public static Dictionary<nint, Dictionary<string, VFXInfo>> VFXInfos = [];
     public static Dictionary<nint, List<CachedTetherInfo>> TetherInfos = [];
-    private static HashSet<nint> Casters = [];
+    /// <summary>
+    /// 目前正在施法的物件：位址 → 上一次派送出去的招式 ID。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 值是招式 ID 而不是單純的位址集合（原本是 <c>HashSet&lt;nint&gt;</c>）：
+    /// 同一個施法者背靠背連續施兩招、中間沒有任何一幀處於「沒在施法」的狀態時，
+    /// 只比對位址會把第二招當成同一次而**完全不觸發事件**。
+    /// </remarks>
+    private static Dictionary<nint, uint> Casters = [];
+
+    /// <summary>
+    /// 派給 <see cref="SplatoonScript.OnStartingCast(uint, PacketActorCast*)"/> 的共用緩衝區。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 刻意用外掛生命週期內只配置一次的非受管記憶體，而不是 <c>stackalloc</c>：
+    /// 指標會交到第三方腳本手上，指向已經彈出的堆疊框是「哪天有腳本把它存起來就崩」的地雷。
+    /// 內容每次事件都會被覆寫，腳本仍然只該在回呼內就地讀。
+    /// </remarks>
+    private static PacketActorCast* CastPacketBuffer = null;
 
     [Function(Reloaded.Hooks.Definitions.X64.CallingConventions.Microsoft)]
     private delegate nint ActorVfxCreateDelegate2(char* a1, nint a2, nint a3, float a4, char a5, ushort a6, char a7);
@@ -53,6 +71,11 @@ public static unsafe class AttachedInfo
             ActorVfxCreateHook = Svc.Hook.HookFromAddress<ActorVfxCreateDelegate2>(actorVfxCreateAddress, ActorVfxNewHandler);
             ActorVfxCreateHook.Enable();
         });
+        if(CastPacketBuffer == null)
+        {
+            CastPacketBuffer = (PacketActorCast*)System.Runtime.InteropServices.Marshal.AllocHGlobal(sizeof(PacketActorCast));
+            *CastPacketBuffer = default;
+        }
         Svc.Framework.Update += Tick;
     }
 
@@ -68,6 +91,13 @@ public static unsafe class AttachedInfo
         }
         ActorVfxCreateHook?.Disable();
         ActorVfxCreateHook?.Dispose();
+        // Tick 已在本方法第一行解除訂閱，且它與 Dispose 同在主執行緒，
+        // 釋放之後不會再有人讀到這塊記憶體。指標歸零讓重複 Dispose 也安全。
+        if(CastPacketBuffer != null)
+        {
+            System.Runtime.InteropServices.Marshal.FreeHGlobal((nint)CastPacketBuffer);
+            CastPacketBuffer = null;
+        }
         CastInfos = null!;
         VFXInfos = null!;
         ObjectEffectInfos = null!;
@@ -202,20 +232,27 @@ public static unsafe class AttachedInfo
 
                 if(isCasting)
                 {
-                    if(!Casters.Contains(b.Address))
+                    var castActionId = b.CastActionId;
+                    if(!Casters.TryGetValue(b.Address, out var lastCastActionId) || lastCastActionId != castActionId)
                     {
-                        CastInfos[b.Address] = new(b.CastActionId, Environment.TickCount64 - (long)(b.CurrentCastTime * 1000));
-                        Casters.Add(b.Address);
+                        CastInfos[b.Address] = new(castActionId, Environment.TickCount64 - (long)(b.CurrentCastTime * 1000));
+                        Casters[b.Address] = castActionId;
                         string text;
                         if(P.Config.LogPosition)
                         {
-                            text = $"{b.Name} ({x.Position}) starts casting {b.CastActionId} ({b.NameId}>{b.CastActionId})";
+                            text = $"{b.Name} ({x.Position}) starts casting {castActionId} ({b.NameId}>{castActionId})";
                         }
                         else
                         {
-                            text = $"{b.Name} starts casting {b.CastActionId} ({b.NameId}>{b.CastActionId})";
+                            text = $"{b.Name} starts casting {castActionId} ({b.NameId}>{castActionId})";
                         }
-                        ScriptingProcessor.OnStartingCast(b.EntityId, b.CastActionId);
+                        // 🔴 順序不能顛倒：上游是 hook（早）→ 輪詢（晚），
+                        // 有腳本同時 override 這兩個多載並靠先後順序區分事件來源。
+                        if(CastPacketBuffer != null && PacketActorCast.TryFill(CastPacketBuffer, (Character*)b.Struct()))
+                        {
+                            ScriptingProcessor.OnStartingCast(b.EntityId, CastPacketBuffer);
+                        }
+                        ScriptingProcessor.OnStartingCast(b.EntityId, castActionId);
                         P.ChatMessageQueue.Enqueue(text);
                         if(P.Config.Logging)
                         {
@@ -226,10 +263,7 @@ public static unsafe class AttachedInfo
                 }
                 else
                 {
-                    if(Casters.Contains(b.Address))
-                    {
-                        Casters.Remove(b.Address);
-                    }
+                    Casters.Remove(b.Address);
                 }
             }
         }
