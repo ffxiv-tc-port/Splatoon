@@ -20,7 +20,7 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1271];
 
-    public override Metadata? Metadata => new(2, "NightmareXIV");
+    public override Metadata? Metadata => new(3, "NightmareXIV");
 
     bool? IsDropper = null;
     List<InnerTile>? Tiles = null;
@@ -81,7 +81,9 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
             TryFindRelativeTile: {TryFindRelativeTile(GetFilledTiles(), out var rel)}
             rel: {rel}
             """);
-            var cd = EventFramework.Instance()->GetInstanceContentDirector();
+            var eventFramework = EventFramework.Instance();
+            if(eventFramework == null) return;
+            var cd = eventFramework->GetInstanceContentDirector();
             if(cd != null && cd->MapEffects != null)
             {
                 for(int i = 0; i < cd->MapEffects->ItemCount; i++)
@@ -182,7 +184,9 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
     List<InnerTile> GetFilledTiles()
     {
         var ret = new List<InnerTile>();
-        var cd = EventFramework.Instance()->GetInstanceContentDirector();
+        var eventFramework = EventFramework.Instance();
+        if(eventFramework == null) return ret;
+        var cd = eventFramework->GetInstanceContentDirector();
         if(cd != null && cd->MapEffects != null)
         {
             for(int i = 4; i < 3 + 8; i++)
@@ -199,7 +203,13 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
 
     bool TryFindRelativeTile(List<InnerTile> filledTiles, out InnerTile rel)
     {
-        var cd = EventFramework.Instance()->GetInstanceContentDirector();
+        var eventFramework = EventFramework.Instance();
+        if(eventFramework == null)
+        {
+            rel = default;
+            return false;
+        }
+        var cd = eventFramework->GetInstanceContentDirector();
         if(cd != null && cd->MapEffects != null)
         {
             bool[] circle = new bool[8];
