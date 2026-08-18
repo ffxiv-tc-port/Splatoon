@@ -102,6 +102,20 @@ internal class Configuration : IEzConfig
     public List<Page> TranslatorPages = [];
     public NightmareUIState NightmareUIState = new();
 
+    // ---- 注意色 / 注意視窗 ----
+    // 全部沿用上游預設值。腳本沒有呼叫 Controller.DisplayAttentionWindowLine 時,
+    // 注意視窗的佇列恆為空 => 視窗不會出現,所以這些欄位對既有使用者是零行為變化。
+    public AttentionColorType AttentionColorType = AttentionColorType.Rainbow;
+    public Vector4 AttentionColor1 = EColor.RedBright;
+    public Vector4 AttentionColor2 = EColor.YellowBright;
+    public float AttentionColorCycle = 2f;
+    public float AttentionFontSize = 1f;
+    public WindowBasePosition AttentionBasePositionX = WindowBasePosition.Middle;
+    public WindowBasePosition AttentionBasePositionY = WindowBasePosition.Start;
+    public Vector2 AttentionBaseOffset = default;
+    public bool AttentionNoAnimate = false;
+    public HashSet<string> DisabledAttentionWindowScripts = [];
+
     public uint ClampFillColorAlpha(uint fillColor)
     {
         var alpha = fillColor >> 24;

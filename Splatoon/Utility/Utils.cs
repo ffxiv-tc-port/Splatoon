@@ -22,6 +22,81 @@ namespace Splatoon.Utility;
 
 public static unsafe class Utils
 {
+    /// <summary>
+    /// 把 <paramref name="top"/> 以 alpha 合成疊到 <paramref name="bottom"/> 上。
+    /// 兩者都是 ImGui 的 ABGR packed uint。注意視窗的標題列底色用它,
+    /// 因為 ImGui 的 TableSetBgColor 不會自己做疊加。
+    /// </summary>
+    public static uint BlendColors(uint bottom, uint top)
+    {
+        var br = (bottom & 0xFF) / 255f;
+        var bg = ((bottom >> 8) & 0xFF) / 255f;
+        var bb = ((bottom >> 16) & 0xFF) / 255f;
+        var ba = ((bottom >> 24) & 0xFF) / 255f;
+
+        var tr = (top & 0xFF) / 255f;
+        var tg = ((top >> 8) & 0xFF) / 255f;
+        var tb = ((top >> 16) & 0xFF) / 255f;
+        var ta = ((top >> 24) & 0xFF) / 255f;
+
+        var outA = ta + ba * (1f - ta);
+        if(outA == 0f) return 0;
+
+        var outR = (tr * ta + br * ba * (1f - ta)) / outA;
+        var outG = (tg * ta + bg * ba * (1f - ta)) / outA;
+        var outB = (tb * ta + bb * ba * (1f - ta)) / outA;
+
+        return ((uint)(outR * 255f) & 0xFF)
+             | (((uint)(outG * 255f) & 0xFF) << 8)
+             | (((uint)(outB * 255f) & 0xFF) << 16)
+             | (((uint)(outA * 255f) & 0xFF) << 24);
+    }
+
+    /// <summary>
+    /// 目前這一幀的「注意色」。腳本用 <c>Controller.AttentionColor</c> 取用。
+    /// 依設定可能是彩虹循環、兩色漸層或固定色。
+    /// </summary>
+    public static Vector4 GetAttentionColor()
+    {
+        var cycleSeconds = Math.Max(P.Config.AttentionColorCycle, 0.1f);
+        if(P.Config.AttentionColorType == AttentionColorType.Rainbow)
+        {
+            var ms = Environment.TickCount64;
+            var t = ms / 1000d / cycleSeconds;
+            var hue = t % 1f;
+            return HsvToVector4(hue, 1f, 1f);
+        }
+        else if(P.Config.AttentionColorType == AttentionColorType.Gradient)
+        {
+            return GradientColor.Get(P.Config.AttentionColor1, P.Config.AttentionColor2, (int)(cycleSeconds * 500));
+        }
+        else
+        {
+            return P.Config.AttentionColor1;
+        }
+    }
+
+    public static Vector4 HsvToVector4(double h, double s, double v)
+    {
+        double r = 0f, g = 0f, b = 0f;
+        var i = (int)(h * 6f);
+        var f = (h * 6f) - i;
+        var p = v * (1f - s);
+        var q = v * (1f - (f * s));
+        var t = v * (1f - ((1f - f) * s));
+
+        switch(i % 6)
+        {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+        }
+
+        return new Vector4((float)r, (float)g, (float)b, 1f);
+    }
     public static Vector3 ToXZY(this Vector3 xyzVector)
     {
         return new(xyzVector.X, xyzVector.Z, xyzVector.Y);

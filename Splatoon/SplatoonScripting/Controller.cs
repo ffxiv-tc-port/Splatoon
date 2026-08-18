@@ -348,4 +348,76 @@ public unsafe class Controller
     {
         AutoResetAt = Environment.TickCount64 + delayMs;
     }
+
+    /// <summary>
+    /// 目前這一幀的「注意色」(ImGui packed uint)。用來標示必須立刻處理的元素。
+    /// 顏色的產生方式由使用者在「渲染引擎 - 注意色」設定。
+    /// </summary>
+    public uint AttentionColor => Utils.GetAttentionColor().ToUint();
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的內容。<br />
+    /// 重要:你交進來的 action 不會在呼叫的同一幀被執行。資料要先準備好再傳進來。<br />
+    /// 重要:你的 action 可能被呼叫多次。不要在裡面做會改狀態的事。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。
+    /// </summary>
+    public void DisplayAttentionWindowLine(Action action)
+    {
+        if(P.Config.DisabledAttentionWindowScripts.Contains(Script.InternalData.FullName)) return;
+        S.AttentionOverlayWindow.Title = Script.InternalData.Name.Replace("_", " ") ?? "";
+        S.AttentionOverlayWindow.ActionQueueCommand.Add((action, true));
+    }
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的文字。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。
+    /// </summary>
+    public void DisplayAttentionWindowLine(string text)
+    {
+        DisplayAttentionWindowLine(() => ImGuiEx.Text(text));
+    }
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的文字。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。<br />
+    /// 參數以 $1、$2、$3 ... 代入,從 1 開始。
+    /// </summary>
+    public void DisplayAttentionWindowLine(string text, params string[] arguments)
+    {
+        for(var i = 0; i < arguments.Length; i++)
+        {
+            var a = arguments[i];
+            text = text.Replace($"${i + 1}", a);
+        }
+        DisplayAttentionWindowLine(() => ImGuiEx.Text(text));
+    }
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的彩色文字。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。<br />
+    /// 參數以 $1、$2、$3 ... 代入,從 1 開始。
+    /// </summary>
+    public void DisplayAttentionWindowLine(Vector4? color, string text, params string[] arguments)
+    {
+        for(var i = 0; i < arguments.Length; i++)
+        {
+            var a = arguments[i];
+            text = text.Replace($"${i + 1}", a);
+        }
+        DisplayAttentionWindowLine(() => ImGuiEx.Text(color, text));
+    }
+
+    /// <summary>
+    /// 能用 <see cref="DisplayAttentionWindowLine(Action)"/> 就優先用它。<br />
+    /// 在注意視窗裡畫一段不做置中處理的原始內容。<br />
+    /// 重要:你交進來的 action 不會在呼叫的同一幀被執行。<br />
+    /// 重要:你的 action 可能被呼叫多次。不要在裡面做會改狀態的事。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。
+    /// </summary>
+    public void DisplayAttentionWindowRaw(Action action)
+    {
+        if(P.Config.DisabledAttentionWindowScripts.Contains(Script.InternalData.FullName)) return;
+        S.AttentionOverlayWindow.Title = Script.InternalData.Name.Replace("_", " ") ?? "";
+        S.AttentionOverlayWindow.ActionQueueCommand.Add((action, false));
+    }
 }
