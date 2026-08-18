@@ -210,7 +210,7 @@ SplatoonScriptsOfficial.Tests@DMParser,2,https://raw.githubusercontent.com/ffxiv
 SplatoonScriptsOfficial.Tests@DirectorUpdateTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DirectorUpdateTest.cs
 SplatoonScriptsOfficial.Tests@DisplayMapEffect,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DisplayMapEffect.cs
 SplatoonScriptsOfficial.Tests@DownloadPluginTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DownloadPluginTest.cs
-SplatoonScriptsOfficial.Tests@EffectResultTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/EffectResultTest.cs
+SplatoonScriptsOfficial.Tests@EffectResultTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/EffectResultTest.cs
 SplatoonScriptsOfficial.Tests@FaceLockTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/FaceLockTest.cs
 SplatoonScriptsOfficial.Tests@GenericTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest.cs
 SplatoonScriptsOfficial.Tests@GenericTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest2.cs

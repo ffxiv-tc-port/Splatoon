@@ -24,7 +24,7 @@ using TerraFX.Interop.Windows;
 namespace SplatoonScriptsOfficial.Tests;
 public unsafe sealed class EffectResultTest : SplatoonScript
 {
-    public override Metadata Metadata { get; } = new(1, "NightmareXIV");
+    public override Metadata Metadata { get; } = new(2, "NightmareXIV");
     public override HashSet<uint>? ValidTerritories { get; } = null;
 
     delegate void HandleEffectResultBasicPacket(uint target, nint packet, byte isReplay);
@@ -33,7 +33,18 @@ public unsafe sealed class EffectResultTest : SplatoonScript
 
     void HandleEffectResultBasicPacketDetour(uint target, nint packet, byte isReplay)
     {
-        HandleEffectResultBasicPacketHook.Original(target, packet, isReplay);
+        // 🔴 OnDisable() 會把這個 EzHook 欄位設回 null，而 detour 可能還在執行中
+        //    （in-flight 呼叫）。EzHook.Original 自己是防呆的（HookDelegate?.OriginalDisposeSafe
+        //    ?? Delegate），但那救不了「持有它的欄位已經不見了」—— 裸讀欄位會把
+        //    NullReferenceException 擲回原生呼叫端。快照一次，之後只用區域變數。
+        var hook = HandleEffectResultBasicPacketHook;
+        if(hook == null)
+        {
+            PluginLog.Information("HandleEffectResultBasicPacket hook is gone mid-call; skipping the original call for this invocation.");
+            return;
+        }
+
+        hook.Original(target, packet, isReplay);
         try
         {
             PluginLog.Information("Basic");
@@ -90,7 +101,18 @@ public unsafe sealed class EffectResultTest : SplatoonScript
 
     nint HandleEffectResultPacketDetour(uint target, nint packet, byte isReplay)
     {
-        var ret = HandleEffectResultPacketHook.Original(target, packet, isReplay);
+        // 🔴 OnDisable() 會把這個 EzHook 欄位設回 null，而 detour 可能還在執行中
+        //    （in-flight 呼叫）。EzHook.Original 自己是防呆的（HookDelegate?.OriginalDisposeSafe
+        //    ?? Delegate），但那救不了「持有它的欄位已經不見了」—— 裸讀欄位會把
+        //    NullReferenceException 擲回原生呼叫端。快照一次，之後只用區域變數。
+        var hook = HandleEffectResultPacketHook;
+        if(hook == null)
+        {
+            PluginLog.Information("HandleEffectResultPacket hook is gone mid-call; skipping the original call for this invocation.");
+            return 0;
+        }
+
+        var ret = hook.Original(target, packet, isReplay);
         try
         {
             var num = *(byte*)packet;
@@ -193,7 +215,18 @@ public unsafe sealed class EffectResultTest : SplatoonScript
 
     nint ActionEffectHandler_ApplySelfEffectsDetour(GameObjectId a1, nint a2, nint a3, nint a4, nint a5)
     {
-        var ret = ActionEffectHandler_ApplySelfEffectsHook.Original(a1, a2, a3, a4, a5);
+        // 🔴 OnDisable() 會把這個 EzHook 欄位設回 null，而 detour 可能還在執行中
+        //    （in-flight 呼叫）。EzHook.Original 自己是防呆的（HookDelegate?.OriginalDisposeSafe
+        //    ?? Delegate），但那救不了「持有它的欄位已經不見了」—— 裸讀欄位會把
+        //    NullReferenceException 擲回原生呼叫端。快照一次，之後只用區域變數。
+        var hook = ActionEffectHandler_ApplySelfEffectsHook;
+        if(hook == null)
+        {
+            PluginLog.Information("ActionEffectHandler_ApplySelfEffects hook is gone mid-call; skipping the original call for this invocation.");
+            return 0;
+        }
+
+        var ret = hook.Original(a1, a2, a3, a4, a5);
         try
         {
             foreach(var obj in Svc.Objects.OfType<ICharacter>())
