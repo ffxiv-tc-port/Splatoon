@@ -21,7 +21,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class DSR_Dooms : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [968];
-        public override Metadata? Metadata => new(6, "Enthusiastus");
+        public override Metadata? Metadata => new(7, "Enthusiastus");
 
         private List<Element> DoomElements = [];
         private List<Element> NoDoomElements = [];
@@ -45,7 +45,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         //IBattleNpc? Thordan => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == ThordanDataId) as IBattleNpc;
         private string TestOverride = "";
 
-        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.ClientState.LocalPlayer!;
+        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.Objects.LocalPlayer!;
         private Vector2 Center = new(100, 100);
 
         public override void OnSetup()
@@ -172,7 +172,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
                     return;
                 }
                 //DuoLog.Information($"Congaline should be complete now.");
-                var guerrique = Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == GuerriqueDataId) as IBattleNpc;
+                var guerrique = Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == GuerriqueDataId) as IBattleNpc;
                 //DuoLog.Information($"Guerrique is at {guerrique.Position.X}/{guerrique.Position.Z}/{guerrique.Position.Y}, need to rotate {-guerrique.Rotation}");
 
                 var players = FakeParty.Get();

@@ -26,7 +26,7 @@ public class M12S_Idyllic_Dream : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => [1327];
 
-    public override Metadata? Metadata => new(3, "Errer");
+    public override Metadata? Metadata => new(4, "Errer");
 
     #region 常量 (Constants)
 
@@ -802,7 +802,7 @@ public class M12S_Idyllic_Dream : SplatoonScript
     {
         int tetherIndex = 0;
         var party = FakeParty.Get().ToList();
-        var localPlayer = Svc.ClientState.LocalPlayer;
+        var localPlayer = Svc.Objects.LocalPlayer;
 
         // 当前轮次需要处理的标点 (Waymarks to process for current round)
         var currentPoints = roundIndex < _roundPoints.Count ? _roundPoints[roundIndex] : Array.Empty<string>();
@@ -918,7 +918,7 @@ public class M12S_Idyllic_Dream : SplatoonScript
         if(_isMechanicActive && _firstSpawnPositions.Count == 0)
         {
             var firstSpawns = Svc.Objects.OfType<IBattleNpc>()
-                .Where(x => x.DataId == FirstSpawnId && x.IsCharacterVisible())
+                .Where(x => x.BaseId == FirstSpawnId && x.IsCharacterVisible())
                 .ToList();
 
             if(firstSpawns.Count > 0)

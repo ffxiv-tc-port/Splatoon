@@ -17,7 +17,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten;
 internal class P1_Cyclonic_Break : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1238];
-    public override Metadata? Metadata => new(2, "Redmoon");
+    public override Metadata? Metadata => new(3, "Redmoon");
 
     private class PlayerData
     {
@@ -57,7 +57,7 @@ internal class P1_Cyclonic_Break : SplatoonScript
     {
         if(castId == _cyclonicBreakCastFireId || castId == _cyclonicBreakCastThunderId)
         {
-            _enemyId = Svc.Objects.FirstOrDefault(x => x.IsTargetable && x.ObjectKind == ObjectKind.BattleNpc && x.DataId == 0x459B).EntityId;
+            _enemyId = Svc.Objects.FirstOrDefault(x => x.IsTargetable && x.ObjectKind == ObjectKind.BattleNpc && x.BaseId == 0x459B).EntityId;
             foreach(var player in FakeParty.Get())
             {
                 _playerList.Add(new PlayerData(player.EntityId));
@@ -70,7 +70,7 @@ internal class P1_Cyclonic_Break : SplatoonScript
         }
         if(castId == _secondCyclonicBreakCastFireId || castId == _secondCyclonicBreakCastThunderId)
         {
-            _enemyId = Svc.Objects.FirstOrDefault(x => x is IBattleNpc obj && obj.IsCharacterVisible() && obj.ObjectKind == ObjectKind.BattleNpc && obj.DataId == 0x459C).EntityId;
+            _enemyId = Svc.Objects.FirstOrDefault(x => x is IBattleNpc obj && obj.IsCharacterVisible() && obj.ObjectKind == ObjectKind.BattleNpc && obj.BaseId == 0x459C).EntityId;
             foreach(var player in FakeParty.Get())
             {
                 _playerList.Add(new PlayerData(player.EntityId));

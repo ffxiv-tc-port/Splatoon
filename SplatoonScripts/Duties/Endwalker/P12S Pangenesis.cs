@@ -25,7 +25,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         private DebuffType MyDebuff = DebuffType.None;
 
         public override HashSet<uint> ValidTerritories => [1154];
-        public override Metadata? Metadata => new(5, "tatad2");
+        public override Metadata? Metadata => new(6, "tatad2");
 
         private string ElementNamePrefix = "P12SSC";
         private int towerCount = 0;
@@ -43,7 +43,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         private string TestOverride = "";
 
-        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.ClientState.LocalPlayer!;
+        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.Objects.LocalPlayer!;
 
         public override void OnEnable()
         {

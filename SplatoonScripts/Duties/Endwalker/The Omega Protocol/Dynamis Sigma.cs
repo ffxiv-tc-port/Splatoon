@@ -25,7 +25,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
     {
         public override HashSet<uint> ValidTerritories => [1122];
 
-        public override Metadata? Metadata => new(7, "NightmareXIV");
+        public override Metadata? Metadata => new(8, "NightmareXIV");
 
         public const uint TowerSingle = 2013245;
         public const uint TowerDual = 2013246;
@@ -58,7 +58,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         private Config Conf => Controller.GetConfig<Config>();
 
-        private IGameObject[] GetTowers() => Svc.Objects.Where(x => x.DataId.EqualsAny<uint>(TowerSingle, TowerDual)).ToArray();
+        private IGameObject[] GetTowers() => Svc.Objects.Where(x => x.BaseId.EqualsAny<uint>(TowerSingle, TowerDual)).ToArray();
 
         public override void OnSetup()
         {
@@ -129,7 +129,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         internal void ApplyMarkerPhaseNorthToSouth(IGameObject omega, IPlayerCharacter partner, bool first, string glitch)
         {
-            var rota = (MathHelper.GetRelativeAngle(omega.Position, Svc.ClientState.LocalPlayer.Position) + omega.Rotation.RadToDeg()) % 360;
+            var rota = (MathHelper.GetRelativeAngle(omega.Position, Svc.Objects.LocalPlayer.Position) + omega.Rotation.RadToDeg()) % 360;
             var rotaPar = (MathHelper.GetRelativeAngle(omega.Position, partner.Position) + omega.Rotation.RadToDeg()) % 360;
             if(Environment.TickCount64 < StopRegisteringAt) isLeft = rota > rotaPar;
             if(isLeft)
@@ -161,7 +161,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         internal void ApplyMarkerPhaseWestToEast(IGameObject omega, IPlayerCharacter partner, bool first, string glitch)
         {
-            var relativeY = Dynamis_Sigma_Utils.GetRelativePosition(omega.Position, Svc.ClientState.LocalPlayer.Position,
+            var relativeY = Dynamis_Sigma_Utils.GetRelativePosition(omega.Position, Svc.Objects.LocalPlayer.Position,
                 omega.Rotation).Y;
             var partnerRelativeY =
                 Dynamis_Sigma_Utils.GetRelativePosition(omega.Position, partner.Position, omega.Rotation).Y;
@@ -208,10 +208,10 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                         if(!Conf.NoChat) DuoLog.Information(IsInverted() ? "Inverted pattern" : "Default pattern");
                     }
                     var towers = GetTowers().OrderBy(x => GetTowerAngle(x, IsInverted())).ToArray();
-                    Queue<string> enumeration = Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == GlitchFar) ? new(Conf.FarTowers) : new(Conf.CloseTowers);
+                    Queue<string> enumeration = Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == GlitchFar) ? new(Conf.FarTowers) : new(Conf.CloseTowers);
                     for(var i = 0; i < towers.Length; i++)
                     {
-                        if(towers[i].DataId == TowerSingle)
+                        if(towers[i].BaseId == TowerSingle)
                         {
                             var e = enumeration.Dequeue();
                             SetTowerAs(i, towers[i], MyMarker.EqualsIgnoreCase(e.GetFirstLetter()), e);
@@ -228,13 +228,13 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                 {
                     if(Markers.Count == 6)
                     {
-                        var glitch = Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == GlitchFar) ? "Far" : "Close";
+                        var glitch = Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == GlitchFar) ? "Far" : "Close";
                         State.Add("Markers phase");
                         State.Add($"Markers: {Markers.Select(x => x.GetObject()).Print()}");
-                        var omega = Svc.Objects.FirstOrDefault(x => x.DataId == 15720);
+                        var omega = Svc.Objects.FirstOrDefault(x => x.BaseId == 15720);
                         State.Add($"Omega-M is {omega}");
                         var partner = GetPartner();
-                        if(Markers.Contains(Svc.ClientState.LocalPlayer.EntityId) && Markers.Contains(partner.EntityId))
+                        if(Markers.Contains(Svc.Objects.LocalPlayer.EntityId) && Markers.Contains(partner.EntityId))
                         {
                             State.Add("You and your partners are markers");
                             //both are markers
@@ -242,7 +242,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                             foreach(var x in Conf.MarkerOrder)
                             {
                                 State.Add($"Checking {x}...");
-                                if(x == Chains[Svc.ClientState.LocalPlayer.EntityId]) break;
+                                if(x == Chains[Svc.Objects.LocalPlayer.EntityId]) break;
                                 State.Add(Chains.Where(c => c.Value == x).Select(z => $"{z.Key.GetObject()}/{Markers.Contains(z.Key)}").Print());
                                 if(Chains.Where(c => c.Value == x).All(z => Markers.Contains(z.Key)))
                                 {
@@ -269,7 +269,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                             foreach(var x in Conf.MarkerOrder)
                             {
                                 State.Add($"Checking {x}...");
-                                if(x == Chains[Svc.ClientState.LocalPlayer.EntityId]) break;
+                                if(x == Chains[Svc.Objects.LocalPlayer.EntityId]) break;
                                 if(Chains.Where(c => c.Value == x).Count(z => Markers.Contains(z.Key)) == 1)
                                 {
                                     State.Add($"Not first because {x} are same");
@@ -277,7 +277,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                                 }
                             }
                             State.Add($"You are {(first ? "first" : "second")}");
-                            var marked = Markers.Contains(Svc.ClientState.LocalPlayer.EntityId);
+                            var marked = Markers.Contains(Svc.Objects.LocalPlayer.EntityId);
                             State.Add($"You are marked: {marked}");
                             if(marked)
                             {
@@ -305,7 +305,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                     }
                     else
                     {
-                        if(Chains.Count == 8 && Vector3.Distance(new(100, 0, 100), Svc.Objects.FirstOrDefault(x => x.DataId == 15720).Position) > 10)
+                        if(Chains.Count == 8 && Vector3.Distance(new(100, 0, 100), Svc.Objects.FirstOrDefault(x => x.BaseId == 15720).Position) > 10)
                         {
                             State.Add("Omega-M found");
                             if(Conf.AlignmentDirection == MarkerAlignmentDirection.NorthToSouth)
@@ -356,7 +356,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         private IPlayerCharacter GetPartner()
         {
-            return FakeParty.Get().First(x => x.EntityId != Svc.ClientState.LocalPlayer.EntityId && Chains[x.EntityId] == Chains[Svc.ClientState.LocalPlayer.EntityId]);
+            return FakeParty.Get().First(x => x.EntityId != Svc.Objects.LocalPlayer.EntityId && Chains[x.EntityId] == Chains[Svc.Objects.LocalPlayer.EntityId]);
         }
 
         public override void OnActionEffect(uint ActionID, ushort animationID, ActionEffectType type, uint sourceID, ulong targetOID, uint damage)
@@ -365,7 +365,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
             {
                 if(ActionID == 31603)
                 {
-                    OmegaPos = Svc.Objects.FirstOrDefault(x => x.DataId == 15720)?.Position ?? Vector3.Zero;
+                    OmegaPos = Svc.Objects.FirstOrDefault(x => x.BaseId == 15720)?.Position ?? Vector3.Zero;
                     if(!Conf.NoChat) DuoLog.Information($"Omega position captured: {OmegaPos}");
                     var distance = float.MaxValue;
                     var marker = "A";
@@ -430,7 +430,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         private bool IsInverted()
         {
-            if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == GlitchFar))
+            if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == GlitchFar))
             {
                 return !GetTowers().Any(x => GetTowerAngle(x) < 3);
             }
@@ -734,7 +734,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
         public static float GetDistanceToWaymark(this Vector3 waymarkPos)
         {
             var d1 = Vector3.Distance(new(100, 0, 100), waymarkPos / 1000f);
-            var d2 = Vector3.Distance(Svc.ClientState.LocalPlayer?.Position ?? Vector3.Zero, waymarkPos / 1000f);
+            var d2 = Vector3.Distance(Svc.Objects.LocalPlayer?.Position ?? Vector3.Zero, waymarkPos / 1000f);
             return d1 + d2;
         }
 

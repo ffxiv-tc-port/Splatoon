@@ -19,7 +19,7 @@ namespace SplatoonScriptsOfficial.Generic;
 public unsafe class ShowEmote : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => null;
-    public override Metadata Metadata => new(5, "NightmareXIV");
+    public override Metadata Metadata => new(6, "NightmareXIV");
 
     private delegate long OnEmoteFuncDelegate(IntPtr a1, GameObject* source, ushort emoteId, GameObjectId targetId, long a5);
     [Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 30 4C 8B 74 24 ?? 48 8B D9", DetourName = nameof(OnEmoteFuncDetour))]
@@ -46,7 +46,7 @@ public unsafe class ShowEmote : SplatoonScript
     {
         try
         {
-            if(targetId == Svc.ClientState.LocalPlayer?.EntityId)
+            if(targetId == Svc.Objects.LocalPlayer?.EntityId)
             {
                 var emoteName = Svc.Data.GetExcelSheet<Emote>()?.GetRowOrDefault(emoteId)?.Name;
                 Svc.Chat.Print($">> {GenericHelpers.Read(source->Name)} uses {emoteName} on you.");

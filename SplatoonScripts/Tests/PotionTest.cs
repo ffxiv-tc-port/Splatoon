@@ -13,7 +13,7 @@ namespace SplatoonScriptsOfficial.Tests
     public class PotionTest : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [561, 562, 563, 564, 565, 570, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607];
-        public override Metadata Metadata => new(1, "NightmareXIV");
+        public override Metadata Metadata => new(2, "NightmareXIV");
 
         private const uint Sustaining_Potion = 20309, Empyrean_Potion = 23163, Orthos_Potion = 38944;
 
@@ -25,7 +25,7 @@ namespace SplatoonScriptsOfficial.Tests
             }
         }
 
-        private float PlayerHealthPercentageHp => (float)Svc.ClientState.LocalPlayer.CurrentHp / (float)Svc.ClientState.LocalPlayer.MaxHp;
+        private float PlayerHealthPercentageHp => (float)Svc.Objects.LocalPlayer.CurrentHp / (float)Svc.Objects.LocalPlayer.MaxHp;
 
         public override void OnUpdate()
         {

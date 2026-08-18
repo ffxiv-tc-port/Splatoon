@@ -15,7 +15,7 @@ namespace SplatoonScriptsOfficial.Generic;
 internal class FateVisualiser : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => [];
-    public override Metadata? Metadata => new(0, "sourpuh");
+    public override Metadata? Metadata => new(1, "sourpuh");
 
     private class Config : IEzConfig
     {
@@ -56,7 +56,7 @@ internal class FateVisualiser : SplatoonScript
 
     private void DrawFateCircle(Vector3 origin, float radius, float castHeight = 20)
     {
-        var playerPos = Svc.ClientState.LocalPlayer?.Position;
+        var playerPos = Svc.Objects.LocalPlayer?.Position;
         if(playerPos.HasValue && Controller.TryGetElementByName("Fate Border Dot", out var template))
         {
             var fadeoutDistance = C.FadeOutDistance;

@@ -21,7 +21,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 {
     public class Pantokrator : SplatoonScript
     {
-        public override Metadata? Metadata => new(4, "NightmareXIV");
+        public override Metadata? Metadata => new(5, "NightmareXIV");
         public override HashSet<uint> ValidTerritories => [1122];
         private IBattleChara? Omega => Svc.Objects.FirstOrDefault(x => x is IBattleChara o && o.NameId == 7695 && o.IsTargetable()) as IBattleChara;
 
@@ -54,7 +54,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                     var angle = GetRelativeAngleRad(new(100f, 100f), Lasers[which].Position.ToVector2());
                     var point = RotatePoint(100f, 100f, angle, new(100f, 130f, 0f));
                     e.Enabled = true;
-                    if(Lasers[which].Address == Svc.ClientState.LocalPlayer.Address)
+                    if(Lasers[which].Address == Svc.Objects.LocalPlayer.Address)
                     {
                         e.color = Controller.GetConfig<Config>().LaserColSelf.ToUint();
                     }
@@ -80,9 +80,9 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                 {
                     var e = Controller.GetElementByName($"Rocket{which + 1}");
                     e.Enabled = true;
-                    if(Rockets[which].Address == Svc.ClientState.LocalPlayer.Address)
+                    if(Rockets[which].Address == Svc.Objects.LocalPlayer.Address)
                     {
-                        if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3424, 3495, 3496, 3497) && x.RemainingTime < 3f))
+                        if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3424, 3495, 3496, 3497) && x.RemainingTime < 3f))
                         {
                             e.color = GradientColor.Get(Controller.GetConfig<Config>().RocketColSelf, Controller.GetConfig<Config>().RocketColSelf2, 250).ToUint();
                         }

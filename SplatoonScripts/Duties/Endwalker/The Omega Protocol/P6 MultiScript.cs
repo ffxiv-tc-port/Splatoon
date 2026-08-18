@@ -81,7 +81,7 @@ internal unsafe class P6_MultiScript : SplatoonScript
     #endregion
 
     #region publicDefine
-    public override Metadata Metadata => new(5, "Redmoon");
+    public override Metadata Metadata => new(6, "Redmoon");
     public override HashSet<uint>? ValidTerritories => [1122];
     #endregion
 
@@ -500,7 +500,7 @@ internal unsafe class P6_MultiScript : SplatoonScript
     private void ShowLimiterCut()
     {
         // This Gimmick Always Update Element
-        Controller.GetElementByName("CountReminder").refActorObjectID = Svc.ClientState.LocalPlayer.EntityId;
+        Controller.GetElementByName("CountReminder").refActorObjectID = Svc.Objects.LocalPlayer.EntityId;
         Controller.GetElementByName("CountReminder").overlayText = _limiterCutCount.ToString();
         if(!_showElement)
         {

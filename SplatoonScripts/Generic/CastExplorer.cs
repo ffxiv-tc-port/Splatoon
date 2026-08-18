@@ -21,7 +21,7 @@ namespace SplatoonScriptsOfficial.Generic;
 public unsafe class CastExplorer : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = null;
-    public override Metadata? Metadata => new(2, "NightmareXIV");
+    public override Metadata? Metadata => new(3, "NightmareXIV");
     private uint HoveredID = 0;
     private bool HideExpired = false;
 
@@ -75,7 +75,7 @@ public unsafe class CastExplorer : SplatoonScript
                 Entries.Add(new("Cast name", () => ImGuiEx.TextCopy(col, $"{ExcelActionHelper.GetActionName(x.CastActionId)}")));
                 Entries.Add(new("Time", () => ImGuiEx.TextCopy(col, $"{x.CurrentCastTime:F1}/{x.BaseCastTime:F1}")));
                 Entries.Add(new("Name ID", () => ImGuiEx.TextCopy(col, $"{x.NameId}")));
-                Entries.Add(new("Data ID", () => ImGuiEx.TextCopy(col, $"{x.DataId}")));
+                Entries.Add(new("Data ID", () => ImGuiEx.TextCopy(col, $"{x.BaseId}")));
                 Entries.Add(new("Model ID", () => ImGuiEx.TextCopy(col, $"{x.Struct()->ModelContainer.ModelCharaId}")));
                 Entries.Add(new("Tar", () => ImGuiEx.Text(col, x.IsTargetable.ToString())));
                 Entries.Add(new("Vis", () => ImGuiEx.Text(col, x.IsCharacterVisible().ToString())));
@@ -101,7 +101,7 @@ public unsafe class CastExplorer : SplatoonScript
         var ret = new Element(0)
         {
             overlayPlaceholders = true,
-            overlayText = $"C: {b.CastActionId} {b.CurrentCastTime:F1}/{b.BaseCastTime:F1} ({ExcelActionHelper.GetActionName(b.CastActionId)})\n{b.Name}/nid:{b.NameId}/did:{b.DataId}",
+            overlayText = $"C: {b.CastActionId} {b.CurrentCastTime:F1}/{b.BaseCastTime:F1} ({ExcelActionHelper.GetActionName(b.CastActionId)})\n{b.Name}/nid:{b.NameId}/did:{b.BaseId}",
             overlayTextColor = b.IsCasting ? EColor.White.ToUint() : ImGuiColors.DalamudGrey.ToUint(),
             overlayBGColor = ImGuiEx.Vector4FromRGBA(0x000000CC).ToUint(),
         };

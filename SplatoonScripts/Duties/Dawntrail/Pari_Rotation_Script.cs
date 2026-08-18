@@ -16,7 +16,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.AnotherMerchantTale;
 public class Pari_Rotation_Script : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1317];
-    public override Metadata? Metadata => new(3, "Poneglyph");
+    public override Metadata? Metadata => new(4, "Poneglyph");
 
     private List<string> turningVFX = new();
     private List<string> distanceVFX = new();
@@ -53,7 +53,7 @@ public class Pari_Rotation_Script : SplatoonScript
     {
         if(!isWaiting || !isTurningOnly) return;
 
-        var actors = Svc.Objects.Where(o => o.DataId == 19058);
+        var actors = Svc.Objects.Where(o => o.BaseId == 19058);
 
         foreach(var actor in actors)
         {

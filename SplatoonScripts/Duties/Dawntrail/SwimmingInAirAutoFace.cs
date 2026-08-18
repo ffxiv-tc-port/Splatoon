@@ -29,7 +29,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.AnotherMerchantTale;
 
 public unsafe class SwimmingInAirAutoFace : SplatoonScript
 {
-    public override Metadata Metadata => new(1, "Ahernika");
+    public override Metadata Metadata => new(2, "Ahernika");
     public override HashSet<uint>? ValidTerritories => [1317];
 
     private Config C => Controller.GetConfig<Config>();
@@ -115,13 +115,13 @@ public unsafe class SwimmingInAirAutoFace : SplatoonScript
         if(Controller.TryGetElementByName("MarchArrow", out var arrowEl)) arrowEl.Enabled = false;
         if(Controller.TryGetElementByName("DirectionText", out var dirText)) dirText.Enabled = false;
 
-        var player = Svc.ClientState.LocalPlayer ;
+        var player = Svc.Objects.LocalPlayer ;
         if(player == null) return;
 
         // Track the first non-center AoE to determine the start of the CW sweep
         if(_sweepStartAngleCW == null)
         {
-            var currentAoes = Svc.Objects.Where(x => x.DataId == AoeNpcId).ToList();
+            var currentAoes = Svc.Objects.Where(x => x.BaseId == AoeNpcId).ToList();
             foreach(var aoe in currentAoes)
             {
                 if(!_seenAoeObjects.Contains(aoe.GameObjectId))
@@ -273,7 +273,7 @@ public unsafe class SwimmingInAirAutoFace : SplatoonScript
     private List<Corner> GetSafeCorners()
     {
         var aoePositions = Svc.Objects
-            .Where(x => x.DataId == AoeNpcId)
+            .Where(x => x.BaseId == AoeNpcId)
             .Select(x => new Vector2(x.Position.X, x.Position.Z))
             .ToList();
 
@@ -416,7 +416,7 @@ public unsafe class SwimmingInAirAutoFace : SplatoonScript
     /// </summary>
     private PlayerGroup? GetPlayerGroup()
     {
-        var player = Svc.ClientState.LocalPlayer;
+        var player = Svc.Objects.LocalPlayer;
         if(player == null) return null;
 
         var myRole = GetPartyRole(player);
@@ -491,7 +491,7 @@ public unsafe class SwimmingInAirAutoFace : SplatoonScript
     /// </summary>
     private bool IsD1(IPlayerCharacter player)
     {
-        var localPlayer = Svc.ClientState.LocalPlayer;
+        var localPlayer = Svc.Objects.LocalPlayer;
         if(localPlayer != null && localPlayer.GetRole() == CombatRole.DPS && C.MyDpsPosition != DpsPosition.Auto)
         {
             bool isMe = player.GameObjectId == localPlayer.GameObjectId;
@@ -754,14 +754,14 @@ public unsafe class SwimmingInAirAutoFace : SplatoonScript
 
     private void DrawDebugInfo()
     {
-        var player = Svc.ClientState.LocalPlayer;
+        var player = Svc.Objects.LocalPlayer;
         if(player == null) { ImGui.Text("Player not found"); return; }
 
         ImGui.Text($"Pos: ({player.Position.X:F1}, {player.Position.Z:F1}) Facing: {player.Rotation:F3} rad ({player.Rotation * 180f / MathF.PI:F1}°)");
         ImGui.Text($"Center: ({C.ArenaCenter.X:F1}, {C.ArenaCenter.Y:F1}) Offset: {C.CornerOffset:F1}");
 
         var safeCorners = GetSafeCorners();
-        var aoeCount = Svc.Objects.Count(x => x.DataId == AoeNpcId);
+        var aoeCount = Svc.Objects.Count(x => x.BaseId == AoeNpcId);
         ImGui.Text($"AoEs: {aoeCount} | Safe Corners: {string.Join(", ", safeCorners)}");
 
         // ===== PARTY / STACKS / GROUPS =====

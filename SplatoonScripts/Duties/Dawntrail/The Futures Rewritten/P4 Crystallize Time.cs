@@ -103,7 +103,7 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
 
     private List<float> ExtraRandomness = [];
     private bool Initialized;
-    public override Metadata? Metadata => new(13, "Garume, NightmareXIV");
+    public override Metadata? Metadata => new(14, "Garume, NightmareXIV");
 
     public override Dictionary<int, string> Changelog => new()
     {
@@ -130,25 +130,25 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
     private float ReturnDebuffTime =>
         BasePlayer.StatusList?.FirstOrDefault(x => x.StatusId == (uint)Debuff.Return)?.RemainingTime ?? -1f;
 
-    private bool IsActive => Svc.Objects.Any(x => x.DataId == 17837) && !BasePlayer.IsDead;
+    private bool IsActive => Svc.Objects.Any(x => x.BaseId == 17837) && !BasePlayer.IsDead;
 
     public override HashSet<uint>? ValidTerritories => [1238];
 
     private Config C => Controller.GetConfig<Config>();
 
-    private static IBattleNpc? WestDragon => Svc.Objects.Where(x => x is { DataId: 0x45AC, Position.X: <= 100 })
+    private static IBattleNpc? WestDragon => Svc.Objects.Where(x => x is { BaseId: 0x45AC, Position.X: <= 100 })
         .Select(x => x as IBattleNpc).First();
 
-    private static IBattleNpc? EastDragon => Svc.Objects.Where(x => x is { DataId: 0x45AC, Position.X: > 100 })
+    private static IBattleNpc? EastDragon => Svc.Objects.Where(x => x is { BaseId: 0x45AC, Position.X: > 100 })
         .Select(x => x as IBattleNpc).First();
 
-    private static IEnumerable<IEventObj> Cleanses => Svc.Objects.Where(x => x is { DataId: 0x1EBD41 })
+    private static IEnumerable<IEventObj> Cleanses => Svc.Objects.Where(x => x is { BaseId: 0x1EBD41 })
         .OfType<IEventObj>()
         .OrderBy(x => x.Position.X);
 
     private MechanicStage GetStage()
     {
-        if(Svc.Objects.All(x => x.DataId != 17837)) return MechanicStage.Unknown;
+        if(Svc.Objects.All(x => x.BaseId != 17837)) return MechanicStage.Unknown;
         var time = SpellInWaitingDebuffTime;
         if(time > 0)
             return time switch
@@ -532,7 +532,7 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
     {
         try
         {
-            if(Svc.Objects.Any(x => x.DataId == 17837) && !BasePlayer.IsDead)
+            if(Svc.Objects.Any(x => x.BaseId == 17837) && !BasePlayer.IsDead)
             {
                 if(C.UseKbiAuto &&
                     BasePlayer.StatusList.Any(x =>

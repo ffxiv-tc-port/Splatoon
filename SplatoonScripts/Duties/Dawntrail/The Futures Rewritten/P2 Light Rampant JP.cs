@@ -44,7 +44,7 @@ public class P2_Light_Rampant_JP : SplatoonScript
 
     private State _state = State.None;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(4, "Garume, Lusaca");
+    public override Metadata? Metadata => new(5, "Garume, Lusaca");
 
     public Config C => Controller.GetConfig<Config>();
 
@@ -72,7 +72,7 @@ public class P2_Light_Rampant_JP : SplatoonScript
             {
                 _aoeTargets.Add(player.Name.ToString());
 
-                if(player.Name.ToString().Equals(Svc.ClientState.LocalPlayer.Name.ToString()))
+                if(player.Name.ToString().Equals(Svc.Objects.LocalPlayer.Name.ToString()))
                     _PlayerHasAoE = true;
 
             }

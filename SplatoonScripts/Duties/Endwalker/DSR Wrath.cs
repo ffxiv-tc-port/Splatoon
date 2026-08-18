@@ -19,7 +19,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class DSR_Wrath : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [968];
-        public override Metadata? Metadata => new(3, "Enthusiastus");
+        public override Metadata? Metadata => new(4, "Enthusiastus");
 
         private Element? SkydiveTargetElement;
         private Element? NoSkydiveTargetElement;
@@ -35,13 +35,13 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         private bool gottether = false;
 
         private uint IgnasseDataId = 12635;
-        private IBattleNpc? Ignasse => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == IgnasseDataId) as IBattleNpc;
+        private IBattleNpc? Ignasse => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == IgnasseDataId) as IBattleNpc;
         private uint VellguineDataId = 12633;
-        private IBattleNpc? Vellguine => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == VellguineDataId) as IBattleNpc;
+        private IBattleNpc? Vellguine => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == VellguineDataId) as IBattleNpc;
 
         private string TestOverride = "";
 
-        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.ClientState.LocalPlayer!;
+        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.Objects.LocalPlayer!;
 
         private Vector2 Center = new(100, 100);
 

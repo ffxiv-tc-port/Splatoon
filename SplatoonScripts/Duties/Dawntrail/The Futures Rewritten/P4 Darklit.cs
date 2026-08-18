@@ -51,11 +51,11 @@ public class P4_Darklit : SplatoonScript
 
     private State _state = State.None;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(5, "Garume, NightmareXIV");
+    public override Metadata? Metadata => new(6, "Garume, NightmareXIV");
     private Config C => Controller.GetConfig<Config>();
 
     private IBattleChara? DarkGirl => Svc.Objects.Where(o => o.IsTargetable)
-        .FirstOrDefault(o => o.DataId == 0x45AB) as IBattleChara;
+        .FirstOrDefault(o => o.BaseId == 0x45AB) as IBattleChara;
 
     public override void OnStartingCast(uint source, uint castId)
     {

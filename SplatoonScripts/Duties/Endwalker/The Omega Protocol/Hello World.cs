@@ -25,7 +25,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 {
     public class Hello_World : SplatoonScript
     {
-        public override Metadata? Metadata => new(9, "NightmareXIV");
+        public override Metadata? Metadata => new(10, "NightmareXIV");
         public override HashSet<uint> ValidTerritories => [1122];
         private bool RotPicker = false;
         private int counter = 0;
@@ -116,7 +116,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
             {
                 if(Conf.EnableAvoiders && IsHelloWorldRunning)
                 {
-                    var otherPlayers = FakeParty.Get().Where(x => x.Address != Svc.ClientState.LocalPlayer.Address);
+                    var otherPlayers = FakeParty.Get().Where(x => x.Address != Svc.Objects.LocalPlayer.Address);
                     if(HasEffect(Effects.BlueRot))
                     {
                         foreach(var x in otherPlayers)
@@ -206,7 +206,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                     if(counter != 4 && !(HasEffect(Effects.NoBlueRot) && HasEffect(Effects.NoRedRot))) RotPicker = true;
                     if(counter != 4)
                     {
-                        var partner = FakeParty.Get().FirstOrDefault(x => x.Address != Svc.ClientState.LocalPlayer.Address && HasEffect(Effects.UpcomingCloseTether, 10f, x));
+                        var partner = FakeParty.Get().FirstOrDefault(x => x.Address != Svc.Objects.LocalPlayer.Address && HasEffect(Effects.UpcomingCloseTether, 10f, x));
                         if(isDefamationRed)
                         {
                             if(Conf.EnableVisualElementsTowers) TowerRed(true);
@@ -350,7 +350,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         private static bool HasEffect(uint effect, float? remainingTile = null, IBattleChara? obj = null)
         {
-            return (obj ?? Svc.ClientState.LocalPlayer).StatusList.Any(x => x.StatusId == effect && (remainingTile == null || x.RemainingTime < remainingTile));
+            return (obj ?? Svc.Objects.LocalPlayer).StatusList.Any(x => x.StatusId == effect && (remainingTile == null || x.RemainingTime < remainingTile));
         }
 
         private void Reminder(string? text, Vector4? color = null)

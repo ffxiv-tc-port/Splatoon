@@ -23,7 +23,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten;
 public class P2_Mirror_Mirror : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata Metadata => new(5, "Garume, NightmareXIV");
+    public override Metadata Metadata => new(6, "Garume, NightmareXIV");
     public enum Action
     {
         OppositeBlueMirror,
@@ -155,7 +155,7 @@ public class P2_Mirror_Mirror : SplatoonScript
         if(_state.EqualsAny(State.End, State.None) || (_state == State.SecondAction && C.Clockwise >= Clockwise.Do_not_display)) { Controller.GetRegisteredElements().Each(x => x.Value.Enabled = false); }
         Controller.GetRegisteredElements().Where(x => x.Key.StartsWith("Spot")).Each(x => x.Value.Enabled = false);
 
-        var castingMirrors = Svc.Objects.OfType<IBattleNpc>().Where(x => x.DataId == 17825 && x.IsCasting(40205));
+        var castingMirrors = Svc.Objects.OfType<IBattleNpc>().Where(x => x.BaseId == 17825 && x.IsCasting(40205));
         if(castingMirrors.Count() == 2)
         {
             if(C.Clockwise == Clockwise.Try_to_guess)
@@ -215,7 +215,7 @@ public class P2_Mirror_Mirror : SplatoonScript
     public float? GetTankDistanceToPoint(Vector3 point)
     {
         //Data ID: 17823
-        var tank = Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.IsTargetable && x.DataId == 17823)?.TargetObject;
+        var tank = Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.IsTargetable && x.BaseId == 17823)?.TargetObject;
         if(tank != null)
         {
             return Vector3.Distance(tank.Position, point);

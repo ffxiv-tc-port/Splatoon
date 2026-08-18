@@ -21,7 +21,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P12S_Classical_Concepts : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1154];
-        public override Metadata? Metadata => new(6, "tatad2");
+        public override Metadata? Metadata => new(7, "tatad2");
 
         private string ElementNamePrefix = "P12SSC";
 
@@ -53,7 +53,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         public override void OnUpdate()
         {
-            if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == 3588 && x.RemainingTime < 1f))
+            if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == 3588 && x.RemainingTime < 1f))
             {
                 Hide();
             }
@@ -191,16 +191,16 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
             Schedulers.Add(new TickScheduler(() =>
             {
                 var obj = Svc.Objects.FirstOrDefault(x => x.Address == newObjectPtr);
-                if(!(obj?.DataId == 0x3F37 || obj?.DataId == 0x3F38 || obj?.DataId == 0x3F39))
+                if(!(obj?.BaseId == 0x3F37 || obj?.BaseId == 0x3F38 || obj?.BaseId == 0x3F39))
                     return;
 
-                var color = obj.DataId == 0x3F37 ? "red" : obj.DataId == 0x3F38 ? "blue" : "yellow";
+                var color = obj.BaseId == 0x3F37 ? "red" : obj.BaseId == 0x3F38 ? "blue" : "yellow";
                 var position = obj.Position.ToVector2();
                 PluginLog.Debug($"cube color:{color}, position:{position.ToString()}");
 
                 var xIndex = ((int)position.X - 88) / 8;
                 var yIndex = ((int)position.Y - 84) / 8;
-                cube[xIndex, yIndex] = (int)obj.DataId - 0x3F36;
+                cube[xIndex, yIndex] = (int)obj.BaseId - 0x3F36;
                 cubeCount++;
                 if(cubeCount == 12)
                     DrawLines(false);

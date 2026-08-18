@@ -26,7 +26,7 @@ namespace SplatoonScriptsOfficial.Generic;
 public class EnemyAggro : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => [];
-    public override Metadata Metadata => new(1, "NightmareXIV");
+    public override Metadata Metadata => new(2, "NightmareXIV");
     private Config Settings => Controller.GetConfig<Config>();
 
     public class Config : IEzConfig
@@ -39,13 +39,13 @@ public class EnemyAggro : SplatoonScript
     public override void OnUpdate()
     {
         Controller.GetRegisteredElements().Each(x => x.Value.Enabled = false);
-        if(Svc.ClientState.LocalPlayer == null || Svc.Objects == null) return;
-        if(Svc.ClientState.LocalPlayer.CurrentHp > 0)
+        if(Svc.Objects.LocalPlayer == null || Svc.Objects == null) return;
+        if(Svc.Objects.LocalPlayer.CurrentHp > 0)
         {
             var i = 0;
             foreach(var x in Svc.Objects)
             {
-                if(x is IPlayerCharacter pc && pc.Address != Player.Object.Address && pc.Address.ToInt64() != 0 && pc.CurrentHp > 0 && pc.TargetObjectId == Svc.ClientState.LocalPlayer.EntityId)
+                if(x is IPlayerCharacter pc && pc.Address != Player.Object.Address && pc.Address.ToInt64() != 0 && pc.CurrentHp > 0 && pc.TargetObjectId == Svc.Objects.LocalPlayer.EntityId)
                 {
                     var element = GetElement(i++);
                     element.refActorObjectID = pc.EntityId;

@@ -21,9 +21,9 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P9S_Dualspell_InOut : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1148];
-        public override Metadata? Metadata => new(3, "NightmareXIV");
+        public override Metadata? Metadata => new(4, "NightmareXIV");
         private TickScheduler? sched = null;
-        private IBattleNpc? Kokytos => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == 16087 && b.IsTargetable()) as IBattleNpc;
+        private IBattleNpc? Kokytos => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == 16087 && b.IsTargetable()) as IBattleNpc;
 
 
 

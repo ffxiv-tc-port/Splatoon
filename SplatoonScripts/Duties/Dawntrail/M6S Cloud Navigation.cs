@@ -27,10 +27,10 @@ public class M6S_Cloud_Navigation : SplatoonScript
     private Config C => Controller.GetConfig<Config>();
 
     public override HashSet<uint>? ValidTerritories => [1259];
-    public override Metadata? Metadata => new(3, "Garume");
+    public override Metadata? Metadata => new(4, "Garume");
 
     private static IBattleNpc? Cloud =>
-        Svc.Objects.FirstOrDefault(x => x.DataId == CloudDataId) as IBattleNpc;
+        Svc.Objects.FirstOrDefault(x => x.BaseId == CloudDataId) as IBattleNpc;
 
     private IPlayerCharacter BasePlayer =>
         string.IsNullOrEmpty(_basePlayerOverride)

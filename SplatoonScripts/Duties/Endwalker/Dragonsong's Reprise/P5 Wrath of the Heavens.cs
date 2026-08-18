@@ -37,19 +37,19 @@ public class P5_Wrath_of_the_Heavens : SplatoonScript
     private Element? _vellguineTargetElement;
     public override HashSet<uint>? ValidTerritories => [968];
 
-    public override Metadata? Metadata => new(5, "Enthusiastus, Garume, damolitionn");
+    public override Metadata? Metadata => new(6, "Enthusiastus, Garume, damolitionn");
 
     private IBattleNpc? Ignasse =>
-        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == IgnasseDataId) as IBattleNpc;
+        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == IgnasseDataId) as IBattleNpc;
 
     private IBattleNpc? Vellguine =>
-        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == VellguineDataId) as IBattleNpc;
+        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == VellguineDataId) as IBattleNpc;
 
     private IPlayerCharacter PC =>
         !string.IsNullOrWhiteSpace(TestOverride) &&
         FakeParty.Get().FirstOrDefault(x => x.Name.TextValue == TestOverride) is IPlayerCharacter pc
             ? pc
-            : Svc.ClientState.LocalPlayer!;
+            : Svc.Objects.LocalPlayer!;
 
     private Config Conf => Controller.GetConfig<Config>();
 

@@ -29,7 +29,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 public unsafe class Oversampled_Wave_Cannon : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1122];
-    public override Metadata? Metadata => new(9, "NightmareXIV, damolitionn");
+    public override Metadata? Metadata => new(10, "NightmareXIV, damolitionn");
 
     private readonly string[] strings = { "front", "right", "back", "left" };
     private readonly string[] monitorRlString = { "right", "left" };
@@ -114,7 +114,7 @@ public unsafe class Oversampled_Wave_Cannon : SplatoonScript
                     {
                         if(direction == CardinalDirection.West)
                         {
-                            if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3453)))
+                            if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3453)))
                             {
                                 LockFaceRotation = directions.First(x => x.Name == Conf.WestMoniterRotation[prio.Priority - 1]).AngleWhenMonitorLeft;
                             }
@@ -125,7 +125,7 @@ public unsafe class Oversampled_Wave_Cannon : SplatoonScript
                         }
                         else
                         {
-                            if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3453)))
+                            if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3453)))
                             {
                                 LockFaceRotation = directions.First(x => x.Name == Conf.EastMoniterRotation[prio.Priority - 1]).AngleWhenMonitorLeft;
                             }
@@ -236,7 +236,7 @@ public unsafe class Oversampled_Wave_Cannon : SplatoonScript
 
     private (int Priority, bool IsMonitor) ObtainMyPriority()
     {
-        var isMonitor = Svc.ClientState.LocalPlayer.HasMonitor();
+        var isMonitor = Svc.Objects.LocalPlayer.HasMonitor();
         bool anyHasMonitor = Conf.PriorityData.GetPlayers(z => (z.IGameObject as IPlayerCharacter)?.HasMonitor() == true).Any();
         if (anyHasMonitor)
         {
@@ -245,7 +245,7 @@ public unsafe class Oversampled_Wave_Cannon : SplatoonScript
                 var prio = 1;
                 foreach (var x in Conf.PriorityData.GetPlayers(z => (z.IGameObject as IPlayerCharacter).HasMonitor() == true))
                 {
-                    if (x.Name.ToString() == Svc.ClientState.LocalPlayer.Name.ToString())
+                    if (x.Name.ToString() == Svc.Objects.LocalPlayer.Name.ToString())
                     {
                         return (prio, true);
                     }
@@ -260,7 +260,7 @@ public unsafe class Oversampled_Wave_Cannon : SplatoonScript
                 var prio = 1;
                 foreach (var x in Conf.PriorityData.GetPlayers(z => (z.IGameObject as IPlayerCharacter).HasMonitor() == false))
                 {
-                    if (x.Name.ToString() == Svc.ClientState.LocalPlayer.Name.ToString())
+                    if (x.Name.ToString() == Svc.Objects.LocalPlayer.Name.ToString())
                     {
                         return (prio, false);
                     }

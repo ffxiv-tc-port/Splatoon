@@ -22,7 +22,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 public unsafe sealed class M8S_Millenial_Decay_EU : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1263];
-    public override Metadata Metadata => new(2, "NightmareXIV");
+    public override Metadata Metadata => new(3, "NightmareXIV");
 
     bool? IsCW = null;
 
@@ -82,7 +82,7 @@ public unsafe sealed class M8S_Millenial_Decay_EU : SplatoonScript
         {
             //Data ID: 18218
             //Casting: True, Action ID = 41908, Type = 1, Cast time: 2.8/7.7
-            var d = Svc.Objects.OfType<IBattleNpc>().Where(x => x.DataId == 18218 && x.IsCasting(41908));
+            var d = Svc.Objects.OfType<IBattleNpc>().Where(x => x.BaseId == 18218 && x.IsCasting(41908));
             //DuoLog.Information($"Count is {d.Count()}");
             if(d.Count() == 2)
             {

@@ -17,7 +17,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.AnotherMerchantTale;
 public class Malefic_Quartering_3 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1317];
-    public override Metadata? Metadata => new(1, "Poneglyph");
+    public override Metadata? Metadata => new(2, "Poneglyph");
 
     private bool isActive = false;
     private uint pdebuff = 0;
@@ -73,7 +73,7 @@ public class Malefic_Quartering_3 : SplatoonScript
             return;
         }
 
-        if(pdebuff == 0 && Svc.ClientState.LocalPlayer is { } p)
+        if(pdebuff == 0 && Svc.Objects.LocalPlayer is { } p)
         {
             var status = p.StatusList;
             if(status.Any(s => s.StatusId == 4782)) pdebuff = 4782;
@@ -82,7 +82,7 @@ public class Malefic_Quartering_3 : SplatoonScript
             else if(status.Any(s => s.StatusId == 4777)) pdebuff = 4777;
         }
 
-        var slashes = Svc.Objects.Where(o => o.DataId == 19227 && !procslashes.Contains((uint)o.GameObjectId)).ToList();
+        var slashes = Svc.Objects.Where(o => o.BaseId == 19227 && !procslashes.Contains((uint)o.GameObjectId)).ToList();
         foreach(var obj in slashes)
         {
             procslashes.Add((uint)obj.GameObjectId);
@@ -147,8 +147,8 @@ public class Malefic_Quartering_3 : SplatoonScript
 
     public override void OnVFXSpawn(uint target, string vfxPath)
     {
-        if(!isActive || Svc.ClientState.LocalPlayer == null) return;
-        if(target != (uint)Svc.ClientState.LocalPlayer.GameObjectId) return;
+        if(!isActive || Svc.Objects.LocalPlayer == null) return;
+        if(target != (uint)Svc.Objects.LocalPlayer.GameObjectId) return;
         if(vfxPath.Contains("chn_ambd_n_p")) activeGreenTether = "N";
         else if(vfxPath.Contains("chn_ambd_s_p")) activeGreenTether = "S";
         else if(vfxPath.Contains("chn_ambd_e_p")) activeGreenTether = "E";

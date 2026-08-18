@@ -24,7 +24,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten;
 public unsafe class P3_Apocalypse : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(12, "Errer, NightmareXIV");
+    public override Metadata? Metadata => new(13, "Errer, NightmareXIV");
     public long StartTime = 0;
     private bool IsAdjust = false;
     private bool IsClockwise = true;
@@ -196,7 +196,7 @@ public unsafe class P3_Apocalypse : SplatoonScript
             }
         }
 
-        var obj = Svc.Objects.Where(x => x.DataId == 2011391);
+        var obj = Svc.Objects.Where(x => x.BaseId == 2011391);
         var close = obj.FirstOrDefault(x => Vector3.Distance(x.Position, Positions[0].ToVector3(0)) < 1f);
         var far = obj.FirstOrDefault(x => Vector3.Distance(x.Position, Positions[1].ToVector3(0)) < 1f);
         if(close != null && far != null)

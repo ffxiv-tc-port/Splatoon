@@ -45,7 +45,7 @@ public class P6_Wyrmsbreath_First : SplatoonScript
     private State _state = State.None;
 
     public override HashSet<uint>? ValidTerritories => [968];
-    public override Metadata? Metadata => new(6, "Garume, ChaosK");
+    public override Metadata? Metadata => new(7, "Garume, ChaosK");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -105,7 +105,7 @@ public class P6_Wyrmsbreath_First : SplatoonScript
     {
         if(_state != State.None) return;
         if(target.GetObject() is not IBattleChara targetObject) return;
-        var targetDataId = targetObject.DataId;
+        var targetDataId = targetObject.BaseId;
         if(targetDataId != 0x3144 && targetDataId != 0x3145) return;
         if(source.GetObject() is not ICharacter sourceCharacter) return;
 

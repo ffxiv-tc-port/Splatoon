@@ -66,7 +66,7 @@ public class P2_Sanctity_Of_The_Ward_Second : SplatoonScript
     public List<IGameObject> MyTowers = [];
     public override HashSet<uint>? ValidTerritories => [968];
 
-    public override Metadata? Metadata => new(4, "Garume");
+    public override Metadata? Metadata => new(5, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -76,7 +76,7 @@ public class P2_Sanctity_Of_The_Ward_Second : SplatoonScript
         {
             PluginLog.Log("Starting cast: " + source);
             _isStart = true;
-            var towers = Svc.Objects.Where(x => x is IBattleNpc { NameId: 3640, DataId: 9020 })
+            var towers = Svc.Objects.Where(x => x is IBattleNpc { NameId: 3640, BaseId: 9020 })
                 .OrderBy(x => x.Position.X)
                 .ThenBy(y => y.Position.Z);
 

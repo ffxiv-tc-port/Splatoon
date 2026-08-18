@@ -52,13 +52,13 @@ public unsafe class P5_Death_of_the_Heavens : SplatoonScript
     public override HashSet<uint>? ValidTerritories => [968];
     private Config C => Controller.GetConfig<Config>();
 
-    public override Metadata? Metadata => new(8, "Garume, damolitionn");
+    public override Metadata? Metadata => new(9, "Garume, damolitionn");
 
     private IBattleChara? Thordan => Svc.Objects.OfType<IBattleChara>()
         .FirstOrDefault(x => x.NameId == 0xE30 && x.IsCharacterVisible());
 
     private IEnumerable<IGameObject> DeathSentence => Svc.Objects
-        .Where(x => x.DataId == 0x1EB685);
+        .Where(x => x.BaseId == 0x1EB685);
 
     private Vector2 GetBaitPosition(State state, BaitType bait)
     {

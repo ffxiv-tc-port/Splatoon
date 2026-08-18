@@ -13,7 +13,7 @@ namespace SplatoonScriptsOfficial.Tests;
 internal unsafe class RedmoonTest1 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => null;
-    public override Metadata Metadata => new(1, "NightmareXIV");
+    public override Metadata Metadata => new(2, "NightmareXIV");
     public override void OnSettingsDraw()
     {
         var gom = GameObjectManager.Instance();
@@ -58,7 +58,7 @@ internal unsafe class RedmoonTest1 : SplatoonScript
         }
         if(ImGuiEx.CollapsingHeader("MyStatusList"))
         {
-            var sm = (StatusManager*)Svc.ClientState.LocalPlayer.StatusList.Address;
+            var sm = (StatusManager*)Svc.Objects.LocalPlayer.StatusList.Address;
             var statusArray = (Status*)((byte*)sm + 0x08);
             if(sm == null)
             {

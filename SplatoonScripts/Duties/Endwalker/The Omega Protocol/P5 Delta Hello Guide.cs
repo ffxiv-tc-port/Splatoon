@@ -23,7 +23,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 internal unsafe class P5_Delta_Hello_Guide : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1122];
-    public override Metadata? Metadata => new(5, "Redmoon");
+    public override Metadata? Metadata => new(6, "Redmoon");
 
     #region Types
     private class PartyData
@@ -272,8 +272,8 @@ internal unsafe class P5_Delta_Hello_Guide : SplatoonScript
 
         _ = new TickScheduler(delegate
         {
-            if(Svc.Objects.FirstOrDefault(x => x.Address == newObjectPtr)?.DataId != 0x3D5D &&
-               Svc.Objects.FirstOrDefault(x => x.Address == newObjectPtr)?.DataId != 0x3D5E) return;
+            if(Svc.Objects.FirstOrDefault(x => x.Address == newObjectPtr)?.BaseId != 0x3D5D &&
+               Svc.Objects.FirstOrDefault(x => x.Address == newObjectPtr)?.BaseId != 0x3D5E) return;
 
             ++_handCount;
             if(_handCount < 8)
@@ -396,11 +396,11 @@ internal unsafe class P5_Delta_Hello_Guide : SplatoonScript
 
         if(_gimmickPhase == GimmickPhase.DeltaFirstHalfStackTiming)
         {
-            ShowDeltaStackPoint(Svc.ClientState.LocalPlayer.EntityId);
+            ShowDeltaStackPoint(Svc.Objects.LocalPlayer.EntityId);
         }
         else if(_gimmickPhase == GimmickPhase.DeltaSecondHalf)
         {
-            ShowDeltaHelloPosition(Svc.ClientState.LocalPlayer.EntityId);
+            ShowDeltaHelloPosition(Svc.Objects.LocalPlayer.EntityId);
         }
     }
 

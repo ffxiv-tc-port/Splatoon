@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace SplatoonScriptsOfficial.Duties.Endwalker.Dragonsong_s_Reprise;
 public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
 {
-    public override Metadata Metadata { get; } = new(5, "NightmareXIV");
+    public override Metadata Metadata { get; } = new(6, "NightmareXIV");
     public override HashSet<uint>? ValidTerritories { get; } = [Raids.Dragonsongs_Reprise_Ultimate];
 
     IPlayerCharacter BasePlayer
@@ -168,7 +168,7 @@ public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
             {
                 MyPosition = newPosition; 
             }
-            var guer = Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.DataId == 12637);
+            var guer = Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.BaseId == 12637);
             if(guer.Position.Z > 105)
             {
                 var newNorth = C.ForceDirection ?? CardinalDirection.South;

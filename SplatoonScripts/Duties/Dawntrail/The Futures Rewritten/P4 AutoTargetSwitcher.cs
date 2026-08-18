@@ -30,12 +30,12 @@ public class P4_AutoTargetSwitcher : SplatoonScript
     private float _lastMinPercentage;
     private int _mornAfahCount;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(8, "Garume");
+    public override Metadata? Metadata => new(9, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
-    private IBattleChara? DarkGirl => Svc.Objects.OfType<IBattleChara>().FirstOrDefault(o => (!C.LimitDistance || Player.DistanceTo(o) < 3f + o.HitboxRadius) && o.IsTargetable && o.DataId == 0x45AB);
-    private IBattleChara? LightGirl => Svc.Objects.OfType<IBattleChara>().FirstOrDefault(o => (!C.LimitDistance || Player.DistanceTo(o) < 3f + o.HitboxRadius) && o.IsTargetable && o.DataId == 0x45A9);
+    private IBattleChara? DarkGirl => Svc.Objects.OfType<IBattleChara>().FirstOrDefault(o => (!C.LimitDistance || Player.DistanceTo(o) < 3f + o.HitboxRadius) && o.IsTargetable && o.BaseId == 0x45AB);
+    private IBattleChara? LightGirl => Svc.Objects.OfType<IBattleChara>().FirstOrDefault(o => (!C.LimitDistance || Player.DistanceTo(o) < 3f + o.HitboxRadius) && o.IsTargetable && o.BaseId == 0x45A9);
 
     private bool IsActive => !C.TimingMode ||
                              (C.EnableTimings.Contains(_currentTiming) && !C.DisableTimings.Contains(_currentTiming));

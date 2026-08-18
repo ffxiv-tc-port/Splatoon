@@ -49,7 +49,7 @@ public class TEA_P3_Wormhole_Formation : SplatoonScript
     private int _wormholeChangedCount;
 
     public override HashSet<uint>? ValidTerritories => [887];
-    public override Metadata? Metadata => new(4, "Garume");
+    public override Metadata? Metadata => new(5, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -78,7 +78,7 @@ public class TEA_P3_Wormhole_Formation : SplatoonScript
     public override void OnVFXSpawn(uint target, string vfxPath)
     {
         if(!vfxPath.StartsWith("vfx/lockon/eff/m0361trg_a")) return;
-        if(!AttachedInfo.VFXInfos.TryGetValue(Svc.ClientState.LocalPlayer.Address, out var info)) return;
+        if(!AttachedInfo.VFXInfos.TryGetValue(Svc.Objects.LocalPlayer.Address, out var info)) return;
         if(info.OrderBy(x => x.Value.Age)
             .TryGetFirst(x => x.Key.StartsWith("vfx/lockon/eff/m0361trg_a"), out var effect))
             _myNumber = int.Parse(effect.Key.Replace("vfx/lockon/eff/m0361trg_a", "")[0].ToString());
@@ -88,7 +88,7 @@ public class TEA_P3_Wormhole_Formation : SplatoonScript
     {
         var targetObject = target.GetObject();
         // PluginLog.Warning($"Name:{targetObject.Name} DataID: {targetObject.DataId} Data1: {data1}, Data2: {data2}");
-        if(WormholeDataIds.All(x => x != targetObject?.DataId)) return;
+        if(WormholeDataIds.All(x => x != targetObject?.BaseId)) return;
         if(data1 == 4 && data2 == 8 && _wormholeChangedCount > 5)
         {
             _isStartWormholeFormation = false;

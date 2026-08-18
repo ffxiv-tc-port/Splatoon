@@ -19,7 +19,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 
 public class EX6_Arcane_Revelation : SplatoonScript
 {
-    public override Metadata Metadata { get; } = new(2, "NightmareXIV");
+    public override Metadata Metadata { get; } = new(3, "NightmareXIV");
     public override HashSet<uint>? ValidTerritories { get; } = [1308];
 
     public override void OnSetup()
@@ -40,7 +40,7 @@ public class EX6_Arcane_Revelation : SplatoonScript
     {
         get
         {
-            if(Svc.Objects.TryGetFirst(x => x.DataId == DataId, out var obj))
+            if(Svc.Objects.TryGetFirst(x => x.BaseId == DataId, out var obj))
             {
                 if(Vector2.Distance(obj.Position.ToVector2(), new(100f, 350f)) < 16f)
                 {
@@ -101,7 +101,7 @@ public class EX6_Arcane_Revelation : SplatoonScript
     public override void OnUpdate()
     {
         Controller.GetRegisteredElements().Each(x => x.Value.Enabled = false);
-        if(Svc.Objects.TryGetFirst(x => x.DataId == DataId, out var obj))
+        if(Svc.Objects.TryGetFirst(x => x.BaseId == DataId, out var obj))
         {
             if(DirectionDetermined)
             {
@@ -141,7 +141,7 @@ public class EX6_Arcane_Revelation : SplatoonScript
 
     public CardinalDirection GetCurrentDirection()
     {
-        if(Svc.Objects.TryGetFirst(x => x.DataId == DataId, out var obj))
+        if(Svc.Objects.TryGetFirst(x => x.BaseId == DataId, out var obj))
         {
             foreach(var p in Directions)
             {
@@ -156,7 +156,7 @@ public class EX6_Arcane_Revelation : SplatoonScript
 
     public bool IsPointGoingTowards(CardinalDirection direction)
     {
-        return IsPointOnLine(Svc.Objects.First(x => x.DataId == DataId).Position.ToVector2(), Directions[CurrentDirection], Directions[direction]);
+        return IsPointOnLine(Svc.Objects.First(x => x.BaseId == DataId).Position.ToVector2(), Directions[CurrentDirection], Directions[direction]);
     }
 
     public bool IsPointOnLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd, float tolerance = 0.5f)

@@ -18,7 +18,7 @@ namespace SplatoonScriptsOfficial.Generic;
 public unsafe class ObjectExplorer : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = null;
-    public override Metadata? Metadata => new(1, "Redmoon");
+    public override Metadata? Metadata => new(2, "Redmoon");
     private uint HoveredID = 0;
     private bool HideExpired = false;
 
@@ -59,7 +59,7 @@ public unsafe class ObjectExplorer : SplatoonScript
             Entries.Add(new("Time", () => ImGuiEx.TextCopy(col, $"{x.CurrentCastTime:F1}/{x.BaseCastTime:F1}")));
             Entries.Add(new("Name ID", () => ImGuiEx.TextCopy(col, x.GameObjectId.ToString("x"))));
             Entries.Add(new("Name ID", () => ImGuiEx.TextCopy(col, x.NameId.ToString("x"))));
-            Entries.Add(new("Data ID", () => ImGuiEx.TextCopy(col, x.DataId.ToString("x"))));
+            Entries.Add(new("Data ID", () => ImGuiEx.TextCopy(col, x.BaseId.ToString("x"))));
             Entries.Add(new("Model ID", () => ImGuiEx.TextCopy(col, x.Struct()->ModelContainer.ModelCharaId.ToString("x"))));
             Entries.Add(new("Tar", () => ImGuiEx.Text(col, x.IsTargetable.ToString())));
             Entries.Add(new("Vis", () => ImGuiEx.Text(col, x.IsCharacterVisible().ToString())));
@@ -85,7 +85,7 @@ public unsafe class ObjectExplorer : SplatoonScript
         var ret = new Element(0)
         {
             overlayPlaceholders = true,
-            overlayText = $"C: {b.Name} {b.CastActionId} gid: {b.GameObjectId.ToString("x")} /nid: {b.NameId}/did: {b.DataId}",
+            overlayText = $"C: {b.Name} {b.CastActionId} gid: {b.GameObjectId.ToString("x")} /nid: {b.NameId}/did: {b.BaseId}",
             overlayTextColor = b.IsCasting ? EColor.White.ToUint() : ImGuiColors.DalamudGrey.ToUint(),
             overlayBGColor = ImGuiEx.Vector4FromRGBA(0x000000CC).ToUint(),
         };

@@ -23,10 +23,10 @@ public class P2_AutoTargetCrystal : SplatoonScript
     }
 
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(2, "Garume");
+    public override Metadata? Metadata => new(3, "Garume");
 
-    private IEnumerable<IBattleNpc> LightCrystals => Svc.Objects.Where(x => x.DataId == 0x45A3).OfType<IBattleNpc>();
-    private IBattleNpc? IceCrystal => Svc.Objects.FirstOrDefault(x => x.DataId == 0x45A5) as IBattleNpc;
+    private IEnumerable<IBattleNpc> LightCrystals => Svc.Objects.Where(x => x.BaseId == 0x45A3).OfType<IBattleNpc>();
+    private IBattleNpc? IceCrystal => Svc.Objects.FirstOrDefault(x => x.BaseId == 0x45A5) as IBattleNpc;
 
     public Config C => Controller.GetConfig<Config>();
 

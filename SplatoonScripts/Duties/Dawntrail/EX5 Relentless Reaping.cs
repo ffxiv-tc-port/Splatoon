@@ -14,7 +14,7 @@ public class EX5_Relentless_Reaping : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1296];
 
-    public override Metadata Metadata => new(1, "damolitionn");
+    public override Metadata Metadata => new(2, "damolitionn");
     // Cast VFXs
     private readonly Dictionary<string, string> vfxToMechanic = new()
     {
@@ -41,7 +41,7 @@ public class EX5_Relentless_Reaping : SplatoonScript
 
     private uint RelentlessReaping = 44564;
 
-    private IBattleNpc? Necron => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == 18699 && b.IsTargetable) as IBattleNpc;
+    private IBattleNpc? Necron => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == 18699 && b.IsTargetable) as IBattleNpc;
 
     public override void OnSetup()
     {
@@ -85,7 +85,7 @@ public class EX5_Relentless_Reaping : SplatoonScript
 
         if (castVfxToIndex.ContainsKey(vfxPath))
         {
-            var obj = Svc.Objects.OfType<IGameObject>().FirstOrDefault(o => o.DataId == 18757 && o.GameObjectId == target);
+            var obj = Svc.Objects.OfType<IGameObject>().FirstOrDefault(o => o.BaseId == 18757 && o.GameObjectId == target);
 
             if (obj != null)
             {
