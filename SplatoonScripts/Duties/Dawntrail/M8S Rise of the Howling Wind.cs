@@ -13,6 +13,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using ECommons.Logging;
+using Player = ECommons.GameHelpers.Player;
+
+using ECommons.DalamudServices.Legacy;
 
 namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 internal class M8S_Rise_of_the_Howling_Wind : SplatoonScript
@@ -107,7 +110,7 @@ internal class M8S_Rise_of_the_Howling_Wind : SplatoonScript
      */
     #region Public Fields
     public override HashSet<uint>? ValidTerritories => [1263];
-    public override Metadata? Metadata => new(5, "Redmoon, NightmareXIV");
+    public override Metadata? Metadata => new(6, "Redmoon, NightmareXIV");
     #endregion
 
     /*

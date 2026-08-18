@@ -17,13 +17,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Player = ECommons.GameHelpers.Player;
+
+using ECommons.DalamudServices.Legacy;
 
 namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 public unsafe class EX4_Escelons_Fall : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1271];
 
-    public override Metadata? Metadata => new(8, "NightmareXIV, Redmoonwow");
+    public override Metadata? Metadata => new(9, "NightmareXIV, Redmoonwow");
 
     private uint StatusCloseFar = 2970;
     private uint StatusParamClose = 758;
