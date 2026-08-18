@@ -42,6 +42,42 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
         NorthWest = 315
     }
 
+    // 本腳本的設定介面早已是繁體中文(1ef111cc),但 ImGuiEx.EnumCombo 沒有拿到 names 時
+    // ECommons 直接畫 value.ToString(),所以標籤中文、選項英文。這幾張表只覆寫顯示字串,
+    // 寫回設定的列舉值完全不變。
+    // 減益名稱取自台服 Status 表:0x99E 黑暗大暴雪 / 0x99F 黑暗大勁風 / 0x996 黑暗神聖 /
+    // 0x99D 黑暗大水花 / 0x99C 暗炎噴發。紅/藍沿用本檔既有的講法(上方就有「紅冰」「紅風」
+    // 「藍色減益」),沒有改成官方的聖龍爪/聖龍牙。
+    private static readonly Dictionary<Direction, string> DirectionNames = new()
+    {
+        [Direction.North] = "北",
+        [Direction.NorthEast] = "東北",
+        [Direction.East] = "東",
+        [Direction.SouthEast] = "東南",
+        [Direction.South] = "南",
+        [Direction.SouthWest] = "西南",
+        [Direction.West] = "西",
+        [Direction.NorthWest] = "西北"
+    };
+
+    private static readonly Dictionary<MoveType, string> MoveTypeNames = new()
+    {
+        [MoveType.RedBlizzardWest] = "紅・黑暗大暴雪(西)",
+        [MoveType.RedBlizzardEast] = "紅・黑暗大暴雪(東)",
+        [MoveType.RedAeroWest] = "紅・黑暗大勁風(西)",
+        [MoveType.RedAeroEast] = "紅・黑暗大勁風(東)",
+        [MoveType.BlueBlizzard] = "藍・黑暗大暴雪",
+        [MoveType.BlueHoly] = "藍・黑暗神聖",
+        [MoveType.BlueWater] = "藍・黑暗大水花",
+        [MoveType.BlueEruption] = "藍・暗炎噴發"
+    };
+
+    private static readonly Dictionary<HitTiming, string> HitTimingNames = new()
+    {
+        [HitTiming.Early] = "較早",
+        [HitTiming.Late] = "較晚"
+    };
+
     private readonly Vector2 _center = new(100, 100);
 
     private readonly List<IBattleChara> _earlyHourglassList = [];
@@ -67,13 +103,14 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
 
     private List<float> ExtraRandomness = [];
     private bool Initialized;
-    public override Metadata? Metadata => new(12, "Garume, NightmareXIV");
+    public override Metadata? Metadata => new(13, "Garume, NightmareXIV");
 
     public override Dictionary<int, string> Changelog => new()
     {
         [10] =
             "新增大量功能並調整了整體機制流程。請確認設定，並盡可能在復盤中驗證腳本運作正常。",
-        [11] = "新增對龍爆炸前兆（爆發）的預判"
+        [11] = "新增對龍爆炸前兆（爆發）的預判",
+        [13] = "設定介面的下拉選單選項改為顯示繁體中文(原本只有標籤是中文、選項是英文)"
     };
 
     private IPlayerCharacter BasePlayer
@@ -990,7 +1027,7 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
             ImGui.Unindent();
             ImGui.Separator();
 
-            ImGuiEx.EnumCombo("命中時機", ref C.HitTiming);
+            ImGuiEx.EnumCombo("命中時機", ref C.HitTiming, names: HitTimingNames);
             ImGui.Checkbox("紅冰擊龍時是否往北", ref C.ShouldGoNorthRedBlizzard);
             ImGuiEx.HelpMarker(
                 "紅冰時，如果北邊沒有人，導引會顯示在北邊而不是南邊。");
@@ -1028,17 +1065,17 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
                 }
 
                 ImGui.Separator();
-                ImGuiEx.EnumCombo("判決1時", ref C.WhenAttack1);
-                ImGuiEx.EnumCombo("判決2時", ref C.WhenAttack2);
-                ImGuiEx.EnumCombo("判決3時", ref C.WhenAttack3);
-                ImGuiEx.EnumCombo("判決4時", ref C.WhenAttack4);
+                ImGuiEx.EnumCombo("判決1時", ref C.WhenAttack1, names: DirectionNames);
+                ImGuiEx.EnumCombo("判決2時", ref C.WhenAttack2, names: DirectionNames);
+                ImGuiEx.EnumCombo("判決3時", ref C.WhenAttack3, names: DirectionNames);
+                ImGuiEx.EnumCombo("判決4時", ref C.WhenAttack4, names: DirectionNames);
                 ImGui.Unindent();
             }
 
-            ImGuiEx.EnumCombo("西邊判決", ref C.WestSentence);
-            ImGuiEx.EnumCombo("西南判決", ref C.SouthWestSentence);
-            ImGuiEx.EnumCombo("東南判決", ref C.SouthEastSentence);
-            ImGuiEx.EnumCombo("東邊判決", ref C.EastSentence);
+            ImGuiEx.EnumCombo("西邊判決", ref C.WestSentence, names: MoveTypeNames);
+            ImGuiEx.EnumCombo("西南判決", ref C.SouthWestSentence, names: MoveTypeNames);
+            ImGuiEx.EnumCombo("東南判決", ref C.SouthEastSentence, names: MoveTypeNames);
+            ImGuiEx.EnumCombo("東邊判決", ref C.EastSentence, names: MoveTypeNames);
             ImGui.Unindent();
             ImGui.Separator();
 
@@ -1051,7 +1088,7 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
                 {
                     ImGui.Indent();
                     ImGui.Text($"位置：{element.refX}, {element.refY}");
-                    ImGuiEx.EnumCombo("編輯方向", ref _editSplitElementDirection);
+                    ImGuiEx.EnumCombo("編輯方向", ref _editSplitElementDirection, names: DirectionNames);
                     ImGui.InputFloat("編輯半徑", ref _editSplitElementRadius, 0.1f);
                     if(ImGui.Button("設定"))
                     {
@@ -1084,10 +1121,10 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
             if(C.NukemaruRewind)
             {
                 ImGui.Indent();
-                ImGuiEx.EnumCombo("東北波動時", ref C.NukemaruRewindPositionWhenNorthEastWave);
-                ImGuiEx.EnumCombo("東南波動時", ref C.NukemaruRewindPositionWhenSouthEastWave);
-                ImGuiEx.EnumCombo("西南波動時", ref C.NukemaruRewindPositionWhenSouthWestWave);
-                ImGuiEx.EnumCombo("西北波動時", ref C.NukemaruRewindPositionWhenNorthWestWave);
+                ImGuiEx.EnumCombo("東北波動時", ref C.NukemaruRewindPositionWhenNorthEastWave, names: DirectionNames);
+                ImGuiEx.EnumCombo("東南波動時", ref C.NukemaruRewindPositionWhenSouthEastWave, names: DirectionNames);
+                ImGuiEx.EnumCombo("西南波動時", ref C.NukemaruRewindPositionWhenSouthWestWave, names: DirectionNames);
+                ImGuiEx.EnumCombo("西北波動時", ref C.NukemaruRewindPositionWhenNorthWestWave, names: DirectionNames);
                 ImGui.Unindent();
             }
 
