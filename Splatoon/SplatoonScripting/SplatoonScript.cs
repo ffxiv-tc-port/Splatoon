@@ -19,6 +19,20 @@ using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace Splatoon.SplatoonScripting;
 
+/// <summary>
+/// 帶設定型別的腳本基底。繼承它就可以直接用 <c>C</c> 取用自己的設定,
+/// 不必每次寫 <c>Controller.GetConfig&lt;MyConfig&gt;()</c>。
+/// </summary>
+/// <remarks>
+/// 這是純加法:<c>SplatoonScript</c> 本身完全沒有動,既有腳本全部照舊繼承它。
+/// T 只要求 <c>new()</c>,不要求實作 <c>IEzConfig</c> —— 與上游一致。
+/// </remarks>
+public abstract class SplatoonScript<T> : SplatoonScript where T : new()
+{
+    /// <summary>本腳本的設定實例。第一次取用時才從磁碟載入。</summary>
+    public T C => Controller.GetConfig<T>();
+}
+
 public abstract class SplatoonScript
 {
     protected SplatoonScript()

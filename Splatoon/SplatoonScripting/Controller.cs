@@ -19,7 +19,10 @@ public unsafe class Controller
     internal Dictionary<string, Layout> Layouts = [];
     internal Dictionary<string, Element> Elements = [];
     internal List<TickScheduler> TickSchedulers = [];
-    internal IEzConfig? Configuration;
+    // 上游把這裡從 IEzConfig? 放寬成 object?,是為了讓 SplatoonScript<T> 的 T 不必實作
+    // IEzConfig。EzConfig.LoadConfiguration<T>/SaveConfiguration 本來就只要求 new()/object,
+    // 所以放寬不影響任何既有腳本(既有的設定類別照樣可以實作 IEzConfig)。
+    internal object? Configuration;
     internal long AutoResetAt = long.MaxValue;
 
     internal int autoIncrement = 0;
@@ -57,9 +60,9 @@ public unsafe class Controller
     /// <summary>
     /// Loads if unloaded and returns script configuration file.
     /// </summary>
-    /// <typeparam name="T">Configuration class, implementing IEzConfig</typeparam>
+    /// <typeparam name="T">Configuration class. 不需要實作 IEzConfig(上游已放寬此約束)。</typeparam>
     /// <returns>Loaded configuration</returns>
-    public T GetConfig<T>() where T : IEzConfig, new()
+    public T GetConfig<T>() where T : new()
     {
         Configuration ??= EzConfig.LoadConfiguration<T>(Script.InternalData.ConfigurationPath, false);
         return (T)Configuration;

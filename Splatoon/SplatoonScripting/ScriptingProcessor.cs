@@ -399,7 +399,22 @@ internal static partial class ScriptingProcessor
                                             var assembly = Compiler.Load(code, pdb);
                                             foreach(var t in assembly.GetTypes())
                                             {
-                                                if(t.BaseType?.FullName == "Splatoon.SplatoonScripting.SplatoonScript")
+                                                // 🔴 腳本是靠「直接基底類別的全名」被認出來的,所以新增 SplatoonScript<T> 之後
+                                                // 必須在這裡也認得它 —— 否則繼承泛型基底的腳本會**靜默地完全不被載入**
+                                                // (編得過、檔案在、清單裡就是沒有它)。
+                                                // 刻意不照抄上游的 t.BaseType.IsAssignableTo(typeof(SplatoonScript)):
+                                                // 那會連「繼承自另一個腳本類別」的深層子類也一起註冊,是行為擴大。
+                                                // 這裡維持原本的精確比對,只多認一個泛型基底。
+                                                var bt = t.BaseType;
+                                                // 泛型基底的 BaseType 是封閉型別(FullName 帶 [[...]] 的型別引數),
+                                                // 所以先取它的泛型定義再比對名字。
+                                                var btd = bt != null && bt.IsGenericType ? bt.GetGenericTypeDefinition() : bt;
+                                                // 這裡刻意沿用既有寫法用 FullName 字串比對而不是 typeof(...) ——
+                                                // 腳本組件是載進外掛自己的 AssemblyLoadContext 的,用型別識別比對要賭
+                                                // 兩邊解析到同一個 Splatoon 組件實例;比名字沒有這個賭注。
+                                                var isScript = btd?.FullName == "Splatoon.SplatoonScripting.SplatoonScript"
+                                                    || btd?.FullName == "Splatoon.SplatoonScripting.SplatoonScript`1";
+                                                if(isScript)
                                                 {
                                                     var instance = (SplatoonScript)assembly.CreateInstance(t.FullName);
                                                     instance.InternalData = new(result.path, instance)
