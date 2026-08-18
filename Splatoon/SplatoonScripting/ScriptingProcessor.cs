@@ -657,6 +657,28 @@ internal static partial class ScriptingProcessor
         }
     }
 
+    /// <summary>
+    /// 施法開始事件的第二種多載，帶完整的施法資訊（招式類型、目標、詠唱長度、朝向、目標地點）。
+    /// </summary>
+    /// <remarks>
+    /// 呼叫順序：<c>AttachedInfo.Tick</c> 一律先派這一支、再派上面的 <c>(uint, uint)</c> 那一支——
+    /// 上游是 hook（早）→ 輪詢（晚），有腳本同時 override 兩者並靠先後順序區分來源，順序顛倒會改變它們的行為。
+    /// </remarks>
+    internal static unsafe void OnStartingCast(uint sourceId, global::Splatoon.Memory.PacketActorCast* packet)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnStartingCast(sourceId, packet);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnStartingCast)); }
+            }
+        }
+    }
+
     internal static void OnMessage(string Message)
     {
         for(var i = 0; i < Scripts.Count; i++)
