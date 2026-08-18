@@ -31,13 +31,13 @@ public static class MechanicTypes
 
     public static readonly string[] Tooltips =
     [
-        "The default type for new elements. Use this if none of the other types make sense.",
-        "Danger zones. Typically this is avoidable AOE damage.",
-        "Safe zones. This zone should be safe from avoidable damage.",
-        "Soakable damage zones. Typically this is unavoidable AOE damage such as stacks, towers, or defamations.",
-        "Gaze zones. When in the zone or tethered you must look away from the origin.",
-        "Knockback zones. When in the zone you will be pushed. Should be paired with a Knockback tether.",
-        "Useful information without an associated hazard.",
+        "The default type for new elements. Use this if none of the other types make sense.".Loc(),
+        "Danger zones. Typically this is avoidable AOE damage.".Loc(),
+        "Safe zones. This zone should be safe from avoidable damage.".Loc(),
+        "Soakable damage zones. Typically this is unavoidable AOE damage such as stacks, towers, or defamations.".Loc(),
+        "Gaze zones. When in the zone or tethered you must look away from the origin.".Loc(),
+        "Knockback zones. When in the zone you will be pushed. Should be paired with a Knockback tether.".Loc(),
+        "Useful information without an associated hazard.".Loc(),
     ];
 
     public static readonly MechanicType[] Values = (MechanicType[])Enum.GetValues(typeof(MechanicType));

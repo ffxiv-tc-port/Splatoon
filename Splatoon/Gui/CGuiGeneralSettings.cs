@@ -133,7 +133,7 @@ internal partial class CGui
                     DalamudReflector.SetDtrEntryState(InfoBar.EntryName, state);
                 }
                 ImGui.SetNextItemWidth(150f);
-                ImGuiEx.EnumCombo("Priority assignment auto-loading notification", ref P.Config.ScriptPriorityNotification);
+                ImGuiEx.EnumCombo("Priority assignment auto-loading notification".Loc(), ref P.Config.ScriptPriorityNotification, names: LocEnum.Names<PriorityInfoOption>());
                 ImGuiEx.TreeNodeCollapsingHeader("Preferred Role Assignments", () =>
                 {
                     ImGuiEx.Text($"Select role assignments that you would like to assigned to yourself via autofill function");

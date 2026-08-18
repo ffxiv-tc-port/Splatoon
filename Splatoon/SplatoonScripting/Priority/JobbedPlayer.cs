@@ -17,7 +17,7 @@ public class JobbedPlayer
         if(isRole)
         {
             ImGui.SetNextItemWidth(150f);
-            ImGuiEx.EnumCombo("##selRole", ref Role);
+            ImGuiEx.EnumCombo("##selRole", ref Role, names: LocEnum.Names<RolePosition>());
         }
         else
         {

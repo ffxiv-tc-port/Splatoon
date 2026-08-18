@@ -445,7 +445,7 @@ internal unsafe partial class CGui
                 ImGuiUtils.SizedText("Target alteration:".Loc(), WidthElement);
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(200f);
-                ImGuiEx.EnumCombo("##alter", ref el.TargetAlteration);
+                ImGuiEx.EnumCombo("##alter", ref el.TargetAlteration, names: LocEnum.Names<TargetAlteration>());
 
                 ImGuiUtils.SizedText("Targetability: ".Loc(), WidthElement);
                 ImGui.SameLine();
@@ -1341,11 +1341,11 @@ internal unsafe partial class CGui
         ImGuiUtils.SizedText("Renderer:".Loc(), WidthElement);
         ImGui.SameLine();
         ImGui.SetNextItemWidth(150f);
-        ImGuiEx.EnumCombo("##renderer", ref el.RenderEngineKind);
+        ImGuiEx.EnumCombo("##renderer", ref el.RenderEngineKind, names: LocEnum.Names<RenderEngineKind>());
 
-        ImGuiUtils.SizedText("Mechanic type:", WidthElement);
-        ImGuiEx.HelpMarker("Choose a mechanic type that best represents this element.\n" +
-                "This is used for automatically setting default colors.\nOnly for DirectX11 renderer.");
+        ImGuiUtils.SizedText("Mechanic type:".Loc(), WidthElement);
+        ImGuiEx.HelpMarker(("Choose a mechanic type that best represents this element.\n" +
+                "This is used for automatically setting default colors.\nOnly for DirectX11 renderer.").Loc());
         ImGui.SameLine();
         ImGui.SetNextItemWidth(WidthElement);
         ImGuiUtils.EnumCombo("##mechtype", ref el.mechanicType, MechanicTypes.Names, MechanicTypes.Tooltips);
