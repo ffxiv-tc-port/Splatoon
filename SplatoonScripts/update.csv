@@ -201,7 +201,7 @@ SplatoonScriptsOfficial.Generic@QuestHighlighter,3,https://raw.githubusercontent
 SplatoonScriptsOfficial.Generic@QuestionableQuestQueue,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/QuestionableQuestQueue.cs
 SplatoonScriptsOfficial.Generic@ScriptEventLogger,10,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ScriptEventLogger.cs
 SplatoonScriptsOfficial.Generic@ShowEmote,6,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ShowEmote.cs
-SplatoonScriptsOfficial.Generic@ShowInfo,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ShowInfo.cs
+SplatoonScriptsOfficial.Generic@ShowInfo,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ShowInfo.cs
 SplatoonScriptsOfficial.Generic@ShowTooltipOnKey,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ShowTooltipOnKey.cs
 SplatoonScriptsOfficial.Generic@SimpleMitigations,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/SimpleMitigations.cs
 SplatoonScriptsOfficial.Generic@StatusbarFpsSwitcher,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/StatusbarFpsSwitcher.cs
