@@ -83,7 +83,7 @@ internal unsafe class TetherProcessor
                             break;
                         }
                     }
-                    var targetText = isTargetYou ? "YOU" : (targetObj is IPlayerCharacter pc ? pc.GetJob().ToString() : targetObj?.DataId.ToString() ?? targetOID.ToString());
+                    var targetText = isTargetYou ? "YOU" : (targetObj is IPlayerCharacter pc ? pc.GetJob().ToString() : targetObj?.BaseId.ToString() ?? targetOID.ToString());
                     var text = $"Tether create: TetherSource:{sourceText} TetherParam:({a2}, {a3}, {a5}) TetherTarget:{targetText}";
                     PluginLog.Verbose(text);
                     Logger.Log(text);

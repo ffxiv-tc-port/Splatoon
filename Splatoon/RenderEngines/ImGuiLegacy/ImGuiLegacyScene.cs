@@ -21,7 +21,7 @@ internal class ImGuiLegacyScene : IDisposable
 
     private void Update(object _)
     {
-        if(Svc.ClientState.LocalPlayer != null)
+        if(Svc.Objects.LocalPlayer != null)
         {
             CamAngleX = Camera.GetAngleX() + Math.PI;
             if(CamAngleX > Math.PI) CamAngleX -= 2 * Math.PI;

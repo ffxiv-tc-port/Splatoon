@@ -17,7 +17,7 @@ public static unsafe class LayoutUtils
             return (e.refActorNameIntl.Get(e.refActorName) == String.Empty || IsNameMatches(e, o)) &&
              (e.refActorModelID == 0 || (o is ICharacter c && c.Struct()->ModelContainer.ModelCharaId == e.refActorModelID)) &&
              (e.refActorObjectID == 0 || o.EntityId == e.refActorObjectID) &&
-             (e.refActorDataID == 0 || o.DataId == e.refActorDataID) &&
+             (e.refActorDataID == 0 || o.BaseId == e.refActorDataID) &&
              (e.refActorNPCID == 0 || o.Struct()->GetNameId() == e.refActorNPCID) &&
              (e.refActorPlaceholder.Count == 0 || e.refActorPlaceholder.Any(x => ResolvePlaceholder(x) == o.Address)) &&
              (e.refActorNPCNameID == 0 || (o is ICharacter c2 && c2.NameId == e.refActorNPCNameID)) &&
@@ -30,7 +30,7 @@ public static unsafe class LayoutUtils
             if(e.refActorComparisonType == 0 && IsNameMatches(e, o)) return true;
             if(e.refActorComparisonType == 1 && o is ICharacter c && c.Struct()->ModelContainer.ModelCharaId == e.refActorModelID) return true;
             if(e.refActorComparisonType == 2 && o.EntityId == e.refActorObjectID) return true;
-            if(e.refActorComparisonType == 3 && o.DataId == e.refActorDataID) return true;
+            if(e.refActorComparisonType == 3 && o.BaseId == e.refActorDataID) return true;
             if(e.refActorComparisonType == 4 && o.Struct()->GetNameId() == e.refActorNPCID) return true;
             if(e.refActorComparisonType == 5 && e.refActorPlaceholder.Any(x => ResolvePlaceholder(x) == o.Address)) return true;
             if(e.refActorComparisonType == 6 && o is ICharacter c2 && c2.NameId == e.refActorNPCNameID) return true;
@@ -81,7 +81,7 @@ public static unsafe class LayoutUtils
     {
         if(e.refTargetYou)
         {
-            return ((e.refActorTargetingYou == 1 && a.TargetObjectId != Svc.ClientState.LocalPlayer.EntityId) || (e.refActorTargetingYou == 2 && a.TargetObjectId == Svc.ClientState.LocalPlayer.EntityId));
+            return ((e.refActorTargetingYou == 1 && a.TargetObjectId != Svc.Objects.LocalPlayer.EntityId) || (e.refActorTargetingYou == 2 && a.TargetObjectId == Svc.Objects.LocalPlayer.EntityId));
         }
 
         return false;
@@ -372,7 +372,7 @@ public static unsafe class LayoutUtils
         {
             if(Svc.Targets.Target != null)
             {
-                var dist = Vector3.Distance(Svc.Targets.Target.GetPositionXZY(), Utils.GetPlayerPositionXZY()) - (layout.DistanceLimitTargetHitbox ? Svc.Targets.Target.HitboxRadius : 0) - (layout.DistanceLimitMyHitbox ? Svc.ClientState.LocalPlayer.HitboxRadius : 0);
+                var dist = Vector3.Distance(Svc.Targets.Target.GetPositionXZY(), Utils.GetPlayerPositionXZY()) - (layout.DistanceLimitTargetHitbox ? Svc.Targets.Target.HitboxRadius : 0) - (layout.DistanceLimitMyHitbox ? Svc.Objects.LocalPlayer.HitboxRadius : 0);
                 if(!(dist >= layout.MinDistance && dist < layout.MaxDistance)) return false;
             }
             else

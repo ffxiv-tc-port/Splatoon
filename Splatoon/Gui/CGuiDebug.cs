@@ -89,11 +89,11 @@ internal unsafe partial class CGui
         ImGui.SetNextItemWidth(60f);
         ImGui.DragInt($"Message concurrency", ref p.dequeueConcurrency, float.Epsilon);
         ImGui.Separator();
-        if(Svc.ClientState.LocalPlayer != null)
+        if(Svc.Objects.LocalPlayer != null)
         {
             var mypos = Utils.GetPlayerPositionXZY();
             ImGuiEx.Text("My pos XYZ: \n" + mypos.X + "\n" + mypos.Y + "\n" + mypos.Z);
-            ImGuiEx.Text("Rotation: " + Svc.ClientState.LocalPlayer.Rotation);
+            ImGuiEx.Text("Rotation: " + Svc.Objects.LocalPlayer.Rotation);
             var tar = Svc.Targets.Target;
             if(tar != null)
             {
@@ -130,15 +130,15 @@ internal unsafe partial class CGui
         }
         ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(s2wb ? Colors.Green : Colors.Red), "X:" + s2wrx + "\nY:" + s2wry);
         ImGui.Separator();
-        if(Svc.ClientState.LocalPlayer != null)
+        if(Svc.Objects.LocalPlayer != null)
         {
-            ImGuiEx.Text($"Player+1 distance: {Vector3.Distance(Svc.ClientState.LocalPlayer.Position, Svc.ClientState.LocalPlayer.Position + new Vector3(1, 0, 0))}");
-            ImGuiEx.Text($"Player+1+1 distance: {Vector3.Distance(Svc.ClientState.LocalPlayer.Position + new Vector3(1, 0, 0), Svc.ClientState.LocalPlayer.Position + new Vector3(2, 0, 0))}");
-            Utils.WorldToScreen(Svc.ClientState.LocalPlayer.Position, out var v1);
-            Utils.WorldToScreen(Svc.ClientState.LocalPlayer.Position + new Vector3(1, 0, 0), out var v2);
-            Utils.WorldToScreen(Svc.ClientState.LocalPlayer.Position + new Vector3(2, 0, 0), out var v3);
-            Utils.WorldToScreen(Svc.ClientState.LocalPlayer.Position + new Vector3(3, 0, 0), out var v4);
-            Utils.WorldToScreen(Svc.ClientState.LocalPlayer.Position + new Vector3(4, 0, 0), out var v5);
+            ImGuiEx.Text($"Player+1 distance: {Vector3.Distance(Svc.Objects.LocalPlayer.Position, Svc.Objects.LocalPlayer.Position + new Vector3(1, 0, 0))}");
+            ImGuiEx.Text($"Player+1+1 distance: {Vector3.Distance(Svc.Objects.LocalPlayer.Position + new Vector3(1, 0, 0), Svc.Objects.LocalPlayer.Position + new Vector3(2, 0, 0))}");
+            Utils.WorldToScreen(Svc.Objects.LocalPlayer.Position, out var v1);
+            Utils.WorldToScreen(Svc.Objects.LocalPlayer.Position + new Vector3(1, 0, 0), out var v2);
+            Utils.WorldToScreen(Svc.Objects.LocalPlayer.Position + new Vector3(2, 0, 0), out var v3);
+            Utils.WorldToScreen(Svc.Objects.LocalPlayer.Position + new Vector3(3, 0, 0), out var v4);
+            Utils.WorldToScreen(Svc.Objects.LocalPlayer.Position + new Vector3(4, 0, 0), out var v5);
             ImGuiEx.Text($"Screen distance: {Vector2.Distance(v1, v2)}, {Vector2.Distance(v2, v3)}, {Vector2.Distance(v3, v4)}, {Vector2.Distance(v4, v5)}");
             ImGui.Separator();
         }
@@ -175,7 +175,7 @@ internal unsafe partial class CGui
                     ImGuiEx.Text($"{a.EntityId.Format()}");
                     ImGui.SameLine();
                     ImGui.SetCursorPosX(300f);
-                    ImGuiEx.Text($"{a.DataId.Format()}");
+                    ImGuiEx.Text($"{a.BaseId.Format()}");
                     ImGui.SameLine();
                     ImGui.SetCursorPosX(400f);
                     ImGuiEx.Text($"{a.Struct()->GetIsTargetable()}");
@@ -225,12 +225,12 @@ internal unsafe partial class CGui
         {
             if(Svc.Targets.Target.NotNull(out var t))
             {
-                ImGuiEx.Text($"Distance c2c 3d: {Vector3.Distance(Svc.ClientState.LocalPlayer.Position, t.Position)}");
-                ImGuiEx.Text($"Distance c2c 2d: {Vector2.Distance(Svc.ClientState.LocalPlayer.Position.ToVector2(), t.Position.ToVector2())}");
-                ImGuiEx.Text($"Distance h2h 3d: {Vector3.Distance(Svc.ClientState.LocalPlayer.Position, t.Position) - Svc.ClientState.LocalPlayer.HitboxRadius - t.HitboxRadius}");
-                ImGuiEx.Text($"Distance h2h 2d: {Vector2.Distance(Svc.ClientState.LocalPlayer.Position.ToVector2(), t.Position.ToVector2()) - Svc.ClientState.LocalPlayer.HitboxRadius - t.HitboxRadius}");
-                ImGuiEx.Text($"Distance c2h 3d: {Vector3.Distance(Svc.ClientState.LocalPlayer.Position, t.Position) - Svc.ClientState.LocalPlayer.HitboxRadius}");
-                ImGuiEx.Text($"Distance c2h 2d: {Vector2.Distance(Svc.ClientState.LocalPlayer.Position.ToVector2(), t.Position.ToVector2()) - Svc.ClientState.LocalPlayer.HitboxRadius}");
+                ImGuiEx.Text($"Distance c2c 3d: {Vector3.Distance(Svc.Objects.LocalPlayer.Position, t.Position)}");
+                ImGuiEx.Text($"Distance c2c 2d: {Vector2.Distance(Svc.Objects.LocalPlayer.Position.ToVector2(), t.Position.ToVector2())}");
+                ImGuiEx.Text($"Distance h2h 3d: {Vector3.Distance(Svc.Objects.LocalPlayer.Position, t.Position) - Svc.Objects.LocalPlayer.HitboxRadius - t.HitboxRadius}");
+                ImGuiEx.Text($"Distance h2h 2d: {Vector2.Distance(Svc.Objects.LocalPlayer.Position.ToVector2(), t.Position.ToVector2()) - Svc.Objects.LocalPlayer.HitboxRadius - t.HitboxRadius}");
+                ImGuiEx.Text($"Distance c2h 3d: {Vector3.Distance(Svc.Objects.LocalPlayer.Position, t.Position) - Svc.Objects.LocalPlayer.HitboxRadius}");
+                ImGuiEx.Text($"Distance c2h 2d: {Vector2.Distance(Svc.Objects.LocalPlayer.Position.ToVector2(), t.Position.ToVector2()) - Svc.Objects.LocalPlayer.HitboxRadius}");
             }
         }
         if(ImGui.CollapsingHeader("Object Effects"))

@@ -427,12 +427,12 @@ public unsafe class Splatoon : IDalamudPlugin
             PlaceholderCache.Clear();
             LayoutAmount = 0;
             ElementAmount = 0;
-            if(LogObjects && Svc.ClientState.LocalPlayer != null)
+            if(LogObjects && Svc.Objects.LocalPlayer != null)
             {
                 foreach(var t in Svc.Objects)
                 {
                     var ischar = t is ICharacter;
-                    var obj = (t.Name.ToString(), t.EntityId, (ulong)t.Struct()->GetGameObjectId(), t.DataId, ischar ? ((ICharacter)t).Struct()->ModelContainer.ModelCharaId : 0, t.Struct()->GetNameId(), ischar ? ((ICharacter)t).NameId : 0, t.ObjectKind);
+                    var obj = (t.Name.ToString(), t.EntityId, (ulong)t.Struct()->GetGameObjectId(), t.BaseId, ischar ? ((ICharacter)t).Struct()->ModelContainer.ModelCharaId : 0, t.Struct()->GetNameId(), ischar ? ((ICharacter)t).NameId : 0, t.ObjectKind);
                     loggedObjectList.TryAdd(obj, new ObjectInfo());
                     loggedObjectList[obj].ExistenceTicks++;
                     loggedObjectList[obj].IsChar = ischar;
@@ -448,7 +448,7 @@ public unsafe class Splatoon : IDalamudPlugin
                         loggedObjectList[obj].Targetable = t.Struct()->GetIsTargetable();
                         if(loggedObjectList[obj].Targetable) loggedObjectList[obj].TargetableTicks++;
                     }
-                    loggedObjectList[obj].Distance = Vector3.Distance(Svc.ClientState.LocalPlayer.Position, t.Position);
+                    loggedObjectList[obj].Distance = Vector3.Distance(Svc.Objects.LocalPlayer.Position, t.Position);
                     loggedObjectList[obj].HitboxRadius = t.HitboxRadius;
                     loggedObjectList[obj].Life = t.GetLifeTimeSeconds();
                 }
@@ -459,7 +459,7 @@ public unsafe class Splatoon : IDalamudPlugin
             }
             PlayerPosCache = null;
             S.RenderManager.ClearDisplayObjects();
-            if(Svc.ClientState.LocalPlayer != null)
+            if(Svc.Objects.LocalPlayer != null)
             {
                 PhaseUpdater.UpdatePhaseIfNeeded();
                 if(ChatMessageQueue.Count > 5 * dequeueConcurrency)
@@ -481,8 +481,8 @@ public unsafe class Splatoon : IDalamudPlugin
                     }
                 }
                 //if (CurrentChatMessages.Count > 0) PluginLog.Verbose($"Messages dequeued: {CurrentChatMessages.Count}");
-                var pl = Svc.ClientState.LocalPlayer;
-                if(Svc.ClientState.LocalPlayer.Address == nint.Zero)
+                var pl = Svc.Objects.LocalPlayer;
+                if(Svc.Objects.LocalPlayer.Address == nint.Zero)
                 {
                     Log("Pointer to LocalPlayer.Address is zero");
                     return;

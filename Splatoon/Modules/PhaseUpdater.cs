@@ -16,7 +16,7 @@ internal static class PhaseUpdater
         {
             foreach(var x in Svc.Objects)
             {
-                if((x.DataId == 12604) && x.IsTargetable)
+                if((x.BaseId == 12604) && x.IsTargetable)
                 {
                     if(P.Phase != 2)
                     {
@@ -34,7 +34,7 @@ internal static class PhaseUpdater
         {
             if(cat == DirectorUpdateCategory.Commence || cat == DirectorUpdateCategory.Recommence)
             {
-                if(Svc.Objects.Any(x => x.DataId.EqualsAny(12601u, 12602u, 12603u) && x.IsTargetable))
+                if(Svc.Objects.Any(x => x.BaseId.EqualsAny(12601u, 12602u, 12603u) && x.IsTargetable))
                 {
                     P.Phase = 1;
                     PluginLog.Debug($"Forcing phase to phase 1 (director update)");

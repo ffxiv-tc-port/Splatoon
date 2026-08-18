@@ -92,7 +92,7 @@ public static unsafe class AttachedInfo
             {
                 if(obj is ICharacter c)
                 {
-                    var targetText = c.AddressEquals(Svc.ClientState.LocalPlayer) ? "me" : (c is IPlayerCharacter pc ? pc.GetJob().ToString() : c.DataId.ToString() ?? "Unknown");
+                    var targetText = c.AddressEquals(Svc.Objects.LocalPlayer) ? "me" : (c is IPlayerCharacter pc ? pc.GetJob().ToString() : c.BaseId.ToString() ?? "Unknown");
                     var text = $"VFX {vfxPath} spawned on {targetText} npc id={c.NameId}, model id={c.Struct()->ModelContainer.ModelCharaId}, name npc id={c.NameId}, position={c.Position}, name={c.Name}";
                     P.ChatMessageQueue.Enqueue(text);
                     if(P.Config.Logging) Logger.Log(text);
@@ -100,7 +100,7 @@ public static unsafe class AttachedInfo
                 }
                 else
                 {
-                    var text = $"VFX {vfxPath} spawned on {obj.DataId} npc id={obj.Struct()->GetNameId()}, position={obj.Position}";
+                    var text = $"VFX {vfxPath} spawned on {obj.BaseId} npc id={obj.Struct()->GetNameId()}, position={obj.Position}";
                     P.ChatMessageQueue.Enqueue(text);
                     if(P.Config.Logging) Logger.Log(text);
                     if(obj is IBattleNpc) P.LogWindow.Log(text);

@@ -430,7 +430,7 @@ internal unsafe partial class CGui
                     if(ImGui.Button("Target".Loc() + "##btarget"))
                     {
                         el.refActorNameIntl.CurrentLangString = Svc.Targets.Target.Name.ToString();
-                        el.refActorDataID = Svc.Targets.Target.DataId;
+                        el.refActorDataID = Svc.Targets.Target.BaseId;
                         el.refActorObjectID = Svc.Targets.Target.EntityId;
                         if(Svc.Targets.Target is ICharacter c)
                         {

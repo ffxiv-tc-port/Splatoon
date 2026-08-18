@@ -809,7 +809,7 @@ public static unsafe class Utils
     public static float GetAdditionalRotation(this Element e, float cx, float cy, float angle)
     {
         if(!e.FaceMe) return e.AdditionalRotation + angle;
-        return (e.AdditionalRotation.RadiansToDegrees() + MathHelper.GetRelativeAngle(new Vector2(cx, cy), Svc.ClientState.LocalPlayer.Position.ToVector2())).DegreesToRadians();
+        return (e.AdditionalRotation.RadiansToDegrees() + MathHelper.GetRelativeAngle(new Vector2(cx, cy), Svc.Objects.LocalPlayer.Position.ToVector2())).DegreesToRadians();
     }
 
     public static bool StartsWithIgnoreCase(this string a, string b)
@@ -863,11 +863,11 @@ public static unsafe class Utils
     //because Dalamud changed Y and Z in actor positions I have to do emulate old behavior to not break old presets
     public static Vector3 GetPlayerPositionXZY()
     {
-        if(Svc.ClientState.LocalPlayer != null)
+        if(Svc.Objects.LocalPlayer != null)
         {
             if(PlayerPosCache == null)
             {
-                PlayerPosCache = XZY(Svc.ClientState.LocalPlayer.Position);
+                PlayerPosCache = XZY(Svc.Objects.LocalPlayer.Position);
             }
             return PlayerPosCache.Value;
         }

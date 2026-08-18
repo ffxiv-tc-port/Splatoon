@@ -94,7 +94,7 @@ internal class Commands : IDisposable
                         var name = arguments.Substring(arguments.IndexOf("settarget ") + 10).Split('~');
                         var el = P.Config.LayoutsL.First(x => x.Name == name[0]).GetElementsWithSubconfiguration().First(x => x.Name == name[1]);
                         el.refActorNameIntl.CurrentLangString = Svc.Targets.Target.Name.ToString();
-                        el.refActorDataID = Svc.Targets.Target.DataId;
+                        el.refActorDataID = Svc.Targets.Target.BaseId;
                         el.refActorObjectID = Svc.Targets.Target.EntityId;
                         if(Svc.Targets.Target is ICharacter c) el.refActorModelID = (uint)c.Struct()->ModelContainer.ModelCharaId;
                         Notify.Success("Successfully set target");

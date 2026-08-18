@@ -13,7 +13,7 @@ public class Marking
     {
         if(obj.Struct()->ModelContainer.ModelCharaId != 0)
         {
-            if(Svc.ClientState.LocalPlayer.EntityId == GetMarker(index))
+            if(Svc.Objects.LocalPlayer.EntityId == GetMarker(index))
             {
                 return true;
             }
