@@ -57,7 +57,18 @@ internal partial class Program
         }
         foreach(var dir in Directory.GetDirectories(directory))
         {
-            ProcessDirectory([..path, Path.GetFileName(dir)], dir);
+            var dirName = Path.GetFileName(dir);
+            // 產生器是無條件遞迴的,不排除就會走進 SplatoonScripts/bin 與 SplatoonScripts/obj。
+            // 目前那裡的 .cs 剛好都比對不到 ": SplatoonScript" 所以 update.csv 沒被汙染,
+            // 但那是巧合不是保證 —— 一旦有腳本原始碼的複本落進建置輸出,CSV 就會多出重複行,
+            // 而且失敗是靜默的:產生器不會報錯,外掛端也只是照著多出來的那行去下載。
+            if(string.Equals(dirName, "bin", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(dirName, "obj", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"Skipping build output directory {dir}");
+                continue;
+            }
+            ProcessDirectory([..path, dirName], dir);
         }
     }
 
