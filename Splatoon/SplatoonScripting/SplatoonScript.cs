@@ -2,6 +2,7 @@
 using Dalamud.Game;
 using Dalamud.Interface.Colors;
 using ECommons;
+using ECommons.Automation.NeoTaskManager;
 using ECommons.Configuration;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
@@ -44,6 +45,12 @@ public abstract class SplatoonScript
     /// Indicates whether your script operates strictly within Splatoon, ECommons and Dalamud APIs. 
     /// </summary>
     public virtual bool Safe { get; } = false;
+
+    /// <summary>
+    /// 覆寫這個屬性可以改變本腳本的 <c>Controller.TaskManager</c> 預設組態。
+    /// 預設值逐字沿用上游:時限 30 秒、開啟除錯輸出。
+    /// </summary>
+    public virtual TaskManagerConfiguration TaskManagerConfiguration { get; } = new(timeLimitMS: 30000, showDebug: true);
 
     public InternalData InternalData { get; internal set; } = null!;
 
@@ -702,6 +709,17 @@ public abstract class SplatoonScript
             return false;
         }
         ScriptingProcessor.OnReset(this);
+        try
+        {
+            // TaskManager 是延遲建立的:腳本沒用過就是 null,這裡什麼也不做。
+            // 用過就必須在停用時釋放,否則它會繼續跑排隊中的工作。
+            Controller.TaskManagerInternal?.Dispose();
+            Controller.TaskManagerInternal = null;
+        }
+        catch(Exception ex)
+        {
+            ScriptingProcessor.LogError(this, ex, "TaskManager.Dispose");
+        }
         try
         {
             PluginLog.Information($"Disabling script {this}");
