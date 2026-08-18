@@ -245,7 +245,7 @@ SplatoonScriptsOfficial.Tests@PotionTest,2,https://raw.githubusercontent.com/ffx
 SplatoonScriptsOfficial.Tests@PriorityTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/PriorityTest.cs
 SplatoonScriptsOfficial.Tests@RedmoonTest1,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest1.cs
 SplatoonScriptsOfficial.Tests@RedmoonTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest2.cs
-SplatoonScriptsOfficial.Tests@RedmoonTest3,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest3.cs
+SplatoonScriptsOfficial.Tests@RedmoonTest3,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest3.cs
 SplatoonScriptsOfficial.Tests@RedmoonTest4,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest4.cs
 SplatoonScriptsOfficial.Tests@SendSpawnedObjects,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/SendSpawnedObjects.cs
 SplatoonScriptsOfficial.Tests@ShowPID,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ShowPID.cs
