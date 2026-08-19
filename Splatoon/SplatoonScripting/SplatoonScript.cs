@@ -217,6 +217,19 @@ public abstract class SplatoonScript
     public virtual void OnDirectorUpdate(DirectorUpdateCategory category) { }
 
     /// <summary>
+    /// 上游版本的 director update 多載,帶完整參數。只是為了讓照上游寫的腳本編得過而存在。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>台服 7.20 沒有 a8／a9,這兩個參數恆為 0。</b>
+    /// 離線反組譯實證:台服的 director update 函式在 0x140B6A260(整支只有 76 位元組),
+    /// 它只讀到第 7 個引數(<c>[rsp+0x60]</c>／<c>[rsp+0x68]</c>／<c>[rsp+0x70]</c> 分別是 a5／a6／a7),
+    /// 第 8、9 個引數的槽位<b>從頭到尾沒有被碰過</b>。
+    /// 📌 上游 81 支腳本裡**沒有任何一支** override 這個多載(全部 66 個 OnDirectorUpdate
+    /// override 都是單參數版),所以這個缺口目前不影響任何腳本。
+    /// </remarks>
+    public virtual void OnDirectorUpdate(nint directorPtr, uint targetId, DirectorUpdateCategory a3, uint a4, uint a5, int a6, int a7, int a8, int a9) { }
+
+    /// <summary>
     /// Will be called after object creation.
     /// </summary>
     /// <param name="newObjectPtr"></param>
