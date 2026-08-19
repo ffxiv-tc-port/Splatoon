@@ -66,7 +66,18 @@ public unsafe class Controller
     /// </summary>
     public float CombatMiliseconds => InCombat ? Environment.TickCount64 - P.CombatStarted : -1;
 
-    public int Scene => *global::Splatoon.Memory.Scene.ActiveScene;
+    /// <summary>
+    /// 場景編號取不到時回傳的哨兵值。真實場景編號讀的是一個 byte（0..255），
+    /// 所以 -1 不可能與任何真實場景相撞；本 repo 內建腳本對 Scene 的用法全是
+    /// 與 1..7 做 == / != 比較，拿到 -1 的行為與「不是那個場景」一致。
+    /// </summary>
+    public const int SceneUnavailable = -1;
+
+    /// <summary>
+    /// Indicates current scene. Returns <see cref="SceneUnavailable"/> (-1) when the
+    /// graphics environment manager is not available yet (title/loading screen).
+    /// </summary>
+    public int Scene => global::Splatoon.Memory.Scene.Current ?? SceneUnavailable;
 
     /// <summary>
     /// Loads if unloaded and returns script configuration file.

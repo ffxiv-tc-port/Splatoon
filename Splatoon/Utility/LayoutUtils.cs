@@ -357,7 +357,13 @@ public static unsafe class LayoutUtils
         if(!layout.Group.IsNullOrEmpty() && P.Config.DisabledGroups.Contains(layout.Group)) return false;
         if(layout.DisableInDuty && Svc.Condition[ConditionFlag.BoundByDuty]) return false;
         if((layout.ZoneLockH.Count > 0 && !layout.ZoneLockH.Contains(Svc.ClientState.TerritoryType)).Invert(layout.IsZoneBlacklist)) return false;
-        if(layout.Scenes.Count > 0 && !layout.Scenes.Contains(*Scene.ActiveScene)) return false;
+        // 場景過濾：環境管理器還沒建立時場景是「不知道」，照本函式其餘條件的語意
+        // （不符合就 return false）一律當成不符合 —— 失敗方向是「不畫」，不是崩潰。
+        if(layout.Scenes.Count > 0)
+        {
+            var activeScene = Scene.Current;
+            if(activeScene == null || !layout.Scenes.Contains(activeScene.Value)) return false;
+        }
         if(layout.Phase != 0 && layout.Phase != P.Phase) return false;
         if(layout.JobLockH.Count > 0 && !layout.JobLockH.Contains(Player.Job)) return false;
         var inCombat = Svc.Condition[ConditionFlag.InCombat];

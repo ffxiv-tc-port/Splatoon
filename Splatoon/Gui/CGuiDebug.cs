@@ -61,7 +61,9 @@ internal unsafe partial class CGui
         {
             var e = (nint)EnvManager.Instance();
             ImGuiEx.TextCopy($"Inst: {e:X16}");
-            ImGuiEx.Text($"36: {*(byte*)(e + 36)}");
+            // EnvManager 是 isPointer 型的 StaticAddress，尚未建立時是 0；
+            // 這個除錯面板原本無條件對 0 + 36 解參考（攔不到的 AVE）。
+            ImGuiEx.Text($"36: {(e == nint.Zero ? "?" : (*(byte*)(e + 36)).ToString())}");
         }
         if(ImGui.CollapsingHeader("CFC debug"))
         {
