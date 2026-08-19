@@ -24,7 +24,7 @@ namespace SplatoonScriptsOfficial.Tests;
 public unsafe class GenericTest4 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => new();
-    public override Metadata? Metadata { get; } = new(6, "NightmareXIV");
+    public override Metadata? Metadata { get; } = new(7, "NightmareXIV");
     int a1;
     string Filter = "";
 
@@ -201,16 +201,20 @@ public unsafe class GenericTest4 : SplatoonScript
 
         public class DutyInfo : AtkReader
         {
-            private nint unitBasePtr;
-            private int beginOffset;
             public DutyInfo(nint UnitBasePtr, int BeginOffset = 0) : base(UnitBasePtr, BeginOffset)
             {
-                this.unitBasePtr = UnitBasePtr;
-                this.beginOffset = BeginOffset;
             }
 
             public string DutyName => ReadSeString(0).ExtractText();
-            public string DutyLevel => MemoryHelper.ReadStringNullTerminated((nint)((AtkUnitBase*)unitBasePtr)->AtkValues[beginOffset + 1].String.Value);
+
+            // 🔴 原本這一行繞過 AtkReader 自己存 UnitBasePtr／BeginOffset 再裸讀:
+            //    ((AtkUnitBase*)unitBasePtr)->AtkValues[beginOffset + 1].String.Value
+            //    三個都沒驗 —— AtkValues 是指標欄位(可為 null)、索引沒和 AtkValuesCount 比、
+            //    型別對也不代表 String.Value 非空。任一條不成立就是 AccessViolationException,
+            //    而 AVE 在 .NET Core 是 corrupted-state exception,try/catch 攔不到。
+            //    改走基底的 ReadString(1):它等價於同一個索引,但帶三道守衛,
+            //    讀不到回 null(與同類 DutyPF 的失敗語意一致)。
+            public string DutyLevel => ReadString(1);
             public string DutyPF => ReadString(2);
         }
     }
