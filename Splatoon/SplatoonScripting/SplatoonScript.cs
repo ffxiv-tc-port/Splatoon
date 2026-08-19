@@ -237,6 +237,23 @@ public abstract class SplatoonScript
     /// <param name="replaying"></param>
     public virtual void OnActorControl(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, ulong targetId, byte replaying) { }
 
+    /// <summary>
+    /// 上游(全球服 7.3)版本的 ActorControl 多載,多了 <paramref name="p7"/>／<paramref name="p8"/>。
+    /// 只是為了讓照上游寫的腳本編得過而存在。<b>VOLATILE DATA WARNING.</b>
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>台服 7.20 沒有 p7／p8,這兩個參數恆為 0。</b>
+    /// 離線反組譯實證(image base 0x140000000):呼叫點 0x14080ADEA 之前,
+    /// 遊戲只寫到 <c>[rsp+0x48]</c> ——
+    /// <c>[rsp+0x40]</c> 是 qword 的 <paramref name="targetId"/>(值 0xE0000000)、
+    /// <c>[rsp+0x48]</c> 是 byte 的 <paramref name="replaying"/>,總共**只有 10 個引數**。
+    /// 上游那兩個多出來的參數是全球服後續版本才加的。
+    /// ⚠️ 所以這裡**刻意不照抄上游的 12 參數委派去掛 hook** —— 那樣會讓
+    /// <paramref name="targetId"/> 與 <paramref name="replaying"/> 整個往後錯兩格讀到未寫入的堆疊,
+    /// 而且是靜默的。真實值照 10 參數版傳,p7／p8 補 0。
+    /// </remarks>
+    public virtual void OnActorControl(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying) { }
+
     [Obsolete($"Please use {nameof(OnActionEffectEvent)}")]
     public virtual void OnActionEffect(uint ActionID, ushort animationID, ActionEffectType type, uint sourceID, ulong targetOID, uint damage) { }
 

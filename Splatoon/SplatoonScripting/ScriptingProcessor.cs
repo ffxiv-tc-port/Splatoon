@@ -816,6 +816,25 @@ internal static partial class ScriptingProcessor
                 catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnActorControl)); }
             }
         }
+        // 舊多載先派完再派上游那個 12 參數多載,既有腳本的相對執行順序不變。
+        // 🔴 台服 7.20 的 ActorControl 只有 10 個引數(離線反組譯實證,詳見
+        // SplatoonScript 上該多載的註解),所以 p7／p8 補 0、targetId／replaying 照真實值傳。
+        OnActorControlWithP7P8(sourceId, command, p1, p2, p3, p4, p5, p6, 0, 0, targetId, replaying);
+    }
+
+    private static void OnActorControlWithP7P8(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnActorControl(sourceId, command, p1, p2, p3, p4, p5, p6, p7, p8, targetId, replaying);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnActorControl)); }
+            }
+        }
     }
 
     internal static void OnActionEffectEvent(ActionEffectSet set)
