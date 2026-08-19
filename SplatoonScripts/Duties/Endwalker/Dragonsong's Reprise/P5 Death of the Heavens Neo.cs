@@ -20,22 +20,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SplatoonScriptsOfficial.Duties.Endwalker.Dragonsong_s_Reprise;
+
 public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
 {
-    public override Metadata Metadata { get; } = new(6, "NightmareXIV");
+    public override Metadata Metadata { get; } = new(8, "NightmareXIV");
     public override HashSet<uint>? ValidTerritories { get; } = [Raids.Dragonsongs_Reprise_Ultimate];
 
-    IPlayerCharacter BasePlayer
-    {
-        get
-        {
-            if(Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.DutyRecorderPlayback] && C.BPO != "" && Players.TryGetFirst(x => x.GetNameWithWorld() == C.BPO, out var p))
-            {
-                return p;
-            }
-            return Player.Object;
-        }
-    }
     IEnumerable<IPlayerCharacter> Players => Controller.GetPartyMembers();
     IPlayerCharacter[] Dooms => Players.Where(x => x.StatusList.Any(s => s.StatusId == 2976)).ToArray();
     IPlayerCharacter[] NonDooms => Players.Where(x => !x.StatusList.Any(s => s.StatusId == 2976)).ToArray();
@@ -117,8 +107,8 @@ public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
             x.Value.Enabled = false;
         });
         if(Controller.Scene != 5) return;
-        if(Shapes.TryGetValue(BasePlayer.EntityId, out var myShape) 
-            && Shapes.TryGetFirst(x => x.Value == myShape 
+        if(Shapes.TryGetValue(BasePlayer.EntityId, out var myShape)
+            && Shapes.TryGetFirst(x => x.Value == myShape
             && x.Key != BasePlayer.EntityId, out var myPartnerId) && myPartnerId.Key.TryGetObject(out var myPartner)
             && Controller.GetPartyMembers().Any(x => x.StatusList.Any(s => s.StatusId == 2976)))
         {
@@ -155,7 +145,7 @@ public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
             {
                 Controller.GetElementByName(doomOnMe ? "LineDoomGreen" : "LineCleanGreen").Enabled = true;
             }
-            var col = GetRainbowColor(1).ToUint();
+            var col = Controller.AttentionColor;
             Controller.GetRegisteredElements().Where(x => x.Key.StartsWith("LineDoom") || x.Key.StartsWith("LineClean")).Each(x => x.Value.color = col);
             Controller.GetElementByName("KBHelper").Enabled = true;
         }
@@ -166,8 +156,10 @@ public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
             var newPosition = GetCharacterNumberAndConfidence(iHaveDoom ? Dooms : NonDooms, BasePlayer);
             if(newPosition.Confidence > MyPosition.Confidence)
             {
-                MyPosition = newPosition; 
+                MyPosition = newPosition;
             }
+            // API13:拿來做身分比對的 DataId 一律改用 BaseId(DataId 只有查表用途才安全)。
+            // 上游 b6d8d43f 這行仍是 DataId,這是我方對上游該版的唯一差異。
             var guer = Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.BaseId == 12637);
             if(guer.Position.Z > 105)
             {
@@ -207,7 +199,7 @@ public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
             }
             UpdatePositions();
             var str = (iHaveDoom ? "Doom" : "Clean") + (MyPosition.Num).ToString();
-            if(EzThrottler.Throttle("doomeam", 200)) DuoLog.Information(str+ $"{MyPosition}");
+            if(EzThrottler.Throttle("doomeam", 200)) PluginLog.Information(str + $"{MyPosition}");
         }
         else if(Dooms.Count(x => x.StatusList.Any(s => s.StatusId == 2976 && s.RemainingTime >= 17f)) == 4)
         {
@@ -289,54 +281,9 @@ public sealed class P5_Death_of_the_Heavens_Neo : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGuiEx.EnumCombo("Override position", ref C.ForceDirection);
-        ImGui.InputText("BPO", ref C.BPO);
-        if(ImGui.BeginCombo("##sel", "Select base player"))
+        if(ImGui.CollapsingHeader("Debug"))
         {
-            foreach(var x in Players)
-            {
-                if(ImGuiEx.Selectable($"{x.GetNameWithWorld()}"))
-                {
-                    C.BPO = x.GetNameWithWorld();
-                    MyPosition = default;
-                }
-            }
-            ImGui.EndCombo();
+            ImGuiEx.EnumCombo("Override position", ref C.ForceDirection);
         }
-    }
-
-    public static Vector4 GetRainbowColor(double cycleSeconds)
-    {
-        if(cycleSeconds <= 0d)
-        {
-            cycleSeconds = 1d;
-        }
-
-        var ms = Environment.TickCount64;
-        var t = (ms / 1000d) / cycleSeconds;
-        var hue = t % 1f;
-        return HsvToVector4(hue, 1f, 1f);
-    }
-
-    public static Vector4 HsvToVector4(double h, double s, double v)
-    {
-        double r = 0f, g = 0f, b = 0f;
-        var i = (int)(h * 6f);
-        var f = h * 6f - i;
-        var p = v * (1f - s);
-        var q = v * (1f - f * s);
-        var t = v * (1f - (1f - f) * s);
-
-        switch(i % 6)
-        {
-            case 0: r = v; g = t; b = p; break;
-            case 1: r = q; g = v; b = p; break;
-            case 2: r = p; g = v; b = t; break;
-            case 3: r = p; g = q; b = v; break;
-            case 4: r = t; g = p; b = v; break;
-            case 5: r = v; g = p; b = q; break;
-        }
-
-        return new Vector4((float)r, (float)g, (float)b, 1f);
     }
 }
