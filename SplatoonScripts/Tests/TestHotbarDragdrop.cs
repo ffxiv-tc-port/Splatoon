@@ -3,6 +3,7 @@ using ECommons;
 using ECommons.DalamudServices;
 using ECommons.EzHookManager;
 using ECommons.ImGuiMethods;
+using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -15,7 +16,7 @@ namespace SplatoonScriptsOfficial.Tests;
 
 public unsafe class TestHotbarDragdrop : SplatoonScript
 {
-    public override Metadata Metadata { get; } = new(1, "NightmareXIV");
+    public override Metadata Metadata { get; } = new(2, "NightmareXIV");
     public override HashSet<uint>? ValidTerritories { get; } = null;
 
     private (int Hotbar, int Slot)? HoveredSlot = null;
@@ -82,7 +83,16 @@ public unsafe class TestHotbarDragdrop : SplatoonScript
                 }
                 if(actionId == this.CurrentAction && ImGui.IsMouseReleased(ImGuiMouseButton.Left) && HoveredSlot != null && !ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow))
                 {
-                    RaptureHotbarModule.Instance()->Hotbars[HoveredSlot.Value.Hotbar].Slots[HoveredSlot.Value.Slot].Set(RaptureHotbarModule.HotbarSlotType.Action, actionId);
+                    // RaptureHotbarModule.Instance() 是手寫包裝,UIModule 為 null 時回 null。
+                    // Hotbars 是 [FixedSizeArray] 的 Span 屬性,對它判空恆為 false,
+                    // 唯一擋得住的位置是這裡的擁有者指標。
+                    var hotbarModule = RaptureHotbarModule.Instance();
+                    if(hotbarModule == null)
+                    {
+                        DuoLog.Error("Hotbar module is not available right now.");
+                        return;
+                    }
+                    hotbarModule->Hotbars[HoveredSlot.Value.Hotbar].Slots[HoveredSlot.Value.Slot].Set(RaptureHotbarModule.HotbarSlotType.Action, actionId);
                 }
             }
         }

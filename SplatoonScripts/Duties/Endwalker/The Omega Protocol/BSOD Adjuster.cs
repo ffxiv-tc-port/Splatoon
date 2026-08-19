@@ -24,7 +24,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 internal class BSOD_Adjuster : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(4, "Redmoon");
+    public override Metadata? Metadata => new(5, "Redmoon");
 
     public class CastID
     {
@@ -334,14 +334,20 @@ internal class BSOD_Adjuster : SplatoonScript
             foreach(var x in FakeParty.Get())
                 party.Add((x.Name.ToString(), x.GetJob()));
 
+            // InfoProxyCrossRealm 走 InfoModule 鏈,UIModule／InfoModule 為 null 或 proxy 未註冊時
+            // 都會回 null。跨界隊伍只是補充來源,取不到就跟「不在跨界隊伍裡」同義
+            // (GroupCount 為 0),FakeParty 那份照樣填得完,所以安靜跳過不記 log。
             var proxy = InfoProxyCrossRealm.Instance();
-            for(var i = 0; i < proxy->GroupCount; i++)
+            if(proxy != null)
             {
-                var group = proxy->CrossRealmGroups[i];
-                for(var c = 0; c < proxy->CrossRealmGroups[i].GroupMemberCount; c++)
+                for(var i = 0; i < proxy->GroupCount; i++)
                 {
-                    var x = group.GroupMembers[c];
-                    party.Add((x.Name.Read(), (Job)x.ClassJobId));
+                    var group = proxy->CrossRealmGroups[i];
+                    for(var c = 0; c < proxy->CrossRealmGroups[i].GroupMemberCount; c++)
+                    {
+                        var x = group.GroupMembers[c];
+                        party.Add((x.Name.Read(), (Job)x.ClassJobId));
+                    }
                 }
             }
 
