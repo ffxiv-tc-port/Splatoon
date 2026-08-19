@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
@@ -8,6 +9,7 @@ using ECommons.Automation.NeoTaskManager;
 using ECommons.Configuration;
 using ECommons.Events;
 using ECommons.GameFunctions;
+using ECommons.GameHelpers;
 using ECommons.Hooks;
 using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
@@ -44,6 +46,47 @@ public unsafe class Splatoon : IDalamudPlugin
     internal Commands CommandManager;
     internal Configuration Config;
     internal Dictionary<ushort, TerritoryType> Zones;
+
+    /// <summary>
+    /// 錄影回放時要「以誰的視角」解算腳本。空字串＝用本機玩家。
+    /// 一般遊玩時完全不參與判斷(見 <see cref="BasePlayer"/> 的第一個分支)。
+    /// </summary>
+    /// <remarks>
+    /// 上游在設定介面裡提供了切換這個值的下拉選單;我方目前只補 API 面,沒有搬那段 UI,
+    /// 所以這個值恆為 ""、<see cref="BasePlayer"/> 恆等於本機玩家 —— 與我方現行行為逐字相同。
+    /// </remarks>
+    public static string BasePlayerOverride = "";
+
+    /// <summary>
+    /// 腳本應該當成「我」的那個玩家。一般遊玩時就是本機玩家;
+    /// 只有在**副本錄影回放**且使用者指定了 <see cref="BasePlayerOverride"/> 時才會換人。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 可能回 <c>null</c>(未登入/切區中),呼叫端要判空 —— 與 <c>Svc.Objects.LocalPlayer</c> 同語意。
+    /// </remarks>
+    public static IPlayerCharacter BasePlayer
+    {
+        get
+        {
+            if(!Svc.Condition[ConditionFlag.DutyRecorderPlayback])
+            {
+                return Svc.Objects.LocalPlayer;
+            }
+            if(BasePlayerOverride == "")
+            {
+                return Svc.Objects.LocalPlayer;
+            }
+            foreach(var x in Svc.Objects)
+            {
+                if(x is IPlayerCharacter pc && pc.GetNameWithWorld() == BasePlayerOverride)
+                {
+                    return pc;
+                }
+            }
+            return Svc.Objects.LocalPlayer;
+        }
+    }
+
     internal long CombatStarted = 0;
     internal HashSet<Element> InjectedElements = [];
     //internal HashSet<(float x, float y, float z, float r, float angle)> draw = new HashSet<(float x, float y, float z, float r, float angle)>();

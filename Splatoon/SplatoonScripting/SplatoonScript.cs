@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Dalamud.Game;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Colors;
 using ECommons;
 using ECommons.Automation.NeoTaskManager;
@@ -7,6 +8,7 @@ using ECommons.Configuration;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.LanguageHelpers;
+using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -39,6 +41,35 @@ public abstract class SplatoonScript
     {
         Controller = new(this);
     }
+
+    /// <summary>
+    /// 腳本應該當成「我」的那個玩家。一般遊玩時等於本機玩家;
+    /// 只有在副本錄影回放且使用者指定了視角時才會換人。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 可能為 <c>null</c>(未登入/切區中),腳本要判空。
+    /// </remarks>
+    public IPlayerCharacter BasePlayer => global::Splatoon.Splatoon.BasePlayer;
+
+    private EzThrottler<string>? _ezThrottler;
+
+    /// <summary>
+    /// 本腳本專屬的時間節流器(毫秒)。第一次取用時才配置。
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ 每個腳本各有一份,key 不會和別的腳本互撞 —— 這正是它相對於靜態
+    /// <c>ECommons.Throttlers.EzThrottler</c> 的意義(那份的 key 是全域且持久的)。
+    /// ⚠️ 同一個 key 的**第一次** <c>Throttle()</c> 一律回 <c>true</c>(放行)。
+    /// </remarks>
+    public EzThrottler<string> EzThrottler => _ezThrottler ??= new();
+
+    private FrameThrottler<string>? _frameThrottler;
+
+    /// <summary>
+    /// 本腳本專屬的影格節流器。第一次取用時才配置。
+    /// </summary>
+    /// <remarks>⚠️ 與 <see cref="EzThrottler"/> 相同:每腳本一份,同 key 首次必放行。</remarks>
+    public FrameThrottler<string> FrameThrottler => _frameThrottler ??= new();
 
     /// <summary>
     /// Controller provides easy access to various helper functions that may be helpful for your script.
