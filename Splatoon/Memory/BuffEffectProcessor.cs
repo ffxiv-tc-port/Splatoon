@@ -136,7 +136,12 @@ internal unsafe class BuffEffectProcessor : IDisposable
             // New object
             if(_CharacterStatusInfoPtr[i].ObjectID != gameObject->EntityId)
             {
-                Unsafe.InitBlock(_CharacterStatusInfoPtr[i].StatusPtr, 0, (uint)sizeof(CharacterStatusInfo));
+                // 這裡要清的是「本槽位的狀態快取緩衝」，它在建構時是照
+                // sizeof(Status) * MAX_STATUS_NUM 配置的（見建構式），不是 CharacterStatusInfo 的大小。
+                // 原本傳 sizeof(CharacterStatusInfo) 只清掉緩衝開頭的一小段，其餘保留前一個
+                // 佔用同一個物件表槽位的角色留下的舊狀態；之後該角色狀態數變多時，比對迴圈會拿
+                // 那些殘留值當「上一幀的狀態」，於是發出根本沒發生過的 Remove／Gain 事件（假 buff 事件）。
+                Unsafe.InitBlock(_CharacterStatusInfoPtr[i].StatusPtr, 0, (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * MAX_STATUS_NUM);
                 _CharacterStatusInfoPtr[i].ObjectID = character->EntityId;
                 Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * (uint)statusCount);
                 continue;
