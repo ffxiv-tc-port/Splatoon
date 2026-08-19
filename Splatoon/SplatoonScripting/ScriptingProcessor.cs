@@ -640,6 +640,24 @@ internal static partial class ScriptingProcessor
                 catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnObjectEffect)); }
             }
         }
+        // 舊多載先派完再派上游那個 uint 多載。遊戲自己就是把這兩個引數當 16 位元讀的,
+        // 零延伸不會遺失資訊(詳見 SplatoonScript 上該多載的註解)。
+        OnObjectEffectWide(Target, Param1, Param2);
+    }
+
+    private static void OnObjectEffectWide(uint Target, uint Param1, uint Param2)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnObjectEffect(Target, Param1, Param2);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnObjectEffect)); }
+            }
+        }
     }
 
     internal static void OnStartingCast(uint source, uint castId)

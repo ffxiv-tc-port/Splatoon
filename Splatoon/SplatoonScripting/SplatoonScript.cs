@@ -159,6 +159,20 @@ public abstract class SplatoonScript
     public virtual void OnObjectEffect(uint target, ushort data1, ushort data2) { }
 
     /// <summary>
+    /// 上游版本的 object effect 多載,參數型別是 <see cref="uint"/> 而不是 <see cref="ushort"/>。
+    /// 值與 <see cref="OnObjectEffect(uint, ushort, ushort)"/> 完全相同,只是零延伸成 32 位元。
+    /// </summary>
+    /// <remarks>
+    /// 📌 離線反組譯實證(台服 0x141631900):遊戲自己就是把這兩個引數當 16 位元讀的
+    /// (<c>movzx r14d, dx</c> / <c>movzx ebp, r8w</c>),上游的 <see cref="uint"/> 只是加寬宣告,
+    /// 高 16 位元遊戲根本不看。⇒ 零延伸過來不會遺失任何資訊。
+    /// </remarks>
+    /// <param name="target">Targeted object's ID</param>
+    /// <param name="data1">First parameter of object effect.</param>
+    /// <param name="data2">Second parameter of object effect.</param>
+    public virtual void OnObjectEffect(uint target, uint data1, uint data2) { }
+
+    /// <summary>
     /// Will be called when a tether created between two game objects. This method will only be called if a script is enabled.
     /// </summary>
     /// <param name="source">Source object ID of pair.</param>
