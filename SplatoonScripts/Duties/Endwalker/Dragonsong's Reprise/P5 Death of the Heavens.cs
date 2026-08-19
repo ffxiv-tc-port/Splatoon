@@ -18,6 +18,7 @@ using ECommons.GameHelpers;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -52,7 +53,7 @@ public unsafe class P5_Death_of_the_Heavens : SplatoonScript
     public override HashSet<uint>? ValidTerritories => [968];
     private Config C => Controller.GetConfig<Config>();
 
-    public override Metadata? Metadata => new(9, "Garume, damolitionn");
+    public override Metadata? Metadata => new(10, "Garume, damolitionn");
 
     private IBattleChara? Thordan => Svc.Objects.OfType<IBattleChara>()
         .FirstOrDefault(x => x.NameId == 0xE30 && x.IsCharacterVisible());
@@ -181,7 +182,7 @@ public unsafe class P5_Death_of_the_Heavens : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGui.Text("General");
+        ImGui.Text("General".Loc());
         ImGui.Indent();
         C.PriorityData.Draw();
         ImGui.Text("Pre Playstation Split");

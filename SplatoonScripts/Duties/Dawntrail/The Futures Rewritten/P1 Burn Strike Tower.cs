@@ -4,6 +4,7 @@ using ECommons.Configuration;
 using ECommons.GameHelpers;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.SimpleGui;
 using Dalamud.Bindings.ImGui;
@@ -30,7 +31,7 @@ public class P1_Burn_Strike_Tower : SplatoonScript
     private IBattleNpc? _myTower;
     private State _state = State.None;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(5, "Garume");
+    public override Metadata? Metadata => new(6, "Garume");
     private Config C => Controller.GetConfig<Config>();
 
     private int TowerCount(uint castId)
@@ -40,7 +41,7 @@ public class P1_Burn_Strike_Tower : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGui.Text("General");
+        ImGui.Text("General".Loc());
         C.PriorityData.Draw();
         ImGui.Separator();
         ImGui.Checkbox("Enabled Fixed Priority", ref C.FixEnabled);
@@ -93,9 +94,9 @@ public class P1_Burn_Strike_Tower : SplatoonScript
             ImGui.Unindent();
         }
 
-        if(ImGui.CollapsingHeader("Debug"))
+        if(ImGui.CollapsingHeader("Debug".Loc()))
         {
-            ImGui.Text("State: " + _state);
+            ImGui.Text("State: ".Loc() + _state);
             ImGui.Text("My Tower: " + _myTower);
             ImGui.Text("Towers: ");
             foreach(var tower in _currentTowers)

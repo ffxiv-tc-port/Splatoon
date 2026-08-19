@@ -2,6 +2,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.DalamudServices.Legacy;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.Throttlers;
 using Dalamud.Bindings.ImGui;
@@ -20,7 +21,7 @@ public class AutoTargetSwitcher : SplatoonScript
     private float _lastMinPercentage;
 
     public override HashSet<uint>? ValidTerritories => [];
-    public override Metadata? Metadata => new(2, "Garume");
+    public override Metadata? Metadata => new(3, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -51,7 +52,7 @@ public class AutoTargetSwitcher : SplatoonScript
 
         ImGui.SliderFloat("Acceptable Percentage", ref C.AcceptablePercentage, 0f, 100f);
         ImGui.SliderInt("Interval", ref C.Interval, 100, 1000);
-        ImGui.Checkbox("Debug", ref C.Debug);
+        ImGui.Checkbox("Debug".Loc(), ref C.Debug);
     }
 
     private void Alert(string message)

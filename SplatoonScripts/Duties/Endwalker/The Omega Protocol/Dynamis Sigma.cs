@@ -7,6 +7,7 @@ using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -25,7 +26,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
     {
         public override HashSet<uint> ValidTerritories => [1122];
 
-        public override Metadata? Metadata => new(8, "NightmareXIV");
+        public override Metadata? Metadata => new(9, "NightmareXIV");
 
         public const uint TowerSingle = 2013245;
         public const uint TowerDual = 2013246;
@@ -592,16 +593,16 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
             ImGui.Checkbox($"Disable chat output", ref Conf.NoChat);
 
-            if(ImGui.CollapsingHeader("Debug"))
+            if(ImGui.CollapsingHeader("Debug".Loc()))
             {
                 ImGuiEx.TextCopy($"{(nint)MKC:X16}");
                 ImGui.InputFloat3("Omega pos", ref OmegaPos);
-                if(ImGui.Button("Copy"))
+                if(ImGui.Button("Copy".Loc()))
                 {
                     ImGui.SetClipboardText(JsonConvert.SerializeObject(OmegaPos));
                 }
                 ImGui.SameLine();
-                if(ImGui.Button("Paste"))
+                if(ImGui.Button("Paste".Loc()))
                 {
                     GenericHelpers.Safe(() => { OmegaPos = JsonConvert.DeserializeObject<Vector3>(ImGui.GetClipboardText()); });
                 }

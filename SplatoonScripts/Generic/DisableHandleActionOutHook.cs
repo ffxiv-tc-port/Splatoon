@@ -1,6 +1,7 @@
 ﻿using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -20,7 +21,7 @@ public unsafe class DisableHandleActionOutHook : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => null;
 
-    public override Metadata? Metadata => new(2, "NightmareXIV");
+    public override Metadata? Metadata => new(3, "NightmareXIV");
 
     public override void OnEnable()
     {
@@ -44,7 +45,7 @@ public unsafe class DisableHandleActionOutHook : SplatoonScript
     public override void OnSettingsDraw()
     {
         ImGuiEx.Text($"Hook enabled: {DalamudReflector.GetService("Dalamud.Game.Gui.GameGui").GetFoP("handleActionOutHook").GetFoP("IsEnabled")}");
-        if(ImGui.Button("Disable")) Disable();
+        if(ImGui.Button("Disable".Loc())) Disable();
         if(ImGui.Button("Enable")) Enable();
         if(ImGui.Button("Load bunch of C# libraries"))
         {

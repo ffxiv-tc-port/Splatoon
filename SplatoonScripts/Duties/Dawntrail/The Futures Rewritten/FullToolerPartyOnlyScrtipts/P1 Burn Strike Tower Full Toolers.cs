@@ -5,6 +5,7 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.SimpleGui;
@@ -59,7 +60,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
     private State _state = State.None;
     private List<PartyData> _partyDataList = [];
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(7, "Garume, Redmoon");
+    public override Metadata? Metadata => new(8, "Garume, Redmoon");
 
     private int TowerCount(uint castId)
     {
@@ -70,7 +71,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
     {
         if(ImGui.CollapsingHeader("Debug"))
         {
-            ImGui.Text("State: " + _state);
+            ImGui.Text("State: ".Loc() + _state);
             ImGui.Text("Towers: ");
             foreach(var tower in _currentTowers)
                 ImGui.Text(tower + " " + tower?.Position);
@@ -365,10 +366,10 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
 
         public static Direction DividePoint(Vector3 Position, float Distance, Vector3? Center = null)
         {
-            // Distance, Center‚Ì’l‚ğ—p‚¢‚ÄA‚W•ûŒü‚ÌƒxƒNƒgƒ‹‚ğ¶¬
+            // Distance, Centerï¿½Ì’lï¿½ï¿½pï¿½ï¿½ï¿½ÄAï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Ìƒxï¿½Nï¿½gï¿½ï¿½ï¿½ğ¶ï¿½
             var directionalVectors = GenerateDirectionalVectors(Distance, Center ?? new Vector3(100, 0, 100));
 
-            // ‚W•ûŒü‚Ì“àAÅ‚à‹ß‚¢•ûŒüƒxƒNƒgƒ‹‚ğæ“¾
+            // ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Ì“ï¿½ï¿½Aï¿½Å‚ï¿½ï¿½ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½æ“¾
             var closestDirection = Direction.North;
             var closestDistance = float.MaxValue;
             foreach(var directionalVector in directionalVectors)
@@ -386,19 +387,19 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
 
         public static Direction GetDirectionFromAngle(Direction direction, int angle)
         {
-            if(direction == Direction.None) return Direction.None; // –³Œø‚È•ûŒü‚Ìê‡
+            if(direction == Direction.None) return Direction.None; // ï¿½ï¿½ï¿½ï¿½ï¿½È•ï¿½ï¿½ï¿½ï¿½Ìê‡
 
-            // •ûŒü”i8•ûŒü: North ~ NorthWestj
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½i8ï¿½ï¿½ï¿½ï¿½: North ~ NorthWestï¿½j
             const int directionCount = 8;
 
-            // Šp“x‚ğ45“x’PˆÊ‚ÉŠÛ‚ßA-180`180‚Ì”ÍˆÍ‚É³‹K‰»
-            angle = ((Round45(angle) % 360) + 360) % 360; // ³‚Ì’l‚É•ÏŠ·‚µ‚Ä360‚Å³‹K‰»
+            // ï¿½pï¿½xï¿½ï¿½45ï¿½xï¿½Pï¿½Ê‚ÉŠÛ‚ßA-180ï¿½`180ï¿½Ì”ÍˆÍ‚Éï¿½ï¿½Kï¿½ï¿½
+            angle = ((Round45(angle) % 360) + 360) % 360; // ï¿½ï¿½ï¿½Ì’lï¿½É•ÏŠï¿½ï¿½ï¿½ï¿½ï¿½360ï¿½Åï¿½ï¿½Kï¿½ï¿½
             if(angle > 180) angle -= 360;
 
-            // Œ»İ‚Ì•ûŒü‚ÌƒCƒ“ƒfƒbƒNƒX
+            // ï¿½ï¿½ï¿½İ‚Ì•ï¿½ï¿½ï¿½ï¿½ÌƒCï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½X
             var currentIndex = (int)direction;
 
-            // 45“x‚²‚Æ‚ÌƒXƒeƒbƒvŒvZ‚ÆV‚µ‚¢•ûŒü‚ÌŒvZ
+            // 45ï¿½xï¿½ï¿½ï¿½Æ‚ÌƒXï¿½eï¿½bï¿½vï¿½vï¿½Zï¿½ÆVï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŒvï¿½Z
             var step = angle / 45;
             var newIndex = (currentIndex + step + directionCount) % directionCount;
 
@@ -407,17 +408,17 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
 
         public static LR GetTwoPointLeftRight(Direction direction1, Direction direction2)
         {
-            // •s³‚È•ûŒü‚Ìê‡iNonej
+            // ï¿½sï¿½ï¿½ï¿½È•ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½iNoneï¿½j
             if(direction1 == Direction.None || direction2 == Direction.None)
                 return LR.SameOrOpposite;
 
-            // •ûŒü”i8‚Â: North ~ NorthWestj
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½i8ï¿½ï¿½: North ~ NorthWestï¿½j
             var directionCount = 8;
 
-            // ·•ª‚ğzŠÂ“I‚ÉŒvZ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½Â“Iï¿½ÉŒvï¿½Z
             var difference = ((int)direction2 - (int)direction1 + directionCount) % directionCount;
 
-            // LR‚ğ’¼Ú•Ô‚·
+            // LRï¿½ğ’¼Ú•Ô‚ï¿½
             return difference == 0 || difference == directionCount / 2
                 ? LR.SameOrOpposite
                 : (difference < directionCount / 2 ? LR.Right : LR.Left);
@@ -425,22 +426,22 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
 
         public static int GetTwoPointAngle(Direction direction1, Direction direction2)
         {
-            // •s³‚È•ûŒü‚ğl—¶
+            // ï¿½sï¿½ï¿½ï¿½È•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½
             if(direction1 == Direction.None || direction2 == Direction.None)
                 return 0;
 
-            // enum ‚Ì’l‚ğ”’l‚Æ‚µ‚Äˆµ‚¢AŠÂó‚Ì·•ª‚ğŒvZ
+            // enum ï¿½Ì’lï¿½ğ”’lï¿½Æ‚ï¿½ï¿½Äˆï¿½ï¿½ï¿½ï¿½Aï¿½Âï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Z
             var diff = ((int)direction2 - (int)direction1 + 8) % 8;
 
-            // ·•ª‚©‚çŠp“x‚ğŒvZ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½xï¿½ï¿½ï¿½vï¿½Z
             return diff <= 4 ? diff * 45 : (diff - 8) * 45;
         }
 
         public static float GetAngle(Direction direction)
         {
-            if(direction == Direction.None) return 0; // –³Œø‚È•ûŒü‚Ìê‡
+            if(direction == Direction.None) return 0; // ï¿½ï¿½ï¿½ï¿½ï¿½È•ï¿½ï¿½ï¿½ï¿½Ìê‡
 
-            // 45“x’PˆÊ‚ÅŒvZ‚µA0“x‚©‚çn‚Ü‚éŒv‰ñ‚è‚ÌŠp“x‚ğ•Ô‚·
+            // 45ï¿½xï¿½Pï¿½Ê‚ÅŒvï¿½Zï¿½ï¿½ï¿½A0ï¿½xï¿½ï¿½ï¿½ï¿½nï¿½Ü‚éï¿½vï¿½ï¿½ï¿½ÌŠpï¿½xï¿½ï¿½Ô‚ï¿½
             return (int)direction * 45 % 360;
         }
 
@@ -448,10 +449,10 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
         {
             var directionalVectors = new List<DirectionalVector>();
 
-            // Še•ûŒü‚ÌƒIƒtƒZƒbƒgŒvZ
+            // ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ÌƒIï¿½tï¿½Zï¿½bï¿½gï¿½vï¿½Z
             foreach(Direction direction in Enum.GetValues(typeof(Direction)))
             {
-                if(direction == Direction.None) continue; // None‚ÍƒXƒLƒbƒv
+                if(direction == Direction.None) continue; // Noneï¿½ÍƒXï¿½Lï¿½bï¿½v
 
                 var offset = direction switch
                 {
@@ -466,10 +467,10 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
                     _ => Vector3.Zero
                 };
 
-                // ‹——£‚ğ“K—p‚µ‚ÄÀ•W‚ğŒvZ
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½pï¿½ï¿½ï¿½Äï¿½ï¿½Wï¿½ï¿½ï¿½vï¿½Z
                 var position = (center ?? new Vector3(100, 0, 100)) + (offset * distance);
 
-                // ƒŠƒXƒg‚É’Ç‰Á
+                // ï¿½ï¿½ï¿½Xï¿½gï¿½É’Ç‰ï¿½
                 directionalVectors.Add(new DirectionalVector(direction, position));
             }
 
@@ -488,17 +489,17 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
             _12ClockDirection = direction;
         }
 
-        // _12ClockDirection‚ğ0•ûŒü‚Æ‚µ‚ÄAw’èŒv‚©‚ç‚Ì•ûŒü‚ğæ“¾
+        // _12ClockDirectionï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÄAï¿½wï¿½èï¿½vï¿½ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾
         public DirectionCalculator.Direction GetDirectionFromClock(int clock)
         {
             if(!isValid)
                 return DirectionCalculator.Direction.None;
 
-            // “Á•ÊƒP[ƒX: clock = 0 ‚Ìê‡A_12ClockDirection ‚ğ‚»‚Ì‚Ü‚Ü•Ô‚·
+            // ï¿½ï¿½ï¿½ÊƒPï¿½[ï¿½X: clock = 0 ï¿½Ìê‡ï¿½A_12ClockDirection ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ü‚Ü•Ô‚ï¿½
             if(clock == 0)
                 return _12ClockDirection;
 
-            // 12ŒvˆÊ’u‚ğ8•ûŒü‚Éƒ}ƒbƒsƒ“ƒO
+            // 12ï¿½ï¿½ï¿½vï¿½Ê’uï¿½ï¿½8ï¿½ï¿½ï¿½ï¿½ï¿½Éƒ}ï¿½bï¿½sï¿½ï¿½ï¿½O
             var clockToDirectionMapping = new Dictionary<int, int>
         {
             { 0, 0 },   // Same as _12ClockDirection
@@ -511,16 +512,16 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
             { 10, -1 }, { 11, -1 } // Diagonal left up
         };
 
-            // Œ»İ‚Ì12•ûŒü‚ğƒCƒ“ƒfƒbƒNƒX‚Æ‚µ‚Äæ“¾
+            // ï¿½ï¿½ï¿½İ‚ï¿½12ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½Æ‚ï¿½ï¿½Äæ“¾
             var baseIndex = (int)_12ClockDirection;
 
-            // ŒvˆÊ’u‚ÉŠî‚Ã‚­ƒXƒeƒbƒv‚ğæ“¾
+            // ï¿½ï¿½ï¿½vï¿½Ê’uï¿½ÉŠï¿½Ã‚ï¿½ï¿½Xï¿½eï¿½bï¿½vï¿½ï¿½ï¿½æ“¾
             var step = clockToDirectionMapping[clock];
 
-            // V‚µ‚¢•ûŒü‚ğŒvZ‚µA”ÍˆÍ‚ğ³‹K‰»
+            // ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½Aï¿½ÍˆÍ‚ğ³‹Kï¿½ï¿½
             var targetIndex = (baseIndex + step + 8) % 8;
 
-            // ‘Î‰‚·‚é•ûŒü‚ğ•Ô‚·
+            // ï¿½Î‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
             return (DirectionCalculator.Direction)targetIndex;
         }
 
@@ -532,7 +533,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
             if(direction == DirectionCalculator.Direction.None)
                 throw new ArgumentException("Direction cannot be None.", nameof(direction));
 
-            // Še•ûŒü‚É‘Î‰‚·‚éÅ¬‚Ì clock ’l‚ğ’è‹`
+            // ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½Åï¿½ï¿½ï¿½ clock ï¿½lï¿½ï¿½ï¿½`
             var directionToClockMapping = new Dictionary<int, int>
             {
                 { 0, 0 },   // Same as _12ClockDirection
@@ -545,16 +546,16 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
                 { 7, 10 }   // Diagonal left up (NorthEast)
             };
 
-            // Œ»İ‚Ì12•ûŒü‚ğƒCƒ“ƒfƒbƒNƒX‚Æ‚µ‚Äæ“¾
+            // ï¿½ï¿½ï¿½İ‚ï¿½12ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½Æ‚ï¿½ï¿½Äæ“¾
             var baseIndex = (int)_12ClockDirection;
 
-            // w’è‚³‚ê‚½•ûŒü‚ÌƒCƒ“ƒfƒbƒNƒX
+            // ï¿½wï¿½è‚³ï¿½ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒCï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½X
             var targetIndex = (int)direction;
 
-            // ·•ª‚ğŒvZ‚µAŒv•ûŒü‚É³‹K‰»
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½Kï¿½ï¿½
             var step = (targetIndex - baseIndex + 8) % 8;
 
-            // ŠY“–‚·‚é clock ‚ğæ“¾
+            // ï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ clock ï¿½ï¿½ï¿½æ“¾
             return directionToClockMapping[step];
         }
 
@@ -581,7 +582,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
     }
 
     /// <summary>
-    /// Element‚Ö‚ÌÀ“K—pˆ—‚ğs‚¤"‘åŒ³"‚Ìƒƒ\ƒbƒhB
+    /// Elementï¿½Ö‚Ìï¿½ï¿½Kï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½"ï¿½åŒ³"ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½B
     /// </summary>
     private void InternalApplyElement(Element element, Vector3 position, float elementRadius, bool filled, bool tether)
     {
@@ -592,29 +593,29 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
         element.SetRefPosition(position);
     }
 
-    //----------------------- ŒöŠJApplyElementƒƒ\ƒbƒhŒQ -----------------------
+    //----------------------- ï¿½ï¿½ï¿½JApplyElementï¿½ï¿½ï¿½\ï¿½bï¿½hï¿½Q -----------------------
 
-    // ElementƒCƒ“ƒXƒ^ƒ“ƒX‚Æ’¼Ú“I‚ÈÀ•Ww’è
+    // Elementï¿½Cï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½Xï¿½Æ’ï¿½ï¿½Ú“Iï¿½Èï¿½ï¿½Wï¿½wï¿½ï¿½
     public void ApplyElement(Element element, Vector3 position, float elementRadius = 0.3f, bool filled = true, bool tether = true)
     {
         InternalApplyElement(element, position, elementRadius, filled, tether);
     }
 
-    // ElementƒCƒ“ƒXƒ^ƒ“ƒX‚ÆŠp“xw’è
+    // Elementï¿½Cï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½Xï¿½ÆŠpï¿½xï¿½wï¿½ï¿½
     public void ApplyElement(Element element, float angle, float radius = 0f, float elementRadius = 0.3f, bool filled = true, bool tether = true)
     {
         var position = CalculatePositionFromAngle(angle, radius);
         InternalApplyElement(element, position, elementRadius, filled, tether);
     }
 
-    // ElementƒCƒ“ƒXƒ^ƒ“ƒX‚Æ•ûŒüw’è
+    // Elementï¿½Cï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½Xï¿½Æ•ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½
     public void ApplyElement(Element element, DirectionCalculator.Direction direction, float radius = 0f, float elementRadius = 0.3f, bool filled = true, bool tether = true)
     {
         var position = CalculatePositionFromDirection(direction, radius);
         InternalApplyElement(element, position, elementRadius, filled, tether);
     }
 
-    // Element–¼‚Æ’¼Ú“I‚ÈÀ•Ww’è
+    // Elementï¿½ï¿½ï¿½Æ’ï¿½ï¿½Ú“Iï¿½Èï¿½ï¿½Wï¿½wï¿½ï¿½
     public void ApplyElement(string elementName, Vector3 position, float elementRadius = 0.3f, bool filled = true, bool tether = true)
     {
         if(Controller.TryGetElementByName(elementName, out var element))
@@ -623,7 +624,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
         }
     }
 
-    // Element–¼‚ÆŠp“xw’è
+    // Elementï¿½ï¿½ï¿½ÆŠpï¿½xï¿½wï¿½ï¿½
     public void ApplyElement(string elementName, float angle, float radius = 0f, float elementRadius = 0.3f, bool filled = true, bool tether = true)
     {
         if(Controller.TryGetElementByName(elementName, out var element))
@@ -633,7 +634,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
         }
     }
 
-    // Element–¼‚Æ•ûŒüw’è
+    // Elementï¿½ï¿½ï¿½Æ•ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½
     public void ApplyElement(string elementName, DirectionCalculator.Direction direction, float radius = 0f, float elementRadius = 0.3f, bool filled = true, bool tether = true)
     {
         if(Controller.TryGetElementByName(elementName, out var element))
@@ -670,7 +671,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
         // Convert radians to degrees with coordinate system adjustment
         var degrees = ((-radians * (180 / MathF.PI)) + 180) % 360;
 
-        // Ensure the result is within the 0‹ to 360‹ range
+        // Ensure the result is within the 0ï¿½ï¿½ to 360ï¿½ï¿½ range
         return degrees < 0 ? degrees + 360 : degrees;
     }
 
@@ -679,7 +680,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
         // Convert degrees to radians with coordinate system adjustment
         var radians = -(degrees - 180) * (MathF.PI / 180);
 
-        // Normalize the result to the range -ƒÎ to ƒÎ
+        // Normalize the result to the range -ï¿½ï¿½ to ï¿½ï¿½
         radians = ((radians + MathF.PI) % (2 * MathF.PI)) - MathF.PI;
 
         return radians;

@@ -4,6 +4,7 @@ using ECommons;
 using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.Hooks.ActionEffectTypes;
+using ECommons.LanguageHelpers;
 using ECommons.Schedulers;
 using Splatoon.SplatoonScripting;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ public unsafe class Abyssal_Blaze : SplatoonScript
     private const uint AbyssalBlazeNpcId = 0x1EBE70;
 
     public override HashSet<uint>? ValidTerritories { get; } = [1311];
-    public override Metadata? Metadata => new(2, "redmoon");
+    public override Metadata? Metadata => new(3, "redmoon");
 
     private List<IGameObject> _firstObject = new List<IGameObject>();
     private List<IGameObject> _secondObject = new List<IGameObject>();
@@ -233,7 +234,7 @@ public unsafe class Abyssal_Blaze : SplatoonScript
                 ImGui.Text($"Second Object {i}: {obj.Name} ({obj.Position.X}, {obj.Position.Y}, {obj.Position.Z})");
             }
 
-            if(ImGui.Button("Reset"))
+            if(ImGui.Button("Reset".Loc()))
             {
                 _firstCastedBlaze = CastAbyssalBlaze.None;
                 _secondCastedBlaze = CastAbyssalBlaze.None;

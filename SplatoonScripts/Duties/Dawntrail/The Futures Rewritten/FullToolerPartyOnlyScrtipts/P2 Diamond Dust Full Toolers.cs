@@ -9,6 +9,7 @@ using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Throttlers;
@@ -126,7 +127,7 @@ internal unsafe class P2_Diamond_Dust_Full_Toolers :SplatoonScript
 
     #region public properties
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(7, "redmoon");
+    public override Metadata? Metadata => new(8, "redmoon");
     #endregion
 
     #region private properties
@@ -361,9 +362,9 @@ internal unsafe class P2_Diamond_Dust_Full_Toolers :SplatoonScript
     public override void OnSettingsDraw()
     {
         ImGui.Checkbox("Lock Face", ref C.LockFace);
-        if (ImGuiEx.CollapsingHeader("Debug"))
+        if (ImGuiEx.CollapsingHeader("Debug".Loc()))
         {
-            ImGui.Checkbox("Debug", ref C.Debug);
+            ImGui.Checkbox("Debug".Loc(), ref C.Debug);
             ImGui.Text($"State: {_state}");
             ImGui.Text($"AOE Type: {_aoeType}");
             ImGui.Text($"First Icicle Impact Direction: {_firstIcicleImpactDirection}");

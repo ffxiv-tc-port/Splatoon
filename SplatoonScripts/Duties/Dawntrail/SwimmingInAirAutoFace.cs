@@ -16,6 +16,7 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Automation;
@@ -29,7 +30,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.AnotherMerchantTale;
 
 public unsafe class SwimmingInAirAutoFace : SplatoonScript
 {
-    public override Metadata Metadata => new(2, "Ahernika");
+    public override Metadata Metadata => new(3, "Ahernika");
     public override HashSet<uint>? ValidTerritories => [1317];
 
     private Config C => Controller.GetConfig<Config>();
@@ -735,7 +736,7 @@ public unsafe class SwimmingInAirAutoFace : SplatoonScript
         ImGuiEx.HelpMarker("Shows a dark green arrow from player toward calculated march destination");
 
         ImGui.Separator();
-        ImGui.Checkbox("Debug", ref C.Debug);
+        ImGui.Checkbox("Debug".Loc(), ref C.Debug);
 
         if(C.Debug)
         {

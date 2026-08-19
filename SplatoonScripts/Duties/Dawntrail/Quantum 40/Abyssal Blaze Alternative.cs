@@ -4,6 +4,7 @@ using ECommons;
 using ECommons.DalamudServices;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Schedulers;
 using Splatoon.SplatoonScripting;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ internal unsafe class Abyssal_Blaze_Alternative : SplatoonScript
 
     #region public fields
     public override HashSet<uint>? ValidTerritories { get; } = [1311];
-    public override Metadata? Metadata => new(1, "redmoon");
+    public override Metadata? Metadata => new(2, "redmoon");
     #endregion
 
     #region private fields
@@ -228,7 +229,7 @@ internal unsafe class Abyssal_Blaze_Alternative : SplatoonScript
                 ImGui.Text($"Right Object {i}: {obj.Name} ({obj.Position.X}, {obj.Position.Y}, {obj.Position.Z})");
             }
 
-            if(ImGui.Button("Reset"))
+            if(ImGui.Button("Reset".Loc()))
             {
                 WormReset();
             }
