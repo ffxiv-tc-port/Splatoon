@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface.Windowing;
+using ECommons.LanguageHelpers;
 using Splatoon.Utility;
 
 namespace Splatoon.Gui;
@@ -108,7 +109,7 @@ internal class ClipZoneSelector : Window
 
                     HandlePopupMenu();
                     ImGui.Separator();
-                    if(ImGui.Selectable("Delete this zone"))
+                    if(ImGui.Selectable("Delete this zone".Loc()))
                     {
                         toRem = i;
                         //DuoLog.Information($"to remove: {toRem} ({i})");
@@ -167,7 +168,7 @@ internal class ClipZoneSelector : Window
     {
         if(P.Config.ClipZones.Count < MAX_CONFIGURABLE_CLIP_ZONES)
         {
-            if(ImGui.Selectable("Add new zone"))
+            if(ImGui.Selectable("Add new zone".Loc()))
             {
                 P.Config.ClipZones.Add(new(100, 100, 300, 300));
             }
@@ -178,7 +179,7 @@ internal class ClipZoneSelector : Window
             if(ImGui.Selectable($"Select zone {i}")) bringToFront = i;
         }
         ImGui.Separator();
-        if(ImGui.Selectable("Save configuration and exit"))
+        if(ImGui.Selectable("Save configuration and exit".Loc()))
         {
             IsOpen = false;
             P.Config.Save();

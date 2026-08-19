@@ -73,7 +73,7 @@ internal class Contribute
             ShellStart("https://donate.nightmarexiv.com/");
         }
         ImGui.SameLine();
-        if(ImGui.Button("Crypto"))
+        if(ImGui.Button("Crypto".Loc()))
         {
             ShellStart("https://crypto.nightmarexiv.com/");
         }

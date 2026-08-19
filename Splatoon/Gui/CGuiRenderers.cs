@@ -199,7 +199,7 @@ internal partial class CGui
                 ImGuiUtils.EnumCombo("##alphablendmode", ref p.Config.AlphaBlendMode, AlphaBlendModes.Names, AlphaBlendModes.Tooltips);
                 if(ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("Change how overlapping elements' transparency is blended");
+                    ImGui.SetTooltip("Change how overlapping elements' transparency is blended".Loc());
                 }
 
                 ImGui.Checkbox("Automatically clip Splatoon's elements around native UI elements and windows".Loc(), ref P.Config.AutoClipNativeUI);
@@ -253,10 +253,10 @@ internal partial class CGui
                         ImGui.PopStyleColor();
 
                         ImGui.SameLine();
-                        ImGui.Checkbox("Override##" + name, ref enableOverride);
+                        ImGui.Checkbox("Override".Loc() + "##" + name, ref enableOverride);
                         ImGui.SameLine();
                         ImGui.PushStyleColor(ImGuiCol.Text, style.strokeColor);
-                        if(ImGui.Button("Reset To Default##" + name))
+                        if(ImGui.Button("Reset To Default".Loc() + "##" + name))
                         {
                             style = MechanicTypes.DefaultMechanicColors[mech];
                         }
@@ -284,7 +284,7 @@ internal partial class CGui
                 ImGuiComponents.HelpMarker("Higher - smoother circle, higher cpu usage".Loc());
 
                 ImGui.Checkbox("Disable circle fix while enabling drawing circles above your point of view".Loc(), ref P.Config.NoCircleFix);
-                ImGuiComponents.HelpMarker("Do not enable it unless you actually need it. Large circles may be rendered incorrectly under certain camera angle with this option enabled.");
+                ImGuiComponents.HelpMarker("Do not enable it unless you actually need it. Large circles may be rendered incorrectly under certain camera angle with this option enabled.".Loc());
 
                 ImGuiUtils.SizedText("Line segments:".Loc(), WidthLayout);
                 ImGui.SameLine();

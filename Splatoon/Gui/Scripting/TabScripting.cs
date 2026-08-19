@@ -83,7 +83,7 @@ internal static class TabScripting
                     }
                 }
             }
-            if(ImGui.Selectable("Default Configuration"))
+            if(ImGui.Selectable("Default Configuration".Loc()))
             {
                 foreach(var s in ScriptingProcessor.Scripts)
                 {
@@ -379,13 +379,13 @@ internal static class TabScripting
                         ex.Log();
                     }
                 }, null, false),
-                (openConfig.Controller.GetRegisteredElements().Count > 0 ? "Registered elements" : null, openConfig.DrawRegisteredElements, null, false),
-                ("Saved Configurations", openConfig.DrawConfigurations, null, false)
+                (openConfig.Controller.GetRegisteredElements().Count > 0 ? "Registered elements".Loc() : null, openConfig.DrawRegisteredElements, null, false),
+                ("Saved Configurations".Loc(), openConfig.DrawConfigurations, null, false)
                 );
 
             ImGuiEx.LineCentered("ScriptConfig", delegate
             {
-                if(ImGui.Button("Close and save configuration"))
+                if(ImGui.Button("Close and save configuration".Loc()))
                 {
                     openConfig.InternalData.ConfigOpen = false;
                     openConfig.Controller.SaveConfig();

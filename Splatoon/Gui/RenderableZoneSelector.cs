@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface.Windowing;
+using ECommons.LanguageHelpers;
 using ECommons.Reflection;
 using System;
 using System.Collections.Generic;
@@ -151,7 +152,7 @@ namespace Splatoon.Gui
 
                         HandlePopupMenu();
                         ImGui.Separator();
-                        if(ImGui.Selectable("Delete this zone"))
+                        if(ImGui.Selectable("Delete this zone".Loc()))
                         {
                             toRem = i;
                             //DuoLog.Information($"to remove: {toRem} ({i})");
@@ -221,7 +222,7 @@ namespace Splatoon.Gui
 
         private void HandlePopupMenu()
         {
-            if(ImGui.Selectable("Add new zone"))
+            if(ImGui.Selectable("Add new zone".Loc()))
             {
                 P.Config.RenderableZones.Add(new(100, 100, 300, 300));
             }
@@ -231,7 +232,7 @@ namespace Splatoon.Gui
                 if(ImGui.Selectable($"Select zone {i}")) bringToFront = i;
             }
             ImGui.Separator();
-            if(ImGui.Selectable("Save configuration and exit"))
+            if(ImGui.Selectable("Save configuration and exit".Loc()))
             {
                 IsOpen = false;
                 P.Config.Save();

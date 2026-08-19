@@ -96,7 +96,7 @@ public class PriorityPopupWindow : Window
                 Mode = TerritorySelector.DisplayMode.PlaceNameDutyUnion,
             };
         }
-        ImGui.Checkbox("Display DPS as D1/D2/D3/D4", ref P.Config.PrioUnifyDps);
+        ImGui.Checkbox("Display DPS as D1/D2/D3/D4".Loc(), ref P.Config.PrioUnifyDps);
         if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.List, "Fill automatically", enabled: ImGuiEx.Ctrl || Assignments.All(x => x.IsPlayerEmpty())))
         {
             Autofill();

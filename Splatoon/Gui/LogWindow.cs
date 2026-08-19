@@ -2,6 +2,7 @@
 using Dalamud.Interface.Windowing;
 using ECommons;
 using ECommons.CircularBuffers;
+using ECommons.LanguageHelpers;
 using ECommons.Reflection;
 using NightmareUI;
 using Serilog.Events;
@@ -37,14 +38,14 @@ public class LogWindow : Window
         ImGui.Checkbox("##Autoscroll", ref Autoscroll);
         ImGuiEx.Tooltip("Autoscroll");
         ImGui.SameLine();
-        if(ImGui.Button("Copy all"))
+        if(ImGui.Button("Copy all".Loc()))
         {
 #pragma warning disable
             GenericHelpers.Copy(FilteredLog.Select(x => $"[{x.Level}@{x.Time}] {x.Message}").Join("\n"));
 #pragma warning restore
         }
         ImGui.SameLine();
-        if(ImGui.Button("Clear"))
+        if(ImGui.Button("Clear".Loc()))
         {
             FilteredLog.Clear();
         }

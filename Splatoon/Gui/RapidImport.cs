@@ -9,7 +9,7 @@ internal static class RapidImport
     internal static bool RapidImportEnabled = false;
     internal static void Draw()
     {
-        if(ImGui.Checkbox("Enable Rapid Import", ref RapidImportEnabled))
+        if(ImGui.Checkbox("Enable Rapid Import".Loc(), ref RapidImportEnabled))
         {
             ImGui.SetClipboardText("");
         }

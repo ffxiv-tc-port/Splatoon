@@ -105,7 +105,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
 
                     ImGui.Indent();
 
-                    ImGuiEx.Text($"Layout name:");
+                    ImGuiEx.Text("Layout name:".Loc());
                     ImGui.Indent();
                     EditField(l.InternationalName, l.Name);
                     ImGui.Unindent();
@@ -113,7 +113,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                     var triggers = l.Triggers.Where(x => x.Match != "" || !x.MatchIntl.IsEmpty()).ToArray();
                     if(triggers.Length > 0)
                     {
-                        ImGuiEx.Text("Triggers:");
+                        ImGuiEx.Text("Triggers:".Loc());
                         ImGui.Indent();
                         foreach(var x in triggers)
                         {
@@ -122,7 +122,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         ImGui.Unindent();
                     }
 
-                    ImGuiEx.Text($"Elements:");
+                    ImGuiEx.Text("Elements:".Loc());
                     ImGui.Indent();
 
                     for(int j = 0; j < l.ElementsL.Count; j++)
@@ -132,7 +132,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         if(e.Name != "" || !e.InternationalName.IsEmpty())
                         {
                             skipped = false;
-                            ImGuiEx.Text($"Element {j + 1} name:");
+                            ImGuiEx.Text("Element ?? name:".Loc(j + 1));
                             ImGui.Indent();
                             EditField(e.InternationalName, e.Name);
                             ImGui.Unindent();
@@ -140,7 +140,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         if(e.IsActorNameUsed())
                         {
                             skipped = false;
-                            ImGuiEx.Text($"Element {j + 1} object name:");
+                            ImGuiEx.Text("Element ?? object name:".Loc(j + 1));
                             ImGui.Indent();
                             EditField(e.refActorNameIntl, e.refActorName);
                             ImGui.Unindent();
@@ -148,7 +148,7 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
                         if(e.overlayText != "" || !e.overlayTextIntl.IsEmpty())
                         {
                             skipped = false;
-                            ImGuiEx.Text($"Element {j + 1} overlay:");
+                            ImGuiEx.Text("Element ?? overlay:".Loc(j + 1));
                             ImGui.Indent();
                             EditField(e.refActorNameIntl, e.refActorName);
                             ImGui.Unindent();

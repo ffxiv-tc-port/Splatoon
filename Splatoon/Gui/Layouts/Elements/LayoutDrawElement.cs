@@ -420,7 +420,7 @@ internal unsafe partial class CGui
                     ImGuiEx.InputUint("##nameplateiconid", ref el.refActorNamePlateIconID);
                     if(ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip("Decimal input");
+                        ImGui.SetTooltip("Decimal input".Loc());
                     }
                 }
 
@@ -836,7 +836,7 @@ internal unsafe partial class CGui
             {
                 ImGui.SameLine();
                 ImGui.Checkbox("Realtime".Loc(), ref el.refActorIsTetherLive);
-                ImGuiEx.HelpMarker("Instead of historical tether, checks for tether that is present in real time. Only param 2 (tether id) is available; additionally, no time limits can be set.");
+                ImGuiEx.HelpMarker("Instead of historical tether, checks for tether that is present in real time. Only param 2 (tether id) is available; additionally, no time limits can be set.".Loc());
                 if(!el.refActorIsTetherLive)
                 {
                     ImGui.SameLine();
@@ -881,8 +881,8 @@ internal unsafe partial class CGui
 
                 ImGuiUtils.SizedText("", WidthElement);
                 ImGui.SameLine();
-                ImGuiEx.Checkbox("Source", ref el.refActorIsTetherSource);
-                ImGuiEx.HelpMarker("Checked - only check if object is tether source; unchecked - only check if object is tether target; dot - check if object is either tether source or target.");
+                ImGuiEx.Checkbox("Source".Loc(), ref el.refActorIsTetherSource);
+                ImGuiEx.HelpMarker("Checked - only check if object is tether source; unchecked - only check if object is tether target; dot - check if object is either tether source or target.".Loc());
                 ImGui.SameLine();
                 ImGui.Checkbox("Invert condition".Loc() + "##tether", ref el.refActorIsTetherInvert);
 
@@ -891,7 +891,7 @@ internal unsafe partial class CGui
                 ImGui.SetNextItemWidth(200f);
                 ImGuiEx.InputListString("##pholderConnectedWith", el.refActorTetherConnectedWithPlayer);
                 ImGui.SameLine();
-                ImGuiEx.Text("Empty = with any");
+                ImGuiEx.Text("Empty = with any".Loc());
             }
         }
 
@@ -902,7 +902,7 @@ internal unsafe partial class CGui
             {
                 if(el.coneAngleMin >= el.coneAngleMax)
                 {
-                    ImGuiEx.HelpMarker("Point A equals Point B. Nothing will be drawn. ", EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+                    ImGuiEx.HelpMarker("Point A equals Point B. Nothing will be drawn. ".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
                 }
             }
             ImGui.SameLine();
@@ -1070,7 +1070,7 @@ internal unsafe partial class CGui
             ImGuiUtils.SizedText("Angle:".Loc(), WidthElement);
             if(el.coneAngleMin >= el.coneAngleMax)
             {
-                ImGuiEx.HelpMarker("Minimum cone angle is higher than maximum cone angle; nothing will be drawn. Please correct this issue", EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+                ImGuiEx.HelpMarker("Minimum cone angle is higher than maximum cone angle; nothing will be drawn. Please correct this issue".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
             }
             ImGui.SameLine();
             ImGui.SetNextItemWidth(50f);
@@ -1121,7 +1121,7 @@ internal unsafe partial class CGui
                         ImGuiUtils.SizedText("Cast Animation:".Loc(), WidthElement);
                         ImGui.SameLine();
                     }
-                    ImGuiEx.HelpMarker("Choose a cast animation for this element. Requires 'While Casting' checked.\nUnsupported in ImGui Legacy renderer");
+                    ImGuiEx.HelpMarker("Choose a cast animation for this element. Requires 'While Casting' checked.\nUnsupported in ImGui Legacy renderer".Loc());
                     ImGui.SameLine();
                     using(ImRaii.Disabled(!canSetCastAnimation))
                     {
@@ -1174,11 +1174,11 @@ internal unsafe partial class CGui
 
             if(el.radius == 0.35f)
             {
-                ImGuiEx.HelpMarker("Radius is not changed; is this intended?", EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+                ImGuiEx.HelpMarker("Radius is not changed; is this intended?".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
             }
             else if(!el.type.EqualsAny(0,1) && el.radius == 0f)
             {
-                ImGuiEx.HelpMarker("Radius is not changed; is this intended?", EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+                ImGuiEx.HelpMarker("Radius is not changed; is this intended?".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
             }
             ImGui.SameLine();
             ImGui.SetNextItemWidth(60f);
@@ -1229,7 +1229,7 @@ internal unsafe partial class CGui
             {
                 ImGuiUtils.SizedText("Tether:".Loc(), WidthElement);
                 ImGui.SameLine();
-                ImGui.Checkbox("Enable##TetherEnable", ref el.tether);
+                ImGui.Checkbox("Enable".Loc() + "##TetherEnable", ref el.tether);
                 ImGui.SameLine();
                 ImGuiEx.Text("Extra Length:".Loc());
                 ImGui.SameLine();
@@ -1353,7 +1353,7 @@ internal unsafe partial class CGui
         if((el.type.EqualsAny(0, 1) && el.Donut > 0) || el.type == 4 || (el.type.EqualsAny(2, 3) && (el.radius > 0 || el.includeHitbox || el.includeOwnHitbox)))
         {
             ImGuiUtils.SizedText("Fill step:".Loc(), WidthElement);
-            ImGuiEx.HelpMarker("Only for ImGui Legacy renderer");
+            ImGuiEx.HelpMarker("Only for ImGui Legacy renderer".Loc());
             ImGui.SameLine();
             ImGui.SetNextItemWidth(60f);
             ImGui.DragFloat("##fillstep", ref el.FillStep, 0.001f, 0, float.MaxValue);

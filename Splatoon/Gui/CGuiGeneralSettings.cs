@@ -128,7 +128,7 @@ internal partial class CGui
             {
                 ImGui.Checkbox("Disable script cache".Loc(), ref p.Config.DisableScriptCache);
                 var state = DalamudReflector.GetDtrEntryState(InfoBar.EntryName);
-                if(ImGui.Checkbox("Enable info bar priority indicator", ref state))
+                if(ImGui.Checkbox("Enable info bar priority indicator".Loc(), ref state))
                 {
                     DalamudReflector.SetDtrEntryState(InfoBar.EntryName, state);
                 }
