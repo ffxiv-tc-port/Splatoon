@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECommons.LanguageHelpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace Splatoon.Gui.Layouts.Header.Sections
                 ImGui.SetNextItemWidth(150f);
                 ImGui.InputInt("##scenenum", ref NewScene, 1, 1);
                 ImGui.SameLine();
-                if(ImGui.Button("Add"))
+                if(ImGui.Button("Add".Loc()))
                 {
                     l.Scenes.Add(NewScene);
                 }

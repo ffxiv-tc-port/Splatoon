@@ -1,6 +1,7 @@
 ﻿using ECommons;
 using ECommons.Configuration;
 using ECommons.GameFunctions;
+using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Environment;
 using Lumina.Excel.Sheets;
@@ -151,10 +152,10 @@ internal unsafe partial class CGui
         if(ImGui.CollapsingHeader("Object table"))
         {
             ImGuiEx.Text("Object table:");
-            ImGuiEx.Text("Name");
+            ImGuiEx.Text("Name".Loc());
             ImGui.SameLine();
             ImGui.SetCursorPosX(200f);
-            ImGuiEx.Text("Object ID");
+            ImGuiEx.Text("Object ID".Loc());
             ImGui.SameLine();
             ImGui.SetCursorPosX(300f);
             ImGuiEx.Text($"Data ID");

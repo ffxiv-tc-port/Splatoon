@@ -498,7 +498,7 @@ internal unsafe partial class CGui
                 if(ImGui.Selectable("While casting".Loc())) el.refActorCastReverse = false;
                 if(ImGui.Selectable("While NOT casting".Loc())) el.refActorCastReverse = true;
                 ImGui.Separator();
-                if(ImGui.Selectable("Paste from clipboard##castinfo"))
+                if(ImGui.Selectable("Paste from clipboard".Loc() + "##castinfo"))
                 {
                     try
                     {
@@ -884,7 +884,7 @@ internal unsafe partial class CGui
                 ImGuiEx.Checkbox("Source", ref el.refActorIsTetherSource);
                 ImGuiEx.HelpMarker("Checked - only check if object is tether source; unchecked - only check if object is tether target; dot - check if object is either tether source or target.");
                 ImGui.SameLine();
-                ImGui.Checkbox("Invert condition##tether", ref el.refActorIsTetherInvert);
+                ImGui.Checkbox("Invert condition".Loc() + "##tether", ref el.refActorIsTetherInvert);
 
                 ImGuiUtils.SizedText("         " + "Connected with:".Loc(), WidthElement);
                 ImGui.SameLine();
