@@ -169,13 +169,13 @@ SplatoonScriptsOfficial.Generic@AutoExec,1,https://raw.githubusercontent.com/ffx
 SplatoonScriptsOfficial.Generic@AutoFateSync,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoFateSync.cs
 SplatoonScriptsOfficial.Generic@AutoRetainerCreation,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoRetainerCreation.cs
 SplatoonScriptsOfficial.Generic@AutoTargetSwitcher,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoTargetSwitcher.cs
-SplatoonScriptsOfficial.Generic@AutoTeleport,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoTeleport.cs
-SplatoonScriptsOfficial.Generic@AutoUseItem,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoUseItem.cs
+SplatoonScriptsOfficial.Generic@AutoTeleport,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoTeleport.cs
+SplatoonScriptsOfficial.Generic@AutoUseItem,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoUseItem.cs
 SplatoonScriptsOfficial.Generic@CastExplorer,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CastExplorer.cs
 SplatoonScriptsOfficial.Generic@CheckEmote,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CheckEmote.cs
 SplatoonScriptsOfficial.Generic@CloseReplayWindows,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CloseReplayWindows.cs
 SplatoonScriptsOfficial.Generic@CommandOnLogin,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CommandOnLogin.cs
-SplatoonScriptsOfficial.Generic@CustomResolutionSwitcher,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CustomResolutionSwitcher.cs
+SplatoonScriptsOfficial.Generic@CustomResolutionSwitcher,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CustomResolutionSwitcher.cs
 SplatoonScriptsOfficial.Generic@DalamudFixer,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DalamudFixer.cs
 SplatoonScriptsOfficial.Generic@DenyAllTrades,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DenyAllTrades.cs
 SplatoonScriptsOfficial.Generic@DisableHandleActionOutHook,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DisableHandleActionOutHook.cs
@@ -188,7 +188,7 @@ SplatoonScriptsOfficial.Generic@GenericTargetEnforcer,2,https://raw.githubuserco
 SplatoonScriptsOfficial.Generic@HighlightDeadgePlayers,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/HighlightDeadgePlayers.cs
 SplatoonScriptsOfficial.Generic@InventoryLowNotifier,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/InventoryLowNotifier.cs
 SplatoonScriptsOfficial.Generic@KillConnection,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/KillConnection.cs
-SplatoonScriptsOfficial.Generic@LimitFramerate,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/LimitFramerate.cs
+SplatoonScriptsOfficial.Generic@LimitFramerate,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/LimitFramerate.cs
 SplatoonScriptsOfficial.Generic@ListInstalledPlugins,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ListInstalledPlugins.cs
 SplatoonScriptsOfficial.Generic@Makeplace2List,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/Makeplace2List.cs
 SplatoonScriptsOfficial.Generic@MemoryWatcher,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/MemoryWatcher.cs
@@ -230,7 +230,7 @@ SplatoonScriptsOfficial.Tests@FaceLockTest,1,https://raw.githubusercontent.com/f
 SplatoonScriptsOfficial.Tests@GenericTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest.cs
 SplatoonScriptsOfficial.Tests@GenericTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest2.cs
 SplatoonScriptsOfficial.Tests@GenericTest3,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest3.cs
-SplatoonScriptsOfficial.Tests@GenericTest4,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest4.cs
+SplatoonScriptsOfficial.Tests@GenericTest4,6,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest4.cs
 SplatoonScriptsOfficial.Tests@GenericTest5,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest5.cs
 SplatoonScriptsOfficial.Tests@GenericTest6,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest6.cs
 SplatoonScriptsOfficial.Tests@GenericTest7,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest7.cs

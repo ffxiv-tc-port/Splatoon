@@ -24,7 +24,7 @@ namespace SplatoonScriptsOfficial.Tests;
 public unsafe class GenericTest4 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => new();
-    public override Metadata? Metadata { get; } = new(5, "NightmareXIV");
+    public override Metadata? Metadata { get; } = new(6, "NightmareXIV");
     int a1;
     string Filter = "";
 
@@ -111,7 +111,26 @@ public unsafe class GenericTest4 : SplatoonScript
     {
         if(!GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContentsFinder", out _))
         {
-            AgentContentsFinder.Instance()->OpenRegularDuty(cfc);
+            // 🔴 AgentContentsFinder.Instance() 由 [Agent(AgentId.ContentsFinder)] 產生:
+            //    內部鏈 AgentModule -> UIModule -> Framework,任一層回 null 整條就回 null
+            //    (登入前、切場景時是常態),底層 [StaticAddress]/[MemberFunction] 特徵碼
+            //    失配時改為擲 InvalidOperationException——兩種失效模式並存。
+            //    裸解參考 null 原生指標是 AccessViolationException,在 .NET Core 屬
+            //    corrupted-state exception,try/catch 攔不到 ⇒ 只能事前判空。
+            //    fail-closed:取不到 agent 就回 false,讓呼叫端下一輪重試而不是崩潰。
+            AgentContentsFinder* agent;
+            try
+            {
+                agent = AgentContentsFinder.Instance();
+            }
+            catch
+            {
+                return false;
+            }
+
+            if(agent == null) return false;
+
+            agent->OpenRegularDuty(cfc);
             return true;
         }
         return false;
