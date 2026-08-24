@@ -14,7 +14,7 @@ namespace SplatoonScriptsOfficial.Tests
 {
     public unsafe class GenericTest : SplatoonScript
     {
-        public override Metadata Metadata => new(1, "NightmareXIV");
+        public override Metadata Metadata => new(2, "NightmareXIV");
         public override HashSet<uint> ValidTerritories => [];
         //bool __fastcall sub_1400AA130(__int16 a1)
         //NumberArrayData_SetValueIfDifferentAndNotify(__int64 a1, int a2, int a3)
@@ -54,6 +54,9 @@ namespace SplatoonScriptsOfficial.Tests
 
         public override void OnDisable()
         {
+            // 先 Disable() 把函式序言還原,擋掉「新的」呼叫進入 detour,再 Dispose()。
+            // 🔴 刻意不把欄位設成 null:仍在飛的 detour 讀到 null 會把 NullReferenceException
+            //    擲回原生呼叫端,比留著已 Dispose 的物件更糟(同 Tests/EffectResultTest.cs 的先例)。
             Hook?.Disable();
             Hook?.Dispose();
             Hook2?.Disable();
@@ -64,7 +67,25 @@ namespace SplatoonScriptsOfficial.Tests
 
         private byte Detour2(nint a1, uint a2)
         {
-            var ret = Hook2.Original(a1, a2);
+            // 🔴 OnDisable() 會 Dispose 這個 hook,但 detour 仍可能在飛:自己的 in-flight 呼叫,
+            //    或別的外掛把 hook 疊在同一位址上、經由它的 trampoline 轉進來(Dalamud 的
+            //    MultiHookTracker 就是為此存在)。裸讀 .Original 在 Dispose 之後會從
+            //    CheckDisposed() 擲 ObjectDisposedException,而例外從 detour 擲回原生呼叫端
+            //    是未定義行為;若後端是 MinHook(DalamudForceMinHook),Dispose 真的釋放了
+            //    trampoline,那就是 use-after-free —— AVE 在 .NET Core 是 corrupted-state
+            //    exception,try/catch 完全攔不到。
+            //    .OriginalDisposeSafe 在 IsDisposed 時改用「函式位址本身」重建委派,兩種後端都安全。
+            // ⚠️ 這個 hook 由 [Signature] → Hook<T>.FromAddress 建立,Hook.address ＝目標函式
+            //    位址本身,所以 OriginalDisposeSafe 成立。FromImport／FromFunctionPointerVariable
+            //    型的 hook(address ＝指標變數位址)絕不可照抄這一招 —— 那會把資料當程式碼跳過去。
+            var hook = Hook2;
+            if(hook == null)
+            {
+                // 理論上到不了:hook 建不起來時 detour 根本不會被掛上。真的發生就要看得見。
+                PluginLog.Information("[GenericTest] Hook2 在呼叫途中消失,本次跳過原函式呼叫。");
+                return 0;
+            }
+            var ret = hook.OriginalDisposeSafe(a1, a2);
             try
             {
                 //if (Debugger.IsAttached) Debugger.Break();
@@ -84,6 +105,10 @@ namespace SplatoonScriptsOfficial.Tests
 
         private void Detour(nint a1, int a2, int a3)
         {
+            // 🔴 同 Detour2:欄位先快照成區域變數,呼叫改用 .OriginalDisposeSafe。
+            //    這裡的 try/catch 只包住診斷輸出,原本最後那行裸的 Hook.Original 在
+            //    try 之外,Dispose 之後擲出的 ObjectDisposedException 連攔都攔不到。
+            var hook = Hook;
             try
             {
 
@@ -103,7 +128,12 @@ namespace SplatoonScriptsOfficial.Tests
             {
                 e.Log();
             }
-            Hook.Original(a1, a2, a3);
+            if(hook == null)
+            {
+                PluginLog.Information("[GenericTest] Hook 在呼叫途中消失,本次跳過原函式呼叫。");
+                return;
+            }
+            hook.OriginalDisposeSafe(a1, a2, a3);
         }
 
         public override void OnSettingsDraw()

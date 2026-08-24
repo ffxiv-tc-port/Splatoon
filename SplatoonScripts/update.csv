@@ -233,7 +233,7 @@ SplatoonScriptsOfficial.Tests@DisplayMapEffect,1,https://raw.githubusercontent.c
 SplatoonScriptsOfficial.Tests@DownloadPluginTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DownloadPluginTest.cs
 SplatoonScriptsOfficial.Tests@EffectResultTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/EffectResultTest.cs
 SplatoonScriptsOfficial.Tests@FaceLockTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/FaceLockTest.cs
-SplatoonScriptsOfficial.Tests@GenericTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest.cs
+SplatoonScriptsOfficial.Tests@GenericTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest.cs
 SplatoonScriptsOfficial.Tests@GenericTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest2.cs
 SplatoonScriptsOfficial.Tests@GenericTest3,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest3.cs
 SplatoonScriptsOfficial.Tests@GenericTest4,7,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest4.cs
@@ -243,9 +243,9 @@ SplatoonScriptsOfficial.Tests@GenericTest7,5,https://raw.githubusercontent.com/f
 SplatoonScriptsOfficial.Tests@IPCExample,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/IPCExample.cs
 SplatoonScriptsOfficial.Tests@Mk2Waymark,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/Mk2Waymark.cs
 SplatoonScriptsOfficial.Tests@MoveTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/MoveTest.cs
-SplatoonScriptsOfficial.Tests@NumberArrayDataDebug,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/NumberArrayDataDebug.cs
+SplatoonScriptsOfficial.Tests@NumberArrayDataDebug,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/NumberArrayDataDebug.cs
 SplatoonScriptsOfficial.Tests@ObjectEffectTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ObjectEffectTest.cs
-SplatoonScriptsOfficial.Tests@OmegaMFResearch,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/OmegaMFResearch.cs
+SplatoonScriptsOfficial.Tests@OmegaMFResearch,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/OmegaMFResearch.cs
 SplatoonScriptsOfficial.Tests@OnResetTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/OnResetTest.cs
 SplatoonScriptsOfficial.Tests@PotionTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/PotionTest.cs
 SplatoonScriptsOfficial.Tests@PriorityTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/PriorityTest.cs
@@ -258,7 +258,7 @@ SplatoonScriptsOfficial.Tests@ShowPID,1,https://raw.githubusercontent.com/ffxiv-
 SplatoonScriptsOfficial.Tests@StatusListMonitoring,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/StatusListMonitoring.cs
 SplatoonScriptsOfficial.Tests@TestE1N,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TestE1N.cs
 SplatoonScriptsOfficial.Tests@TestHotbarDragdrop,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TestHotbarDragdrop.cs
-SplatoonScriptsOfficial.Tests@TetherProcessor2Test,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TetherProcessor2Test.cs
+SplatoonScriptsOfficial.Tests@TetherProcessor2Test,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TetherProcessor2Test.cs
 SplatoonScriptsOfficial.Tests@TrapTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TrapTest.cs
 SplatoonScriptsOfficial.Tests@VentureOverrideTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/VentureOverrideTest.cs
 SplatoonScriptsOfficial.Tests@VolumeControl,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/VolumeControl.cs
