@@ -255,15 +255,22 @@ internal static partial class ScriptingProcessor
         UpdateCompleted = false;
         Scripts.Each(x => x.Disable());
         ClearScripts();
-        var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "Scripts");
-        if(!Directory.Exists(dir))
+        // Directory enumeration and file reads are disk I/O and can be slow with many scripts;
+        // run them off the UI/framework thread. CompileAndLoad itself only enqueues onto a
+        // ConcurrentQueue and (if needed) starts the existing compiler Thread, so it's safe to
+        // call from here; that thread already publishes results back via RunOnFrameworkThread.
+        Task.Run(() =>
         {
-            Directory.CreateDirectory(dir);
-        }
-        foreach(var f in Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories))
-        {
-            CompileAndLoad(File.ReadAllText(f, Encoding.UTF8), f, true);
-        }
+            var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "Scripts");
+            if(!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            foreach(var f in Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories))
+            {
+                CompileAndLoad(File.ReadAllText(f, Encoding.UTF8), f, true);
+            }
+        });
     }
 
     internal static void ReloadScript(SplatoonScript s, bool ignoreCache = false)
@@ -275,7 +282,11 @@ internal static partial class ScriptingProcessor
         }
         s.Disable();
         RemoveScript(s);
-        CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, false, ignoreCache);
+        // File read is disk I/O; background it (see ReloadAll comment above).
+        Task.Run(() =>
+        {
+            CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, false, ignoreCache);
+        });
     }
 
     internal static void ReloadScripts(IEnumerable<SplatoonScript> scripts, bool isFirst)
@@ -285,12 +296,23 @@ internal static partial class ScriptingProcessor
             DuoLog.Error("Can not reload yet, please wait");
             return;
         }
-        foreach(var s in scripts)
+        // Materialize first: Disable()/RemoveScript() must run on the framework thread now
+        // (RemoveScript mutates the shared ScriptsInternal list and asserts as much), while the
+        // file reads below are backgrounded, so we can't lazily re-enumerate `scripts` later.
+        var scriptsList = scripts as IReadOnlyCollection<SplatoonScript> ?? scripts.ToList();
+        foreach(var s in scriptsList)
         {
             s.Disable();
             RemoveScript(s);
-            CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, isFirst);
         }
+        // File reads are disk I/O; background them (see ReloadAll comment above).
+        Task.Run(() =>
+        {
+            foreach(var s in scriptsList)
+            {
+                CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, isFirst);
+            }
+        });
     }
 
     internal static void CompileAndLoad(string sourceCode, string fpath, bool isFirst, bool ignoreCache = false)

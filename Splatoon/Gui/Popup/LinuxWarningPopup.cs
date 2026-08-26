@@ -29,15 +29,15 @@ public class LinuxWarningPopup : Window
     public override void Draw()
     {
         ImGuiEx.TextWrapped($"""
-            Linux or Mac OS environment detected and by default DirectX11 renderer was disabled due to crashing issues. 
-            If you wish, you can open Splatoon settings, go to "Render" tab to test it and reenable it if test succeeds. 
-            If it doesn't works for you, simply hide this window and use Legacy rendered.
+            偵測到 Linux 或 Mac OS 環境，因崩潰問題，DirectX11 渲染器已預設停用。
+            如果您願意，可以開啟 Splatoon 設定，前往「渲染」分頁進行測試，若測試成功則可重新啟用。
+            若對您無效，請直接隱藏此視窗並使用舊版渲染器。
             """);
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Cog, "Open configuration"))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Cog, "開啟設定"))
         {
             P.ConfigGui.Open = true;
         }
-        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.EyeSlash, "Permanently hide this window"))
+        if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.EyeSlash, "永久隱藏此視窗"))
         {
             P.Config.DX11MacLinuxWarningHidden = true;
             IsOpen = false;

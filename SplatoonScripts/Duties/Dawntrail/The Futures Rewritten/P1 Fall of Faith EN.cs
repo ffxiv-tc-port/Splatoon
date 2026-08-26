@@ -137,7 +137,7 @@ public class P1_Fall_of_Faith_EN : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGuiEx.Text($"Configure conga line");
+        ImGuiEx.Text($"設定連環爆走位順序");
         C.Priority.Draw();
         if(ImGui.CollapsingHeader("Debug"))
         {

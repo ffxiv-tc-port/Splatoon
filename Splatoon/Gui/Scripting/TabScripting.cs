@@ -31,16 +31,23 @@ internal static class TabScripting
         ImGui.SameLine();
         if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Undo, "Reload and Update".Loc()))
         {
-            var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "ScriptCache");
-            foreach(var x in Directory.GetFiles(dir))
+            // Directory scan + deletes are disk I/O; run them off the UI thread. ReloadAll()
+            // itself still needs to run on the framework thread (it synchronously touches
+            // script state before dispatching its own background work), so hop back via
+            // RunOnFrameworkThread once the cache is cleared.
+            Task.Run(() =>
             {
-                if(x.EndsWith(".bin"))
+                var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "ScriptCache");
+                foreach(var x in Directory.GetFiles(dir))
                 {
-                    PluginLog.Information($"Deleting {x}");
-                    File.Delete(x);
+                    if(x.EndsWith(".bin"))
+                    {
+                        PluginLog.Information($"Deleting {x}");
+                        File.Delete(x);
+                    }
                 }
-            }
-            ScriptingProcessor.ReloadAll();
+                Svc.Framework.RunOnFrameworkThread(ScriptingProcessor.ReloadAll);
+            });
         }
         ImGuiEx.Tooltip("Clears cache, recompiles and reloads all scripts and checks them for updates immediately.");
         ImGui.SameLine();
