@@ -161,6 +161,19 @@ public abstract class SplatoonScript
     public virtual void OnStartingCast(uint source, uint castId) { }
 
     /// <summary>
+    /// Will be called when a hostile object starts casting. This method will only be called if a script is enabled.
+    /// </summary>
+    /// <remarks>
+    /// 型別名與簽章與上游相同，但資料來源不同：我方是每幀從遊戲已解析好的 CastInfo 組出來的，
+    /// 不是封包。差異與限制寫在 <c>Splatoon.Memory.PacketActorCast</c> 的說明裡。
+    /// 🔴 <paramref name="packet"/> 指向外掛生命週期內共用的同一塊緩衝，內容每次事件都會被覆寫——
+    /// 只能在本方法內就地讀，不要把指標存起來跨呼叫使用。
+    /// </remarks>
+    /// <param name="sourceId">Source entity id</param>
+    /// <param name="packet">Packet</param>
+    public virtual unsafe void OnStartingCast(uint sourceId, global::Splatoon.Memory.PacketActorCast* packet) { }
+
+    /// <summary>
     /// Will be called whenever plugin processes a message. These are the same messages which layout trigger system receives. This method will only be called if a script is enabled.
     /// </summary>
     /// <param name="Message"></param>
