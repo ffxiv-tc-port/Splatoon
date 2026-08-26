@@ -57,7 +57,21 @@ public class InternalData
         return $"{Path}{(key == "" ? "" : $".{key}")}.json";
     }
 
+    private bool? ContainsPriorityListsCache = null;
+
+    /// <summary>
+    /// 掃描腳本組件是否含有 PriorityData。結果是腳本組件的編譯期性質，組件載入後永不改變，
+    /// 因此只在第一次呼叫時計算並快取。此方法位於每幀的繪製路徑上
+    /// （InfoBar / PriorityPopupWindow → ScriptingProcessor.AnyScriptUsesPriority），
+    /// 若不快取，每幀會對每一支已載入的腳本各做一次 Assembly.GetTypes() 全反射掃描。
+    /// </summary>
     public bool ContainsPriorityLists()
+    {
+        ContainsPriorityListsCache ??= ScanForPriorityLists();
+        return ContainsPriorityListsCache.Value;
+    }
+
+    private bool ScanForPriorityLists()
     {
         foreach(var s in Script.GetType().Assembly.GetTypes())
         {

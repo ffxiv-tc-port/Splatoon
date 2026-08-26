@@ -4,13 +4,13 @@ Configuration:
 - You need to set priorities, for example: MT, ST, H1, H2, D1, D2, D3, D4.
 - You also need to configure where each person should go, depending on the turn they are targeted.
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P1%20Fall%20of%20Faith.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P1%20Fall%20of%20Faith.cs
 ```
 
 ## [Script] Alternative Fall of Faith
 Altetnative implementation of Fall of Faith resolution. 
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/refs/heads/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P1%20Fall%20of%20Faith%20EN.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P1%20Fall%20of%20Faith%20EN.cs
 ```
 
 ## [Script] Burn Strike (Tower)
@@ -18,7 +18,7 @@ It highlights positions where towers you need to go to are.
 Configuration:
 - You need to set priorities, for example: H1, H2, D1, D2, D3, D4.
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P1%20Burn%20Strike%20Tower.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P1%20Burn%20Strike%20Tower.cs
 ```
 
 ## Protean pairs/spreads

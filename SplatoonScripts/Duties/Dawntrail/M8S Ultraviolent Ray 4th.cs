@@ -7,14 +7,17 @@ using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using ECommons.GameFunctions;
-using ECommons.GameHelpers;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
+using Player = ECommons.GameHelpers.Player;
+using ECommons.GameHelpers;
+
+using ECommons.DalamudServices.Legacy;
 
 namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 
@@ -87,7 +90,7 @@ public class M8S_Ultraviolent_Ray_4th : SplatoonScript
     #region public values
 
     public override HashSet<uint>? ValidTerritories => [1263];
-    public override Metadata? Metadata => new(1, "Redmoon");
+    public override Metadata? Metadata => new(2, "Redmoon");
 
     #endregion
 

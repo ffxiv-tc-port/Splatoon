@@ -17,8 +17,23 @@ internal static partial class ScriptingProcessor
     internal static IReadOnlyList<SplatoonScript> Scripts => ScriptsInternal;
     internal static ConcurrentQueue<(string code, string path)> LoadScriptQueue = new();
     internal static volatile bool ThreadIsRunning = false;
+
+    /// <summary>
+    /// 台服分支的腳本策展來源。上游的腳本版本閘門只比對「同名腳本的遠端版本較大」,
+    /// 完全不檢查 API 世代,而覆寫是就地寫檔不留備份 —— 指向上游會讓我們針對台服
+    /// 修過的腳本被國際服版本靜默蓋掉(例如讀錯 AtkArrayData 索引 = 任意記憶體讀取)。
+    ///
+    /// 刻意使用 "HEAD" 而不是寫死分支名:HEAD 永遠跟著 repo 的預設分支走。
+    /// 寫死分支在改名/換版本分支之後會 404,而這裡的下載失敗只會被 e.Log() 吞掉,
+    /// 使用者看不到任何徵兆 —— 那是靜默失效,比噴錯更糟。
+    /// </summary>
+    internal const string ScriptRepoBaseURL = "https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts";
+
     internal static readonly string[] TrustedURLs =
     [
+        "https://github.com/ffxiv-tc-port/",
+        "https://www.github.com/ffxiv-tc-port/",
+        "https://raw.githubusercontent.com/ffxiv-tc-port/",
         "https://github.com/NightmareXIV/",
         "https://www.github.com/NightmareXIV/",
         "https://raw.githubusercontent.com/NightmareXIV/",
@@ -105,7 +120,7 @@ internal static partial class ScriptingProcessor
             try
             {
                 PluginLog.Debug($"Starting downloading blacklist...");
-                var result = P.HttpClient.GetAsync("https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/blacklist.csv").Result;
+                var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/blacklist.csv").Result;
                 result.EnsureSuccessStatusCode();
                 PluginLog.Debug($"Blacklist download complete");
                 var blacklist = result.Content.ReadAsStringAsync().Result;
@@ -149,7 +164,7 @@ internal static partial class ScriptingProcessor
             try
             {
                 PluginLog.Debug($"Starting downloading update list...");
-                var result = P.HttpClient.GetAsync("https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/update.csv").Result;
+                var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/update.csv").Result;
                 result.EnsureSuccessStatusCode();
                 PluginLog.Debug($"Update list downloaded");
                 var updateList = result.Content.ReadAsStringAsync().Result;
@@ -384,7 +399,22 @@ internal static partial class ScriptingProcessor
                                             var assembly = Compiler.Load(code, pdb);
                                             foreach(var t in assembly.GetTypes())
                                             {
-                                                if(t.BaseType?.FullName == "Splatoon.SplatoonScripting.SplatoonScript")
+                                                // 🔴 腳本是靠「直接基底類別的全名」被認出來的,所以新增 SplatoonScript<T> 之後
+                                                // 必須在這裡也認得它 —— 否則繼承泛型基底的腳本會**靜默地完全不被載入**
+                                                // (編得過、檔案在、清單裡就是沒有它)。
+                                                // 刻意不照抄上游的 t.BaseType.IsAssignableTo(typeof(SplatoonScript)):
+                                                // 那會連「繼承自另一個腳本類別」的深層子類也一起註冊,是行為擴大。
+                                                // 這裡維持原本的精確比對,只多認一個泛型基底。
+                                                var bt = t.BaseType;
+                                                // 泛型基底的 BaseType 是封閉型別(FullName 帶 [[...]] 的型別引數),
+                                                // 所以先取它的泛型定義再比對名字。
+                                                var btd = bt != null && bt.IsGenericType ? bt.GetGenericTypeDefinition() : bt;
+                                                // 這裡刻意沿用既有寫法用 FullName 字串比對而不是 typeof(...) ——
+                                                // 腳本組件是載進外掛自己的 AssemblyLoadContext 的,用型別識別比對要賭
+                                                // 兩邊解析到同一個 Splatoon 組件實例;比名字沒有這個賭注。
+                                                var isScript = btd?.FullName == "Splatoon.SplatoonScripting.SplatoonScript"
+                                                    || btd?.FullName == "Splatoon.SplatoonScripting.SplatoonScript`1";
+                                                if(isScript)
                                                 {
                                                     var instance = (SplatoonScript)assembly.CreateInstance(t.FullName);
                                                     instance.InternalData = new(result.path, instance)
@@ -857,7 +887,10 @@ internal static partial class ScriptingProcessor
         {
             Scripts[i].Disable();
         }
-        ClearScripts();
+        // 上游 446567f5 用 Svc.Framework.Run 包住;我方改用 RunOnFrameworkThread——
+        // 已在 framework thread 時 inline 執行(正常卸載路徑行為不變),
+        // 跨執行緒呼叫時才 marshal,避免 Run 一律延到下一 tick(可能落在卸載之後)。
+        Svc.Framework.RunOnFrameworkThread(ClearScripts);
     }
 
     internal static void LogError(this SplatoonScript s, Exception e, string methodName)

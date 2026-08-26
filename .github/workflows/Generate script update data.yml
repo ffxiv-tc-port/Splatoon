@@ -1,12 +1,19 @@
-# This is a basic workflow that is manually triggered
+# 產生並提交 SplatoonScripts/update.csv —— 也就是我們自己的腳本派送清單。
+#
+# 這個 workflow 在上游是被 `github.repository == 'PunishXIV/Splatoon'` 擋住的,
+# 所以在我們這裡從來沒有真正跑過(歷史紀錄全是 skipped)。
+# 接管腳本策展之後它必須跑,否則 update.csv 會永遠停在上游那份、
+# 指向上游的腳本檔,我們針對台服做的修正一支都送不出去。
 
 name: Generate script update data
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   workflow_dispatch:
   push:
+    # 只在出貨分支上重新產生。update.csv 是直接派送給使用者的清單,
+    # 不應該被功能分支或 tag 推送覆寫。
+    branches:
+      - 'tc-7.20'
     paths:
       - SplatoonScripts/**
 
@@ -14,31 +21,42 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# 這個 job 需要把重新產生的 update.csv 推回 repo。
+# 上游沒有宣告 permissions,在預設為唯讀的 repo 上 git push 會失敗。
+permissions:
+  contents: write
+
 jobs:
-  # This workflow contains a single job called "greet"
   generate_updatefile:
-    if: ${{ github.repository == 'PunishXIV/Splatoon' }}
-    # The type of runner that the job will run on
+    if: ${{ github.repository == 'ffxiv-tc-port/Splatoon' }}
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Runs a single command using the runners shell
         - name: Checkout Repository
           uses: actions/checkout@v4
           with:
             submodules: false
+            # 版本檢查要拿 push 之前的 commit 來比對,需要完整歷史。
+            fetch-depth: 0
         - name: Set up .NET
           uses: actions/setup-dotnet@v3
           with:
             dotnet-version: 8.0.x
+        # 這一步失敗就不會產生、也不會提交 update.csv。
+        # 版本沒 bump 的腳本本來就派送不出去,讓它在這裡大聲失敗,
+        # 好過安靜地發一份使用者永遠不會下載到的清單。
+        - name: Enforce script version bumps
+          env:
+            EVENT_NAME: ${{ github.event_name }}
+            BEFORE_SHA: ${{ github.event.before }}
+          run: python3 .github/scripts/check-script-versions.py
         - name: Run the program
           run: dotnet run --project ScriptUpdateFileGenerator/ScriptUpdateFileGenerator.csproj "SplatoonScripts" "SplatoonScripts/update.csv"
         - name: Commit file
           run: |
-            git config --local user.email "noreply@nightmarexiv.com"
-            git config --local user.name "GitHub Action"
+            git config --local user.email "noreply@anthropic.com"
+            git config --local user.name "Claude Sonnet 5"
             git add SplatoonScripts/update.csv
-            git commit -m "Update SplatoonScripts/update.csv" -a || echo "No changes to commit"
-            git push  # Push the changes back to the repository
+            # 刻意不用 -a:只提交這個產生出來的檔案,不要順手帶走別的東西。
+            git commit -m "自動產生:更新 SplatoonScripts/update.csv" || echo "No changes to commit"
+            git push

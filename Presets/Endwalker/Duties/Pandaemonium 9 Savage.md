@@ -20,12 +20,12 @@
 
 [International] [Script] Dualspell In/Out unsafe zone indication
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P9S%20Dualspell%20InOut.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P9S%20Dualspell%20InOut.cs
 ```
 
 [Script] [Untested] Limit Cut Japanese strat helper
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/P9S%20JP%20LC%20Strat.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P9S%20JP%20LC%20Strat.cs
 ```
 
 [EN] [Untested] Limit cut: AOE indicators for puddle and defamations 

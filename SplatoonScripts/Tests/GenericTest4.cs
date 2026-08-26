@@ -12,18 +12,19 @@ using ECommons.UIHelpers;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Callback = ECommons.Automation.Callback;
 #pragma warning disable
 namespace SplatoonScriptsOfficial.Tests;
 public unsafe class GenericTest4 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => new();
-    public override Metadata? Metadata { get; } = new(4, "NightmareXIV");
+    public override Metadata? Metadata { get; } = new(5, "NightmareXIV");
     int a1;
     string Filter = "";
 
@@ -58,7 +59,12 @@ public unsafe class GenericTest4 : SplatoonScript
         }
         if(GenericHelpers.TryGetAddonByName<AddonContentsFinder>("ContentsFinder", out var addon))
         {
-            var list = addon->AtkUnitBase.GetNodeById(52)->GetAsAtkComponentList();
+            // GetNodeById 找不到節點會回 null,而 GetAsAtkComponentList() 是 [MemberFunction]
+            // 原生呼叫、不是受管理的 null-safe 存取器 —— 對空節點呼叫就是攔不到的 AVE,
+            // 所以先驗節點再呼叫。
+            var listNode = addon->AtkUnitBase.GetNodeById(52);
+            AtkComponentList* list = null;
+            if(listNode != null) list = listNode->GetAsAtkComponentList();
             var length = addon->NumEntries;
             var reader = new ReaderAddonContentsFinder(&addon->AtkUnitBase);
             for(int i = 0; i < length; i++)
@@ -115,7 +121,13 @@ public unsafe class GenericTest4 : SplatoonScript
     {
         if(GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContentsFinder", out var addon) && GenericHelpers.IsAddonReady(addon))
         {
-            var btn = addon->GetButtonNodeById(73);
+            var btn = addon->GetComponentButtonById(73);
+            // 🔴 GetComponentButtonById 找不到會回 null,而 IsEnabled 解的是
+            // OwnerNode->AtkResNode.NodeFlags(FFXIVClientStructs 對 OwnerNode 零空指標檢查),
+            // 兩層都要在讀取前驗。AVE 是 corrupted-state exception,try/catch 攔不到。
+            // 讀不到就回 false(這一幀不做事、下一輪重來)—— 不能當成「按鈕已停用」回 true,
+            // 那會把工作標成完成卻其實什麼都沒做。
+            if(btn == null || btn->OwnerNode == null) return false;
             if(btn->IsEnabled)
             {
                 Callback.Fire(addon, true, 12, 1);
@@ -134,7 +146,12 @@ public unsafe class GenericTest4 : SplatoonScript
         {
             var cfcData = Svc.Data.GetExcelSheet<ContentFinderCondition>().GetRowOrDefault(cfc);
             if(cfcData == null || cfcData.Value.Name.ExtractText() == "") throw new ArgumentOutOfRangeException(nameof(cfc));
-            var list = addon->AtkUnitBase.GetNodeById(52)->GetAsAtkComponentList();
+            // GetNodeById 找不到節點會回 null,而 GetAsAtkComponentList() 是 [MemberFunction]
+            // 原生呼叫、不是受管理的 null-safe 存取器 —— 對空節點呼叫就是攔不到的 AVE,
+            // 所以先驗節點再呼叫。
+            var listNode = addon->AtkUnitBase.GetNodeById(52);
+            AtkComponentList* list = null;
+            if(listNode != null) list = listNode->GetAsAtkComponentList();
             var length = addon->NumEntries;
             var reader = new ReaderAddonContentsFinder(&addon->AtkUnitBase);
             int cnt = 0;

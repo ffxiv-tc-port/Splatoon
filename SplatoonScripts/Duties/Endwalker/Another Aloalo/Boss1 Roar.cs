@@ -16,7 +16,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System;
@@ -52,7 +52,7 @@ public class Boss1_Roar : SplatoonScript
     private State _state = State.None;
 
     public override HashSet<uint>? ValidTerritories => [1179, 1180];
-    public override Metadata? Metadata => new(1, "Garume");
+    public override Metadata? Metadata => new(2, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -145,7 +145,7 @@ public class Boss1_Roar : SplatoonScript
                 break;
             default:
                 {
-                    if(sourceId.GetObject() is IBattleChara { DataId: 0x40A1 } or { DataId: 0x40A8 })
+                    if(sourceId.GetObject() is IBattleChara { BaseId: 0x40A1 } or { BaseId: 0x40A8 })
                     {
                         var enemy = (IBattleChara)sourceId.GetObject()!;
                         if(enemy.Position.X < -5)

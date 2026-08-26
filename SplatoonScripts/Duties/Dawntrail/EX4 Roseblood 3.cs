@@ -7,7 +7,7 @@ using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.Interop;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SharpDX.Direct3D11;
 using Splatoon.SplatoonScripting;
 using Splatoon.Utility;
@@ -19,6 +19,8 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1271];
+
+    public override Metadata? Metadata => new(3, "NightmareXIV");
 
     bool? IsDropper = null;
     List<InnerTile>? Tiles = null;
@@ -72,17 +74,19 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
         ImGuiEx.EnumCombo("Tower taking position", ref C.Position);
         if(ImGui.CollapsingHeader("Debug"))
         {
-            ImGui.Checkbox("IsDropped", ref this.IsDropped);
+            //ImGui.Checkbox("IsDropped", ref this.IsDropped);
             ImGuiEx.Checkbox("IsDropper", ref this.IsDropper);
             ImGuiEx.TextWrappedCopy($"""
             GetFilledTiles: {GetFilledTiles().Print()}
             TryFindRelativeTile: {TryFindRelativeTile(GetFilledTiles(), out var rel)}
             rel: {rel}
             """);
-            var cd = EventFramework.Instance()->GetInstanceContentDirector();
+            var eventFramework = EventFramework.Instance();
+            if(eventFramework == null) return;
+            var cd = eventFramework->GetInstanceContentDirector();
             if(cd != null && cd->MapEffects != null)
             {
-                for(int i = 4; i < 3 + 8; i++)
+                for(int i = 0; i < cd->MapEffects->ItemCount; i++)
                 {
                     ref var effect = ref cd->MapEffects->Items[i];
                     ImGuiEx.Text($"{i} Effect: {effect.LayoutId}/{effect.State}/{effect.Flags:B8}");
@@ -97,7 +101,7 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
     }
 
     //  Magic Vulnerability Up (3414), Remains = 8.1, Param = 0, Count = 0
-    bool IsDropped = Svc.Objects.OfType<IPlayerCharacter>().Any(x => x.StatusList.Any(s => s.StatusId == 3414));
+    bool IsDropped => Svc.Objects.OfType<IPlayerCharacter>().Any(x => x.StatusList.Any(s => s.StatusId == 3414));
 
     public override void OnVFXSpawn(uint target, string vfxPath)
     {
@@ -180,7 +184,9 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
     List<InnerTile> GetFilledTiles()
     {
         var ret = new List<InnerTile>();
-        var cd = EventFramework.Instance()->GetInstanceContentDirector();
+        var eventFramework = EventFramework.Instance();
+        if(eventFramework == null) return ret;
+        var cd = eventFramework->GetInstanceContentDirector();
         if(cd != null && cd->MapEffects != null)
         {
             for(int i = 4; i < 3 + 8; i++)
@@ -197,7 +203,13 @@ public unsafe sealed class EX4_Roseblood_3 : SplatoonScript
 
     bool TryFindRelativeTile(List<InnerTile> filledTiles, out InnerTile rel)
     {
-        var cd = EventFramework.Instance()->GetInstanceContentDirector();
+        var eventFramework = EventFramework.Instance();
+        if(eventFramework == null)
+        {
+            rel = default;
+            return false;
+        }
+        var cd = eventFramework->GetInstanceContentDirector();
         if(cd != null && cd->MapEffects != null)
         {
             bool[] circle = new bool[8];

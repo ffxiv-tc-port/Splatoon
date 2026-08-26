@@ -31,7 +31,7 @@ internal static unsafe class Explorer
         }
         if(Ptr == nint.Zero)
         {
-            if(Svc.Targets.Target != null && Svc.ClientState.LocalPlayer != null)
+            if(Svc.Targets.Target != null && Svc.Objects.LocalPlayer != null)
             {
                 DrawGameObject(Svc.Targets.Target);
             }
@@ -52,11 +52,11 @@ internal static unsafe class Explorer
         ImGuiEx.TextCopy($"ObjectKind: {obj.ObjectKind}");
         ImGuiEx.TextCopy($"{"Position".Loc()}: {obj.Position.X} {obj.Position.Y} {obj.Position.Z}");
         ImGuiEx.TextCopy($"{"Rotation".Loc()}: {obj.Rotation}/{360 - (obj.Rotation.RadiansToDegrees() + 180)}");
-        ImGuiEx.TextCopy($"Vector3 {"distance".Loc()}: {Vector3.Distance(obj.Position, Svc.ClientState.LocalPlayer.Position)}");
-        ImGuiEx.TextCopy($"Vector2 {"distance".Loc()}: {Vector2.Distance(obj.Position.ToVector2(), Svc.ClientState.LocalPlayer.Position.ToVector2())}");
+        ImGuiEx.TextCopy($"Vector3 {"distance".Loc()}: {Vector3.Distance(obj.Position, Svc.Objects.LocalPlayer.Position)}");
+        ImGuiEx.TextCopy($"Vector2 {"distance".Loc()}: {Vector2.Distance(obj.Position.ToVector2(), Svc.Objects.LocalPlayer.Position.ToVector2())}");
         ImGuiEx.TextCopy($"{"Object ID".Loc()} long: {((ulong)obj.Struct()->GetGameObjectId()).Format()}");
         ImGuiEx.TextCopy($"{"Object ID".Loc()}: {obj.EntityId.Format()}");
-        ImGuiEx.TextCopy($"{"Data ID".Loc()}: {obj.DataId.Format()}");
+        ImGuiEx.TextCopy($"{"Data ID".Loc()}: {obj.BaseId.Format()}");
         ImGuiEx.TextCopy($"{"Owner ID".Loc()}: {obj.OwnerId.Format()}");
         ImGuiEx.TextCopy($"{"NPC ID".Loc()}: {obj.Struct()->GetNameId()}");
         ImGuiEx.TextCopy($"{"Dead".Loc()}: {obj.Struct()->IsDead()}");
@@ -92,6 +92,8 @@ internal static unsafe class Explorer
             ImGuiEx.TextCopy($"TargetObjectID: {c.TargetObjectId}");
             ImGuiEx.TextCopy($"EventState:  {c.Struct()->EventState}");
             ImGuiEx.TextCopy($"VFX Container:  {(nint)(&c.Struct()->Vfx):X16}");
+            ImGuiEx.TextCopy($"StatusLoopVfxId:  {c.Struct()->StatusLoopVfxId}");
+            ImGuiEx.TextCopy($"Tethers:  {c.Struct()->Vfx.Tethers.ToArray().Select(x => $"ID: {x.Id} Progress: {x.Progress} Target: {x.TargetId.ObjectId:X8}").Print(" | ")}");
             ImGuiEx.Text("VFX");
             if(c.TryGetVfx(out var fx))
             {

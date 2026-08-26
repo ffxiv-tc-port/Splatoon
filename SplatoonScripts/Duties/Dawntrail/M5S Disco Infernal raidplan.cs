@@ -8,7 +8,7 @@ using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 
@@ -35,8 +35,8 @@ public sealed class M5S_Disco_Infernal_RaidPlan : SplatoonScript
 
     private (int x, int y) _targetIndex = (0, 0);
     public override HashSet<uint>? ValidTerritories => [1257];
-    public override Metadata? Metadata => new Metadata(1, "Garume,Alex");
-    private static IBattleNpc[] SpotLights => [.. Svc.Objects.Where(x => x.DataId == 0x47BB).OfType<IBattleNpc>()];
+    public override Metadata? Metadata => new Metadata(2, "Garume,Alex");
+    private static IBattleNpc[] SpotLights => [.. Svc.Objects.Where(x => x.BaseId == 0x47BB).OfType<IBattleNpc>()];
 
     private Config C => Controller.GetConfig<Config>();
 

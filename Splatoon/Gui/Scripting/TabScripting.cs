@@ -176,7 +176,7 @@ internal static class TabScripting
 
         void DrawScriptGroup(IEnumerable<SplatoonScript> scripts)
         {
-            if(ImGui.BeginTable("##scriptsTable", 7, ImGuiTableFlags.BordersInner | ImGuiTableFlags.BordersOuter | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
+            if(ImGui.BeginTable("##scriptsTable", 8, ImGuiTableFlags.BordersInner | ImGuiTableFlags.BordersOuter | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
             {
                 ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableSetupColumn("Configuration", ImGuiTableColumnFlags.WidthFixed, 120);
@@ -185,6 +185,7 @@ internal static class TabScripting
                 ImGui.TableSetupColumn("##c2");
                 ImGui.TableSetupColumn("##c3");
                 ImGui.TableSetupColumn("##c4");
+                ImGui.TableSetupColumn("##c5");
                 ImGui.TableHeadersRow();
                 foreach(var script in scripts)
                 {
@@ -313,6 +314,13 @@ internal static class TabScripting
                         ImGui.PopStyleVar();
                         //ImGuiEx.Tooltip("This script contains no settings");
                     }
+
+                    ImGui.TableNextColumn();
+
+                    // 這個集合由 Controller.DisplayAttentionWindowLine 讀取:
+                    // 名字在集合裡的腳本,它排進注意視窗的內容會被直接丟掉。
+                    ImGuiEx.CollectionButtonCheckbox(FontAwesomeIcon.ExclamationTriangle, script.InternalData.FullName, P.Config.DisabledAttentionWindowScripts);
+                    ImGuiEx.Tooltip("Disable attention window for this script.".Loc());
 
                     ImGui.TableNextColumn();
 

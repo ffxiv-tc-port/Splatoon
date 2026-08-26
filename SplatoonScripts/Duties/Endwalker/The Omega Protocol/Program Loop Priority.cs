@@ -9,7 +9,7 @@ using ECommons.Hooks;
 using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
 using ECommons.Schedulers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
 using System;
@@ -23,7 +23,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 public unsafe class Program_Loop_Priority : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(18, "NightmareXIV, damolitionn");
+    public override Metadata? Metadata => new(19, "NightmareXIV, damolitionn");
     private Config Conf => Controller.GetConfig<Config>();
     private HashSet<uint> TetheredPlayers = [];
     private List<uint> Towers = [];
@@ -111,7 +111,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
             {
                 if (Controller.TryGetElementByName("SelfTetherReminder", out var e))
                 {
-                    if (IsTakingCurrentTether(Svc.ClientState.LocalPlayer.EntityId))
+                    if (IsTakingCurrentTether(Svc.Objects.LocalPlayer.EntityId))
                     {
                         e.Enabled = true;
                         myTether = 0;
@@ -131,7 +131,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
                             SwitchTetherSafeSpots(false);
                         }
 
-                        if (tetheredPlayers.Contains(Svc.ClientState.LocalPlayer.EntityId))
+                        if (tetheredPlayers.Contains(Svc.Objects.LocalPlayer.EntityId))
                         {
                             e.overlayBGColor = Conf.ValidTetherColor.ToUint();
                             e.overlayTextColor = Conf.OverlayTextColor.ToUint();
@@ -156,7 +156,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
 
                                         if (players == null) return;
 
-                                        if (players[0].IGameObject.EntityId == Svc.ClientState.LocalPlayer.EntityId)
+                                        if (players[0].IGameObject.EntityId == Svc.Objects.LocalPlayer.EntityId)
                                         {
                                             SafeSpots[0].tether = true;
                                         }
@@ -184,7 +184,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
 
                                     if (players == null) return;
 
-                                    if (players[0].IGameObject.EntityId == Svc.ClientState.LocalPlayer.EntityId)
+                                    if (players[0].IGameObject.EntityId == Svc.Objects.LocalPlayer.EntityId)
                                     {
                                         myTether = tethers[0];
                                     }
@@ -245,7 +245,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
             {
                 if (Conf.Towers != TowerStartPoint.Disable_towers && Controller.TryGetElementByName("SelfTower", out var e))
                 {
-                    if (IsTakingCurrentTower(Svc.ClientState.LocalPlayer.EntityId))
+                    if (IsTakingCurrentTower(Svc.Objects.LocalPlayer.EntityId))
                     {
                         e.Enabled = true;
                         e.color = GradientColor.Get(Conf.TowerColor1, Conf.TowerColor2).ToUint();
@@ -258,7 +258,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
 
                             if (players == null) return;
 
-                            if (players[0].IGameObject.EntityId == Svc.ClientState.LocalPlayer.EntityId)
+                            if (players[0].IGameObject.EntityId == Svc.Objects.LocalPlayer.EntityId)
                             {
                                 e.refActorObjectID = currentTowers[0];
 
@@ -365,7 +365,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
                 {
                     //PluginLog.Information($"Event obj spawn: {obj} {obj.DataId}");
                 }
-                if (obj.DataId == 2013244 && GetOmega() != null)
+                if (obj.BaseId == 2013244 && GetOmega() != null)
                 {
                     Towers.Add(obj.EntityId);
                     if (TowerOrder.Count == 0)

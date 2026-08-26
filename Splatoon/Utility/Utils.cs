@@ -6,7 +6,9 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
+using FFXIVClientStructs.FFXIV.Client.UI.Arrays;
 using Newtonsoft.Json;
 using Splatoon.RenderEngines;
 using Splatoon.Serializables;
@@ -14,11 +16,241 @@ using Splatoon.Structures;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using TerraFX.Interop.Windows;
 
 namespace Splatoon.Utility;
 
 public static unsafe class Utils
 {
+    /// <summary>
+    /// 把 <paramref name="top"/> 以 alpha 合成疊到 <paramref name="bottom"/> 上。
+    /// 兩者都是 ImGui 的 ABGR packed uint。注意視窗的標題列底色用它,
+    /// 因為 ImGui 的 TableSetBgColor 不會自己做疊加。
+    /// </summary>
+    public static uint BlendColors(uint bottom, uint top)
+    {
+        var br = (bottom & 0xFF) / 255f;
+        var bg = ((bottom >> 8) & 0xFF) / 255f;
+        var bb = ((bottom >> 16) & 0xFF) / 255f;
+        var ba = ((bottom >> 24) & 0xFF) / 255f;
+
+        var tr = (top & 0xFF) / 255f;
+        var tg = ((top >> 8) & 0xFF) / 255f;
+        var tb = ((top >> 16) & 0xFF) / 255f;
+        var ta = ((top >> 24) & 0xFF) / 255f;
+
+        var outA = ta + ba * (1f - ta);
+        if(outA == 0f) return 0;
+
+        var outR = (tr * ta + br * ba * (1f - ta)) / outA;
+        var outG = (tg * ta + bg * ba * (1f - ta)) / outA;
+        var outB = (tb * ta + bb * ba * (1f - ta)) / outA;
+
+        return ((uint)(outR * 255f) & 0xFF)
+             | (((uint)(outG * 255f) & 0xFF) << 8)
+             | (((uint)(outB * 255f) & 0xFF) << 16)
+             | (((uint)(outA * 255f) & 0xFF) << 24);
+    }
+
+    /// <summary>
+    /// 目前這一幀的「注意色」。腳本用 <c>Controller.AttentionColor</c> 取用。
+    /// 依設定可能是彩虹循環、兩色漸層或固定色。
+    /// </summary>
+    public static Vector4 GetAttentionColor()
+    {
+        var cycleSeconds = Math.Max(P.Config.AttentionColorCycle, 0.1f);
+        if(P.Config.AttentionColorType == AttentionColorType.Rainbow)
+        {
+            var ms = Environment.TickCount64;
+            var t = ms / 1000d / cycleSeconds;
+            var hue = t % 1f;
+            return HsvToVector4(hue, 1f, 1f);
+        }
+        else if(P.Config.AttentionColorType == AttentionColorType.Gradient)
+        {
+            return GradientColor.Get(P.Config.AttentionColor1, P.Config.AttentionColor2, (int)(cycleSeconds * 500));
+        }
+        else
+        {
+            return P.Config.AttentionColor1;
+        }
+    }
+
+    public static Vector4 HsvToVector4(double h, double s, double v)
+    {
+        double r = 0f, g = 0f, b = 0f;
+        var i = (int)(h * 6f);
+        var f = (h * 6f) - i;
+        var p = v * (1f - s);
+        var q = v * (1f - (f * s));
+        var t = v * (1f - ((1f - f) * s));
+
+        switch(i % 6)
+        {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: r = v; g = p; b = q; break;
+        }
+
+        return new Vector4((float)r, (float)g, (float)b, 1f);
+    }
+    public static Vector3 ToXZY(this Vector3 xyzVector)
+    {
+        return new(xyzVector.X, xyzVector.Z, xyzVector.Y);
+    }
+
+    public static List<IGameObject> AlterTargetIfNeeded(Element element, IGameObject go)
+    {
+        List<IGameObject> ret = [go];
+        if(element.TargetAlteration == TargetAlteration.Tethered)
+        {
+            ret.Clear();
+            {
+                if(go is ICharacter chr)
+                {
+                    var c = chr.Struct();
+                    for(int i = 0; i < c->Vfx.Tethers.Length; i++)
+                    {
+                        var t = c->Vfx.Tethers[i];
+                        if(t.Id != 0)
+                        {
+                            var target = Svc.Objects.FirstOrDefault(x => x.GameObjectId == t.TargetId);
+                            if(target != null)
+                            {
+                                ret.Add(target);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach(var x in Svc.Objects)
+            {
+                if(x is ICharacter chr)
+                {
+                    var c = chr.Struct();
+                    for(int i = 0; i < c->Vfx.Tethers.Length; i++)
+                    {
+                        var t = c->Vfx.Tethers[i];
+                        if(t.Id != 0 && t.TargetId == go.GameObjectId)
+                        {
+                            ret.Add(x);
+                        }
+                    }
+                }
+            }
+        }
+        else if(element.TargetAlteration == TargetAlteration.Targeted)
+        {
+            ret.Clear();
+            if(go is ICharacter chr)
+            {
+                var t = chr.TargetObject;
+                if(t != null)
+                {
+                    ret.Add(t);
+                }
+            }
+        }
+        else if((int)element.TargetAlteration >= 1100 && (int)element.TargetAlteration <= 1200)
+        {
+            ret.Clear();
+            if(go != null)
+            {
+                var index = (int)element.TargetAlteration - 1100;
+                int i = 0;
+                foreach(var x in Svc.Objects.OfType<IPlayerCharacter>().OrderBy(o => Vector3.DistanceSquared(o.Position, go.Position)))
+                {
+                    if(index == i)
+                    {
+                        ret.Add(x);
+                        break;
+                    }
+                    i++;
+                }
+            }
+        }
+        else if((int)element.TargetAlteration >= 2100 && (int)element.TargetAlteration <= 2200)
+        {
+            ret.Clear();
+            if(go != null)
+            {
+                var index = (int)element.TargetAlteration - 2100;
+                int i = 0;
+                foreach(var x in Svc.Objects.OfType<IPlayerCharacter>().OrderByDescending(o => Vector3.DistanceSquared(o.Position, go.Position)))
+                {
+                    if(index == i)
+                    {
+                        ret.Add(x);
+                        break;
+                    }
+                    i++;
+                }
+            }
+        }
+        return ret;
+    }
+
+    public static List<Vector3> GetFacePositions(Layout layout, Element element, IGameObject go, string placeholder)
+    {
+        if(placeholder.StartsWith("<element:"))
+        {
+            var details = placeholder[1..^1].Split(":");
+            var list = details.Length == 2 
+                ? Splatoon.CapturedPositions.SafeSelect(layout.GetName())?.SafeSelect(details[1])
+                : Splatoon.CapturedPositions.SafeSelect(details[1])?.SafeSelect(details[2]);
+            return list ?? [];
+        }
+        if(placeholder == "<tethered>")
+        {
+            var ret = new List<Vector3>();
+            {
+                if(go is ICharacter chr)
+                {
+                    var c = chr.Struct();
+                    for(int i = 0; i < c->Vfx.Tethers.Length; i++)
+                    {
+                        var t = c->Vfx.Tethers[i];
+                        if(t.Id != 0)
+                        {
+                            var target = Svc.Objects.FirstOrDefault(x => x.GameObjectId == t.TargetId);
+                            if(target != null)
+                            {
+                                ret.Add(target.Position);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach(var x in Svc.Objects)
+            {
+                if(x is ICharacter chr)
+                {
+                    var c = chr.Struct();
+                    for(int i = 0; i < c->Vfx.Tethers.Length; i++)
+                    {
+                        var t = c->Vfx.Tethers[i];
+                        if(t.Id != 0 && t.TargetId == go.GameObjectId)
+                        {
+                            ret.Add(x.Position);
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+        var obj = ExtendedPronoun.Resolve(placeholder);
+        if(obj != null)
+        {
+            return [obj->Position];
+        }
+        return [];
+    }
+
     public static string GetShortName(this Expansion ex)
     {
         return ex switch
@@ -652,7 +884,7 @@ public static unsafe class Utils
     public static float GetAdditionalRotation(this Element e, float cx, float cy, float angle)
     {
         if(!e.FaceMe) return e.AdditionalRotation + angle;
-        return (e.AdditionalRotation.RadiansToDegrees() + MathHelper.GetRelativeAngle(new Vector2(cx, cy), Svc.ClientState.LocalPlayer.Position.ToVector2())).DegreesToRadians();
+        return (e.AdditionalRotation.RadiansToDegrees() + MathHelper.GetRelativeAngle(new Vector2(cx, cy), Svc.Objects.LocalPlayer.Position.ToVector2())).DegreesToRadians();
     }
 
     public static bool StartsWithIgnoreCase(this string a, string b)
@@ -706,11 +938,11 @@ public static unsafe class Utils
     //because Dalamud changed Y and Z in actor positions I have to do emulate old behavior to not break old presets
     public static Vector3 GetPlayerPositionXZY()
     {
-        if(Svc.ClientState.LocalPlayer != null)
+        if(Svc.Objects.LocalPlayer != null)
         {
             if(PlayerPosCache == null)
             {
-                PlayerPosCache = XZY(Svc.ClientState.LocalPlayer.Position);
+                PlayerPosCache = XZY(Svc.Objects.LocalPlayer.Position);
             }
             return PlayerPosCache.Value;
         }

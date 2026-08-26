@@ -10,7 +10,7 @@ using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Reflection;
 using ECommons.Schedulers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Splatoon.Memory;
 using Splatoon.SplatoonScripting;
@@ -26,14 +26,14 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P11S_Multiscript : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1152];
-        public override Metadata? Metadata => new(6, "NightmareXIV");
+        public override Metadata? Metadata => new(7, "NightmareXIV");
 
         private const string DarkVFX = "vfx/common/eff/m0830_dark_castloopc0k1.avfx";
         private const string LightVFX = "vfx/common/eff/m0830_light_castloopc0k1.avfx";
         private enum Color
         { Unknown, Light, Dark };
-        private IBattleNpc? Themis => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == 16114 && b.IsTargetable()) as IBattleNpc;
-        private IEnumerable<IBattleNpc> IllusoryThemises => Svc.Objects.Where(x => x is IBattleNpc b && b.DataId == 16115).Cast<IBattleNpc>();
+        private IBattleNpc? Themis => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == 16114 && b.IsTargetable()) as IBattleNpc;
+        private IEnumerable<IBattleNpc> IllusoryThemises => Svc.Objects.Where(x => x is IBattleNpc b && b.BaseId == 16115).Cast<IBattleNpc>();
         private TickScheduler? DonutScheduler;
         private TickScheduler? TowerScheduler;
 

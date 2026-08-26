@@ -43,14 +43,14 @@ public unsafe sealed class TranslationWorkspaceWindow : Window
             ImGuiEx.TextV("Source Language:".Loc());
             ImGui.TableNextColumn();
             ImGuiEx.SetNextItemFullWidth();
-            ImGuiEx.EnumCombo("##src", ref Page.SourceLanguage);
+            ImGuiEx.EnumCombo("##src", ref Page.SourceLanguage, names: LocEnum.Names<ClientLanguage>());
 
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             ImGuiEx.TextV("Target Language:".Loc());
             ImGui.TableNextColumn();
             ImGuiEx.SetNextItemFullWidth();
-            ImGuiEx.EnumCombo("##tar", ref Page.TargetLanguage);
+            ImGuiEx.EnumCombo("##tar", ref Page.TargetLanguage, names: LocEnum.Names<ClientLanguage>());
             ImGui.EndTable();
         }
 

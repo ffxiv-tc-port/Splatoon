@@ -5,13 +5,14 @@ using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.Hooks;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using ECommons.ImGuiMethods;
 
 namespace SplatoonScriptsOfficial.Duties.Endwalker.Dragonsong_s_Reprise;
 
@@ -36,19 +37,19 @@ public class P5_Wrath_of_the_Heavens : SplatoonScript
     private Element? _vellguineTargetElement;
     public override HashSet<uint>? ValidTerritories => [968];
 
-    public override Metadata? Metadata => new(4, "Enthusiastus, Garume, damolitionn");
+    public override Metadata? Metadata => new(6, "Enthusiastus, Garume, damolitionn");
 
     private IBattleNpc? Ignasse =>
-        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == IgnasseDataId) as IBattleNpc;
+        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == IgnasseDataId) as IBattleNpc;
 
     private IBattleNpc? Vellguine =>
-        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == VellguineDataId) as IBattleNpc;
+        Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == VellguineDataId) as IBattleNpc;
 
     private IPlayerCharacter PC =>
         !string.IsNullOrWhiteSpace(TestOverride) &&
         FakeParty.Get().FirstOrDefault(x => x.Name.TextValue == TestOverride) is IPlayerCharacter pc
             ? pc
-            : Svc.ClientState.LocalPlayer!;
+            : Svc.Objects.LocalPlayer!;
 
     private Config Conf => Controller.GetConfig<Config>();
 
@@ -197,6 +198,7 @@ public class P5_Wrath_of_the_Heavens : SplatoonScript
 
     public override void OnUpdate()
     {
+        Controller.GetRegisteredElements().Where(x => x.Value.tether).Each(x => x.Value.color = GradientColor.Get(EColor.GreenBright, EColor.RedBright, 500).ToUint());
         if(_ignasseHitboxElement.Enabled)
         {
             _ignasseHitboxElement.SetRefPosition(Ignasse.Position);

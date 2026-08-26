@@ -16,6 +16,6 @@
 		"DownloadLinkTesting": "https://love.puni.sh/plugins/Splatoon/latest.zip",
 		"AcceptsFeedback": true,
 		"IconUrl": "https://raw.githubusercontent.com/ffxiv-tc-port/DalamudPluginsTC/main/icons/Splatoon.png",
-		"DalamudApiLevel": 12
+		"DalamudApiLevel": 13
 }
 

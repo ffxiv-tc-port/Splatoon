@@ -6,7 +6,7 @@ using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ public class Boss1_Spring_Crystal_Tower : SplatoonScript
 
     private State _state = State.None;
     public override HashSet<uint>? ValidTerritories => [1179, 1180];
-    public override Metadata? Metadata => new(2, "Garume");
+    public override Metadata? Metadata => new(3, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -31,7 +31,7 @@ public class Boss1_Spring_Crystal_Tower : SplatoonScript
         {
             _crustalCastingCount++;
             if(_crustalCastingCount != 3) return;
-            var crystals = Svc.Objects.Where(x => x.DataId is 0x409D or 0x40A4).ToArray();
+            var crystals = Svc.Objects.Where(x => x.BaseId is 0x409D or 0x40A4).ToArray();
             var hasBubbleCrystals = crystals.Where(x => float.Abs(x.Position.X) < 11f);
 
             var isEast = crystals.All(x => x.Position.X > 0);
@@ -132,7 +132,7 @@ public class Boss1_Spring_Crystal_Tower : SplatoonScript
             if(ImGui.Button("Reset")) Reset();
             ImGui.Text($"State: {_state}");
 
-            var crystals = Svc.Objects.Where(x => x.DataId is 0x409D or 0x40A4).ToArray();
+            var crystals = Svc.Objects.Where(x => x.BaseId is 0x409D or 0x40A4).ToArray();
             var hasBubbleCrystals = crystals.Where(x => float.Abs(x.Position.X) < 11f);
             var isEast = crystals.All(x => x.Position.X > 0);
             var isNorth = hasBubbleCrystals.Any(x => x.Position.Z < -10);

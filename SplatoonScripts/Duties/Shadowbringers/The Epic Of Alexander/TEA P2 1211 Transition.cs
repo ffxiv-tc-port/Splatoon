@@ -5,7 +5,7 @@ using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.Memory;
 using Splatoon.SplatoonScripting;
@@ -64,7 +64,7 @@ public class TEA_P2_1211_Transition : SplatoonScript
     private int _myNumber;
 
     public override HashSet<uint> ValidTerritories => [887];
-    public override Metadata Metadata => new(6, "Garume");
+    public override Metadata Metadata => new(7, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -127,7 +127,7 @@ public class TEA_P2_1211_Transition : SplatoonScript
     {
         if(vfxPath.StartsWith("vfx/lockon/eff/m0361trg_a"))
         {
-            if(AttachedInfo.VFXInfos.TryGetValue(Svc.ClientState.LocalPlayer.Address, out var info))
+            if(AttachedInfo.VFXInfos.TryGetValue(Svc.Objects.LocalPlayer.Address, out var info))
                 if(info.OrderBy(x => x.Value.Age)
                     .TryGetFirst(x => x.Key.StartsWith("vfx/lockon/eff/m0361trg_a"), out var effect))
                     _myNumber = int.Parse(effect.Key.Replace("vfx/lockon/eff/m0361trg_a", "")[0].ToString());

@@ -5,7 +5,7 @@ using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.Utility;
@@ -22,7 +22,7 @@ public unsafe class QuestHighlighter : SplatoonScript
     public override HashSet<uint>? ValidTerritories => [];
     private Config C => Controller.GetConfig<Config>();
 
-    public override Metadata? Metadata => new(2, "???");
+    public override Metadata? Metadata => new(3, "???");
 
     public static class Markers
     {
@@ -163,7 +163,7 @@ public unsafe class QuestHighlighter : SplatoonScript
                     }
                     else if(x is IGameObject)
                     {
-                        if(C.ShowEO && (Markers.EventObjNameWhitelist.ContainsIgnoreCase(x.Name.ToString()) || Markers.EventObjWhitelist.Contains(x.DataId)))
+                        if(C.ShowEO && (Markers.EventObjNameWhitelist.ContainsIgnoreCase(x.Name.ToString()) || Markers.EventObjWhitelist.Contains(x.BaseId)))
                         {
                             want = true;
                         }
@@ -174,7 +174,7 @@ public unsafe class QuestHighlighter : SplatoonScript
             if(want)
             {
                 var element = GetElement(i++);
-                element.refActorDataID = x.DataId;
+                element.refActorDataID = x.BaseId;
                 element.overlayText = (C.ShowTargetName) ? "$NAME" : "";
                 element.tether = C.ShowTether;
                 element.thicc = C.LineThickness;

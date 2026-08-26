@@ -15,7 +15,7 @@ using ECommons.MathHelpers;
 using ECommons.PartyFunctions;
 using ECommons.Schedulers;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.Memory;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
@@ -50,7 +50,7 @@ public class Party_Synergy : SplatoonScript
 
     // public
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(6, "NightmareXIV, damolitionn");
+    public override Metadata? Metadata => new(7, "NightmareXIV, damolitionn");
     private Config Conf => Controller.GetConfig<Config>();
 
     public override void OnSetup()
@@ -199,13 +199,13 @@ public class Party_Synergy : SplatoonScript
     public override void OnUpdate()
     {
         if(state == State.None || PartyList.Count(x => x.PlayStationMarker != "") != 8 ||
-            Svc.ClientState.LocalPlayer == null)
+            Svc.Objects.LocalPlayer == null)
             return;
 
         if(!isLeftRightDecided)
         {
             // Set Far/Close
-            if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
+            if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
                 foreach(var row in PartyList)
                     row.FarClose = "Far";
             else
@@ -223,7 +223,7 @@ public class Party_Synergy : SplatoonScript
 
                 fetchedList.Add(row);
                 isLeftRightDecided = true;
-                myData = PartyList.FirstOrDefault(x => x.ObjectId == Svc.ClientState.LocalPlayer.GameObjectId);
+                myData = PartyList.FirstOrDefault(x => x.ObjectId == Svc.Objects.LocalPlayer.GameObjectId);
             }
 
             return;
@@ -273,7 +273,7 @@ public class Party_Synergy : SplatoonScript
             var OtherStacker = PartyList.Where(x => x.IsStacker && x.ObjectId != swapper.GameObjectId).FirstOrDefault();
             if(OtherStacker == null)
                 return;
-            var myData = PartyList.FirstOrDefault(x => x.ObjectId == Svc.ClientState.LocalPlayer.GameObjectId);
+            var myData = PartyList.FirstOrDefault(x => x.ObjectId == Svc.Objects.LocalPlayer.GameObjectId);
             if(myData == null)
                 return;
 
@@ -300,7 +300,7 @@ public class Party_Synergy : SplatoonScript
                 if(Conf.PrintPreciseResultInChat)
                     DuoLog.Warning($"Swapping! \n{SwapStacker.Name}\n{NoneVfxSwaper.Name}\n============");
 
-                if(Svc.ClientState.LocalPlayer.GameObjectId.EqualsAny(SwapStacker.ObjectId, NoneVfxSwaper.ObjectId) &&
+                if(Svc.Objects.LocalPlayer.GameObjectId.EqualsAny(SwapStacker.ObjectId, NoneVfxSwaper.ObjectId) &&
                     !printed)
                 {
                     new TimedMiddleOverlayWindow("swaponYOU", 10000, () =>
@@ -317,7 +317,7 @@ public class Party_Synergy : SplatoonScript
             if(Conf.ExplicitTether)
             {
                 PluginLog.Information($"FarLeft: {Conf.IsRightAdjustKnokback}");
-                if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
+                if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
                 {
                     Controller.GetElementByName("FarLeft").Enabled = true;
                     Controller.GetElementByName("FarRight").Enabled = true;
@@ -502,14 +502,14 @@ public class Party_Synergy : SplatoonScript
     {
         //Dequeued message: VFX vfx/lockon/eff/com_share2i.avfx
         if(vfxPath == VfxID.StackVFX &&
-            Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3427, 3428)))
+            Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3427, 3428)))
         {
             var stackers = AttachedInfo.VFXInfos
                 .Where(x => x.Value.Any(z => z.Key == VfxID.StackVFX && z.Value.Age < 1000)).Select(x => x.Key)
                 .Select(x => Svc.Objects.FirstOrDefault(z => z.Address == x)).ToArray();
             var opticalUnit = Svc.Objects.FirstOrDefault(x => x is ICharacter c && c.NameId == 7640);
             var mid = MathHelper.GetRelativeAngle(new Vector2(100, 100), opticalUnit.Position.ToVector2());
-            var myAngle = (MathHelper.GetRelativeAngle(Svc.ClientState.LocalPlayer.Position, opticalUnit.Position) -
+            var myAngle = (MathHelper.GetRelativeAngle(Svc.Objects.LocalPlayer.Position, opticalUnit.Position) -
                 mid + 360) % 360;
             if(stackers.Length == 2 && opticalUnit != null)
             {
@@ -520,7 +520,7 @@ public class Party_Synergy : SplatoonScript
                 var dirModified = myAngle < 180 ? "Right" : "Left";
                 if(Conf.ExplicitTether)
                 {
-                    if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
+                    if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
                         Controller.GetElementByName($"Far{dirNormal}").Enabled = true;
                     else
                         Controller.GetElementByName($"Close{dirNormal}").Enabled = true;
@@ -546,12 +546,12 @@ public class Party_Synergy : SplatoonScript
                     //DuoLog.Information($"Second swapper: {secondSwapper}");
                     if(Conf.PrintPreciseResultInChat)
                         DuoLog.Warning($"Swapping! \n{swapper.Name}\n{secondSwapper?.Name}\n============");
-                    if(Svc.ClientState.LocalPlayer.Address.EqualsAny(swapper.Address, secondSwapper.Address))
+                    if(Svc.Objects.LocalPlayer.Address.EqualsAny(swapper.Address, secondSwapper.Address))
                     {
                         HideAll();
                         if(Conf.ExplicitTether)
                         {
-                            if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
+                            if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == BuffList.FarGlitch))
                                 Controller.GetElementByName($"Far{dirModified}").Enabled = true;
                             else
                                 Controller.GetElementByName($"Close{dirModified}").Enabled = true;

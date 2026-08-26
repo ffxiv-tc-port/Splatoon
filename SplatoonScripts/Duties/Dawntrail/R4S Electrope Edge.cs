@@ -10,7 +10,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.SimpleGui;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using NightmareUI.PrimaryUI;
 using Splatoon.Memory;
 using Splatoon.SplatoonScripting;
@@ -37,13 +37,13 @@ public class R4S_Electrope_Edge : SplatoonScript
 
 
     public override HashSet<uint>? ValidTerritories { get; } = [1232];
-    public override Metadata? Metadata => new(9, "NightmareXIV");
+    public override Metadata? Metadata => new(10, "NightmareXIV");
     private List<uint> Hits = [];
     private List<uint> Longs = [];
     private uint Debuff = 3999;
 
     private IBattleNpc? WickedThunder => Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.NameId == 13057 && x.IsTargetable);
-    private IBattleNpc? RelativeTile => Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.DataId == 9020 && x.CastActionId == 38351 && x.IsCasting && x.BaseCastTime - x.CurrentCastTime > 0 && Vector3.Distance(new(100, 0, 100), x.Position).InRange(15.5f, 17f));
+    private IBattleNpc? RelativeTile => Svc.Objects.OfType<IBattleNpc>().FirstOrDefault(x => x.BaseId == 9020 && x.CastActionId == 38351 && x.IsCasting && x.BaseCastTime - x.CurrentCastTime > 0 && Vector3.Distance(new(100, 0, 100), x.Position).InRange(15.5f, 17f));
 
     public override void OnSetup()
     {

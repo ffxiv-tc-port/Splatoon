@@ -15,7 +15,7 @@ Configuration:
 ![R1S Protean Hightlight Script Instructions](/docs/images/instructions/dawntrail/raids/R1S_1.png)
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R1S%20Protean%20Highlight.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R1S%20Protean%20Highlight.cs
 ```
 
 ### [Script] [Untested] Raining Cats
@@ -23,7 +23,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R1S%20Raining%20Cats.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R1S%20Raining%20Cats.cs
 ```
 
 ## Presets
@@ -146,5 +146,5 @@ This script draws arrows indicating where the clones will jump to, draws cleaves
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R1S%20Multiscript.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R1S%20Multiscript.cs
 ```

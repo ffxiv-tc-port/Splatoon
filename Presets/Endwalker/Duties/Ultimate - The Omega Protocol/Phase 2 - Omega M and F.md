@@ -63,12 +63,12 @@ Full Tether Guide is need priority List setting. The priority is adjusted from r
 The default display and guide is New toolbox strat Left Swap. For other strats, please modify the position in the element editor. (Do not modify anything other than the position)
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Party%20Synergy.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Party%20Synergy.cs
 ```
 
 [International] [Partially EN] [Script] Target enforcer. Will not let you select immune target.
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/MF%20Target%20Enforcer.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/MF%20Target%20Enforcer.cs
 ```
 
 ## Playstation markers
@@ -163,7 +163,7 @@ Far
 # Limitless Synergy
 [Script] [Beta] Tethers indicator
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Limitless%20Synergy.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Limitless%20Synergy.cs
 ```
 
 [International] Optimized Sagittarius Arrow indicator
@@ -173,5 +173,5 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/
 
 [Script] Beyond Defense bait indicator. **It's not very reliable unless someone clearly baits it out, I'd not recommend to 100% rely on it**. 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Beyond%20Defense.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Beyond%20Defense.cs
 ```

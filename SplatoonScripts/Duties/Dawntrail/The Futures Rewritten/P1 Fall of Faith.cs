@@ -9,7 +9,7 @@ using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.PartyFunctions;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
@@ -29,6 +29,17 @@ public class P1_Fall_of_Faith : SplatoonScript
         West
     }
 
+    // 本腳本的設定介面早已是繁體中文(1ef111cc),但 ImGuiEx.EnumCombo 沒有拿到 names 時
+    // ECommons 直接畫 value.ToString(),所以標籤中文、選項英文。這張表只覆寫顯示字串,
+    // 寫回設定的列舉值完全不變。
+    private static readonly Dictionary<Direction, string> DirectionNames = new()
+    {
+        [Direction.North] = "北",
+        [Direction.East] = "東",
+        [Direction.South] = "南",
+        [Direction.West] = "西"
+    };
+
     private readonly ImGuiEx.RealtimeDragDrop<Job> DragDrop = new("DragDropJob", x => x.ToString());
 
     private Dictionary<string, PlayerData> _partyDatas = [];
@@ -37,7 +48,13 @@ public class P1_Fall_of_Faith : SplatoonScript
 
     private int _tetherCount = 1;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(2, "Garume");
+    public override Metadata? Metadata => new(3, "Garume");
+
+    public override Dictionary<int, string> Changelog => new()
+    {
+        [3] = "設定介面的下拉選單選項改為顯示繁體中文(原本只有標籤是中文、選項是英文)"
+    };
+
     private Config C => Controller.GetConfig<Config>();
 
     public override void OnStartingCast(uint source, uint castId)
@@ -188,12 +205,12 @@ public class P1_Fall_of_Faith : SplatoonScript
     {
         ImGui.Text("一般設定");
 
-        ImGuiEx.EnumCombo("連結1方向##Tether1", ref C.Tether1Direction);
-        ImGuiEx.EnumCombo("連結2方向##Tether2", ref C.Tether2Direction);
-        ImGuiEx.EnumCombo("連結3方向##Tether1", ref C.Tether3Direction);
-        ImGuiEx.EnumCombo("連結4方向##Tether1", ref C.Tether4Direction);
-        ImGuiEx.EnumCombo("無連結12方向##NoTether12", ref C.NoTether12Direction);
-        ImGuiEx.EnumCombo("無連結34方向##NoTether34", ref C.NoTether34Direction);
+        ImGuiEx.EnumCombo("連結1方向##Tether1", ref C.Tether1Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("連結2方向##Tether2", ref C.Tether2Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("連結3方向##Tether1", ref C.Tether3Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("連結4方向##Tether1", ref C.Tether4Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("無連結12方向##NoTether12", ref C.NoTether12Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("無連結34方向##NoTether34", ref C.NoTether34Direction, names: DirectionNames);
 
         ImGui.Separator();
 

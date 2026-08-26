@@ -3,13 +3,12 @@ using Dalamud.Game.ClientState.Objects.Types;
 using ECommons;
 using ECommons.ExcelServices;
 using ECommons.GameFunctions;
-using ECommons.GameHelpers;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.SimpleGui;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
 using System;
@@ -17,6 +16,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Element = Splatoon.Element;
+using Player = ECommons.GameHelpers.Player;
+using ECommons.GameHelpers;
+
+using ECommons.DalamudServices.Legacy;
 
 namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts;
 
@@ -56,7 +59,7 @@ public class P1_Burn_Strike_Tower_Tooler_Party : SplatoonScript
     private State _state = State.None;
     private List<PartyData> _partyDataList = [];
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(6, "Garume, Redmoon");
+    public override Metadata? Metadata => new(7, "Garume, Redmoon");
 
     private int TowerCount(uint castId)
     {

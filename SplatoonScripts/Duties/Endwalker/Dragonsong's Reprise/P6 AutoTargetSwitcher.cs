@@ -7,7 +7,7 @@ using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.Throttlers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -29,15 +29,15 @@ public class P6_AutoTargetSwitcher : SplatoonScript
     private float _lastMinPercentage;
     public override HashSet<uint>? ValidTerritories => [968];
 
-    public override Metadata? Metadata => new(5, "Garume");
+    public override Metadata? Metadata => new(6, "Garume");
     private Config C => Controller.GetConfig<Config>();
 
     private IBattleChara? Nidhogg => Svc.Objects.Where(o => o.IsTargetable)
-        .FirstOrDefault(o => o.DataId == 0x3144) as IBattleChara;
+        .FirstOrDefault(o => o.BaseId == 0x3144) as IBattleChara;
 
     private IBattleChara? Hraesvelgr => Svc.Objects
         .Where(o => o.IsTargetable)
-        .FirstOrDefault(o => o.DataId == 0x3145) as IBattleChara;
+        .FirstOrDefault(o => o.BaseId == 0x3145) as IBattleChara;
 
     private bool IsActive => !C.TimingMode ||
                              (C.EnableTimings.Contains(_currentTiming) && !C.DisableTimings.Contains(_currentTiming));

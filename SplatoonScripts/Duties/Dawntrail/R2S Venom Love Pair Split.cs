@@ -23,7 +23,7 @@ public class R2S_Venom_Love_Pair_Split : SplatoonScript
     }
     public override HashSet<uint>? ValidTerritories { get; } = [1228];
 
-    public override Metadata? Metadata => new(3, "Redmoon");
+    public override Metadata? Metadata => new(4, "Redmoon");
 
     private const uint PoisonResistanceDownDebuffID = 3935;
     private bool IsShow = false;
@@ -42,7 +42,7 @@ public class R2S_Venom_Love_Pair_Split : SplatoonScript
         if(sourceObj == null)
             return;
 
-        if(sourceObj.DataId == 0 || sourceObj.DataId != 16941)
+        if(sourceObj.BaseId == 0 || sourceObj.BaseId != 16941)
             return;
 
         if((castId == 37252) || (castId == 39688))
@@ -65,14 +65,14 @@ public class R2S_Venom_Love_Pair_Split : SplatoonScript
     public override void OnActionEffectEvent(ActionEffectSet set)
     {
         if(set.Action == null || (set.Source == null)) return;
-        if(set.Source.DataId == 0) return;
+        if(set.Source.BaseId == 0) return;
 
-        if((set.Action.Value.RowId == 37256) && (set.Source.DataId == 16945))
+        if((set.Action.Value.RowId == 37256) && (set.Source.BaseId == 16945))
         {
             HideElement();
         }
 
-        if((set.Action.Value.RowId == 39691) && (set.Source.DataId == 16943))
+        if((set.Action.Value.RowId == 39691) && (set.Source.BaseId == 16943))
         {
             HideElement();
         }

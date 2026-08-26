@@ -40,7 +40,7 @@ internal unsafe class ObjectEffectProcessor
         {
             e.Log();
         }
-        return ProcessObjectEffectHook.Original(a1, a2, a3, a4);
+        return ProcessObjectEffectHook.OriginalDisposeSafe(a1, a2, a3, a4);
     }
 
     internal ObjectEffectProcessor()

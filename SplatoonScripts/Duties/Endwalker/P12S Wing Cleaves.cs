@@ -7,7 +7,7 @@ using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.Utility;
@@ -21,7 +21,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P12S_Wing_Cleaves : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1153, 1154];
-        public override Metadata? Metadata => new(7, "NightmareXIV");
+        public override Metadata? Metadata => new(8, "NightmareXIV");
         private Queue<string> Cleaves = new();
         private bool isSpin = false;
         private Vector3 firstPos;
@@ -72,7 +72,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         public override void OnVFXSpawn(uint target, string vfxPath)
         {
             var obj = target.GetObject();
-            if(obj?.DataId == 16229 && vfxPath.Contains("vfx/lockon/eff/m0829"))
+            if(obj?.BaseId == 16229 && vfxPath.Contains("vfx/lockon/eff/m0829"))
             {
                 if(Cleaves.Count == 0)
                 {
@@ -157,7 +157,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         {
             if(Cleaves.Count > 0)
             {
-                var wings = Svc.Objects.Where(x => x.DataId == 16229);
+                var wings = Svc.Objects.Where(x => x.BaseId == 16229);
                 if(!wings.Any())
                 {
                     Cleaves.Clear();

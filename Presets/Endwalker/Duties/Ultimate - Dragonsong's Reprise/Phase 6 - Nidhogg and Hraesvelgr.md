@@ -82,14 +82,14 @@ Helps with keeping melee uptime when Nidhogg dives one half of the arena in addi
   - If adjustments are needed, turn on "Swap if needed."
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P6%20Wyrmsbreath%20First.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P6%20Wyrmsbreath%20First.cs
 ```
 
 [International][Beta][Untested] P6 Wroth Flames
 - Settings are required.
   - Please set the priority list.
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P6%20Wroth%20Flames.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P6%20Wroth%20Flames.cs
 ```
 
 [International][Beta][Untested] P6 Auto Target Switcher
@@ -98,5 +98,5 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/
   - Lower the "Acceptable Percentage" and "Interval."
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P6%20AutoTargetSwitcher.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P6%20AutoTargetSwitcher.cs
 ```

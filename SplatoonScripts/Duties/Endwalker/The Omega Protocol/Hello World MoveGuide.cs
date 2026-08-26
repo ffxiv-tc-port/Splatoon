@@ -16,7 +16,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.SplatoonAPI;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Data;
 using Splatoon;
 using Splatoon.SplatoonScripting;
@@ -33,7 +33,7 @@ using System.Threading.Tasks;
 namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 internal unsafe class Hello_World_MoveGuide : SplatoonScript
 {
-    public override Metadata? Metadata => new(2, "Redmoon");
+    public override Metadata? Metadata => new(3, "Redmoon");
     public override HashSet<uint> ValidTerritories => [1122];
 
     private enum State
@@ -240,7 +240,7 @@ internal unsafe class Hello_World_MoveGuide : SplatoonScript
             }
 
             ImGui.Text("ShowGuidePointRef()");
-            ImGui.InputText($"ObjectID", ref Conf.ObjectID, 11U);
+            ImGui.InputText($"ObjectID", ref Conf.ObjectID, 11);
             ImGui.InputFloat3("refOffset", ref Conf.refOffset);
             ImGui.InputFloat("Degree", ref Conf.deg);
             if(ImGui.Button("ShowGuidePointRef Show"))
@@ -307,7 +307,7 @@ internal unsafe class Hello_World_MoveGuide : SplatoonScript
             {
                 partyList.Add(new PartyListData() { Name = x.Name.ToString(), pcPtr = x });
 
-                if(x.Address == Svc.ClientState.LocalPlayer.Address)
+                if(x.Address == Svc.Objects.LocalPlayer.Address)
                 {
                     myData = partyList.Last();
                 }
@@ -781,7 +781,7 @@ internal unsafe class Hello_World_MoveGuide : SplatoonScript
 
     public Vector3 GetNearestWaymark(Vector3? referencePos = null)
     {
-        var basePos = referencePos ?? Svc.ClientState.LocalPlayer?.Position ?? Vector3.Zero;
+        var basePos = referencePos ?? Svc.Objects.LocalPlayer?.Position ?? Vector3.Zero;
         var nearestWaymark = Vector3.Zero;
         var shortestDistance = float.MaxValue;
 
@@ -851,6 +851,6 @@ internal unsafe class Hello_World_MoveGuide : SplatoonScript
 
     private static bool HasEffect(uint effect, float? remainingTile = null, IBattleChara? obj = null)
     {
-        return (obj ?? Svc.ClientState.LocalPlayer).StatusList.Any(x => x.StatusId == effect && (remainingTile == null || x.RemainingTime < remainingTile));
+        return (obj ?? Svc.Objects.LocalPlayer).StatusList.Any(x => x.StatusId == effect && (remainingTile == null || x.RemainingTime < remainingTile));
     }
 }

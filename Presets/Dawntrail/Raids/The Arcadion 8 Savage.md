@@ -13,7 +13,7 @@
 
 ### Stonefang/Windfang
 > [!IMPORTANT]
-> Contains configurable elements. [If you want to see your designated spot, open these presets and edit 4 elements' ADD ANGLE option as displayed in image available via this link.](https://github.com/PunishXIV/Splatoon/blob/main/Presets/Files/Dawntrail/m8sfang.png) Preset is usable without additional configuration as well, though.
+> Contains configurable elements. [If you want to see your designated spot, open these presets and edit 4 elements' ADD ANGLE option as displayed in image available via this link.](https://github.com/ffxiv-tc-port/Splatoon/blob/HEAD/Presets/Files/Dawntrail/m8sfang.png) Preset is usable without additional configuration as well, though.
 ```
 ~Lv2~{"Name":"M8S Stonefang","Group":"AAC Cruiserweight M4 Savage","ZoneLockH":[1263],"ElementsL":[{"Name":"Stonefang circle","type":1,"radius":9.0,"fillIntensity":0.3,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41889,41890],"refActorComparisonType":6,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0},{"Name":"Stonefang cone","type":4,"refY":15.0,"radius":15.0,"coneAngleMin":-15,"coneAngleMax":15,"color":3355503359,"fillIntensity":0.1,"thicc":3.0,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41889,41890],"refActorCastTimeMax":999.0,"refActorComparisonType":6,"includeRotation":true,"AdditionalRotation":0.05061455,"FaceMe":true,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0},{"Name":"Stonefang line card","type":3,"refY":15.0,"offY":-15.0,"radius":3.0,"fillIntensity":0.3,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41889],"refActorComparisonType":6,"includeRotation":true,"AdditionalRotation":1.5707964,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0},{"Name":"Stonefang line card","type":3,"refY":15.0,"offY":-15.0,"radius":3.0,"fillIntensity":0.3,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41889],"refActorComparisonType":6,"includeRotation":true,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0},{"Name":"Stonefang line inter","type":3,"refY":15.0,"offY":-15.0,"radius":3.0,"fillIntensity":0.3,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41890],"refActorComparisonType":6,"includeRotation":true,"AdditionalRotation":0.7853982,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0},{"Name":"Stonefang line inter","type":3,"refY":15.0,"offY":-15.0,"radius":3.0,"fillIntensity":0.3,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41890],"refActorComparisonType":6,"includeRotation":true,"AdditionalRotation":2.3561945,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0},{"Name":"[EDIT] Stonefang safespot tether inter (see github)","type":1,"Enabled":false,"offY":10.5,"radius":1.0,"color":3371826944,"Filled":false,"fillIntensity":0.5,"thicc":4.0,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41890],"refActorComparisonType":6,"includeRotation":true,"tether":true,"AdditionalRotation":0,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0},{"Name":"[EDIT] Stonefang safespot tether card (see github)","type":1,"Enabled":false,"offY":10.5,"radius":1.0,"color":3371826944,"Filled":false,"fillIntensity":0.5,"thicc":4.0,"refActorNPCNameID":13843,"refActorRequireCast":true,"refActorCastId":[41889],"refActorComparisonType":6,"includeRotation":true,"tether":true,"AdditionalRotation":0,"refActorTetherTimeMin":0.0,"refActorTetherTimeMax":0.0}]}
 ```
@@ -46,7 +46,7 @@ The following preset indicates range of cone attack directed at healers and tank
 ### [Script] Millenial Decay Universal
 Requires thorough configuration. For strats where you are not being knocked back, you may also need to edit elements coordinates.
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Millenial%20Decay%20EU.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Millenial%20Decay%20EU.cs
 ```
 
 ### Spread reminder
@@ -99,12 +99,12 @@ Displays second upcoming AOE in faint yellow:
 ### [Script] Tactical Pack
 Requires configuration
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Tactical%20Pack.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Tactical%20Pack.cs
 ```
 
 ### [Script] Pack Predation AOE
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Pack%20Predation%20Telegraphs.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Pack%20Predation%20Telegraphs.cs
 ```
 
 ### Cleanse countdown
@@ -195,7 +195,7 @@ Enable one of 4 disabled by default elements.
 #### [Clock, Toxic, DN, Half-Rinon] Shadowchase Spread/Stack guide - true north strat - Requires configuration
 
 > [!IMPORTANT]
-> Requires configuration. [Enable TWO positions for each stack and spread layouts - one from A pattern, one from B pattern set according to this picture. Mobs can spawn in either of these patterns, it's random.](https://github.com/PunishXIV/Splatoon/blob/main/Presets/Files/Dawntrail/image_224.png)
+> Requires configuration. [Enable TWO positions for each stack and spread layouts - one from A pattern, one from B pattern set according to this picture. Mobs can spawn in either of these patterns, it's random.](https://github.com/ffxiv-tc-port/Splatoon/blob/HEAD/Presets/Files/Dawntrail/image_224.png)
 >
 > Does NOT works with Rinon strat as it relies on relative north!
 ```
@@ -245,7 +245,7 @@ Displays 1st and 4th cleaves (relative north) in black shortly before they resol
 ### [Script] [Beta] Quad beckon moonlight
 Configuration optional - can be configured to pinpoint your spread position
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Quad%20Beckon%20Moonlight.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Quad%20Beckon%20Moonlight.cs
 ```
 
 ### Dragon heads after Beckon Moonlight
@@ -270,13 +270,13 @@ Early display
 > This means that in most cases your priority list will look like: **T1 H1 R1 M1 M2 R2 H2 T2**
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Ultraviolent%20Ray.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Ultraviolent%20Ray.cs
 ```
 
 ### [Script] Elemental Purge Cleave
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Elemental%20Purge%20Cleave.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Elemental%20Purge%20Cleave.cs
 ```
 
 ### South platform highlighter
@@ -291,7 +291,7 @@ https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties
 
 ### [Script] Rise of the Howling Wind / Twofold Tempest
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Rise%20of%20the%20Howling%20Wind.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Rise%20of%20the%20Howling%20Wind.cs
 ```
 
 ### Champion's circle
@@ -325,7 +325,7 @@ https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties
 
 ### [JP strat only] [Script] Millennial Decay
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Millennial%20Decay.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Millennial%20Decay.cs
 ```
 
 # Archive
@@ -335,7 +335,7 @@ I created this based on the following link.
 
 https://www.youtube.com/watch?v=CPpfqs0ysuM&t=621s
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Lone%20Wolfs%20Lament.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Lone%20Wolfs%20Lament.cs
 ```
 
 ### [Script] [JP] Ultraviolent Ray 4th
@@ -344,5 +344,5 @@ It is based on a strategy that has fallen out of use in JP
 In most cases, there is no need to use it
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M8S%20Ultraviolent%20Ray%204th.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M8S%20Ultraviolent%20Ray%204th.cs
 ```

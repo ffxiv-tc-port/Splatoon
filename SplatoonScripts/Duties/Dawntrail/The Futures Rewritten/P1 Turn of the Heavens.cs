@@ -11,7 +11,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.PartyFunctions;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten;
 internal class P1_Turn_of_the_Heavens : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1238];
-    public override Metadata? Metadata => new(2, "Redmoon");
+    public override Metadata? Metadata => new(3, "Redmoon");
 
     private Config Conf => Controller.GetConfig<Config>();
     private List<IPlayerCharacter> _sortedList = [];
@@ -113,7 +113,7 @@ internal class P1_Turn_of_the_Heavens : SplatoonScript
 
                 if(ThreadLoadImageHandler.TryGetIconTextureWrap((uint)job.GetIcon(), false, out var texture))
                 {
-                    ImGui.Image(texture.ImGuiHandle, new Vector2(24f));
+                    ImGui.Image(texture.Handle, new Vector2(24f));
                     ImGui.SameLine();
                 }
 
@@ -130,7 +130,7 @@ internal class P1_Turn_of_the_Heavens : SplatoonScript
             ImGui.Text($"_mechanicActive : {_mechanicActive}");
             ImGui.Text($"_stackedList : {_stackedList.Print()}");
             ImGui.Text($"_sortedList : {_sortedList.Print()}");
-            ImGui.Text($"Svc.ClientState.LocalPlayer.Name: {Svc.ClientState.LocalPlayer.Name}");
+            ImGui.Text($"Svc.ClientState.LocalPlayer.Name: {Svc.Objects.LocalPlayer.Name}");
         }
     }
 
@@ -196,12 +196,12 @@ internal class P1_Turn_of_the_Heavens : SplatoonScript
             DebugLog($"_stackedList: {_stackedList.Print()}");
             if(_stackedList.Count == 2)
             {
-                if(!_stackedList.Exists(x => x.Address == Svc.ClientState.LocalPlayer.Address))
+                if(!_stackedList.Exists(x => x.Address == Svc.Objects.LocalPlayer.Address))
                 {
                     DebugLog("Non stacker");
                     // non stacker show element
                     var noneStackers = _sortedList.Where(x => !_stackedList.Contains(x)).ToList();
-                    var myIndex = noneStackers.IndexOf(Svc.ClientState.LocalPlayer);
+                    var myIndex = noneStackers.IndexOf(Svc.Objects.LocalPlayer);
                     if(myIndex == -1)
                     {
                         DuoLog.Warning($"Could not find player in priority list");

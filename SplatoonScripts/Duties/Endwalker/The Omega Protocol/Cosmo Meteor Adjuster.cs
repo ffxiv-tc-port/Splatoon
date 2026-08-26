@@ -11,7 +11,7 @@ using ECommons.Logging;
 using ECommons.PartyFunctions;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ internal unsafe class Cosmo_Meteor_Adjuster : SplatoonScript
 {
     #region PublicDef
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(2, "Redmoon");
+    public override Metadata? Metadata => new(3, "Redmoon");
     #endregion
 
     #region PrivateDef
@@ -92,7 +92,7 @@ internal unsafe class Cosmo_Meteor_Adjuster : SplatoonScript
             if(vfxPath == VfxPath.Flare)
             {
                 _flarePos.Add(new FlareContainer(character, false));
-                if(character.Address == Svc.ClientState.LocalPlayer.Address)
+                if(character.Address == Svc.Objects.LocalPlayer.Address)
                 {
                     _flarePos.Last().mine = true;
                     _isFlareMine = true;
@@ -251,7 +251,7 @@ internal unsafe class Cosmo_Meteor_Adjuster : SplatoonScript
 
                 if(ThreadLoadImageHandler.TryGetIconTextureWrap((uint)job.GetIcon(), false, out var texture))
                 {
-                    ImGui.Image(texture.ImGuiHandle, new Vector2(24f));
+                    ImGui.Image(texture.Handle, new Vector2(24f));
                     ImGui.SameLine();
                 }
 
@@ -394,7 +394,7 @@ internal unsafe class Cosmo_Meteor_Adjuster : SplatoonScript
                 if(_flarePos.Any(x => x.character.Address == priorityMember.Address))
                 {
                     _flareData[i] = (northElementsArray[i], priorityMember.Name.ToString());
-                    if(Svc.ClientState.LocalPlayer.Address == priorityMember.Address)
+                    if(Svc.Objects.LocalPlayer.Address == priorityMember.Address)
                     {
                         Controller.GetElementByName(northElementsArray[i]).Enabled = true;
                         Controller.GetElementByName(northElementsArray[i]).tether = true;
@@ -411,7 +411,7 @@ internal unsafe class Cosmo_Meteor_Adjuster : SplatoonScript
                 if(_flarePos.Any(x => x.character.Address == priorityMember.Address))
                 {
                     _flareData[i] = (southElementsArray[i], priorityMember.Name.ToString());
-                    if(Svc.ClientState.LocalPlayer.Address == priorityMember.Address)
+                    if(Svc.Objects.LocalPlayer.Address == priorityMember.Address)
                     {
                         Controller.GetElementByName(southElementsArray[i]).Enabled = true;
                         Controller.GetElementByName(southElementsArray[i]).tether = true;

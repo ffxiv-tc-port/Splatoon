@@ -6,7 +6,7 @@ using ECommons.GameFunctions;
 using ECommons.Hooks;
 using ECommons.MathHelpers;
 using ECommons.Schedulers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P12S_Caloric_Theory : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1154];
-        public override Metadata? Metadata => new(2, "tatad2");
+        public override Metadata? Metadata => new(3, "tatad2");
 
         private string ElementNamePrefix = "P12SCaloricTheory123";
 
@@ -134,7 +134,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
             Indicator2.color = ImGuiColors.HealerGreen.ToUint();
             distancePassed = 0;
             //lastPosition = FakeParty.Get().First(x => x.EntityId == 0x1017913F).Position.ToVector2();
-            lastPosition = Svc.ClientState.LocalPlayer.Position.ToVector2();
+            lastPosition = Svc.Objects.LocalPlayer.Position.ToVector2();
 
             if(debug)
             {
@@ -148,7 +148,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         public override void OnUpdate()
         {
-            var hasBuff = Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == closeCaloricStatusId);
+            var hasBuff = Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == closeCaloricStatusId);
             if(hasBuff)
             {
                 if(!lastHasBuff)
@@ -159,7 +159,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
                 else
                 {
                     //Vector2 Position = FakeParty.Get().First(x => x.EntityId == 0x1017913F).Position.ToVector2(); 
-                    var Position = Svc.ClientState.LocalPlayer.Position.ToVector2();
+                    var Position = Svc.Objects.LocalPlayer.Position.ToVector2();
                     var distance = Vector2.Distance(Position, lastPosition);
                     //PluginLog.Information($"pos:{Position}, lastPos:{lastPosition}, dis: {distance}"); 
                     lastPosition = Position;

@@ -1,19 +1,19 @@
 ### **[Script]** [Beta] [ALL STRATS] Disco Infernal
 Universal Disco Infernal script that works with any strat, both melee and ranged.
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M5S%20Disco%20Infernal%20Universal.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M5S%20Disco%20Infernal%20Universal.cs
 ```
 
 ### **[Script]** Let's Dance (clones)
 
 Also works for normal
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M5S%20Lets%20Dance.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M5S%20Lets%20Dance.cs
 ```
 
 ### **[Script]** Conga Line for Arcady Night Fever + Let's Dance
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M5S_Lets_Dance_NavigateStandPosition.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M5S_Lets_Dance_NavigateStandPosition.cs
 ```
 
 ### *-snap twist
@@ -167,11 +167,11 @@ These presets/scripts are replaced by other ones.
 The script only works with ranged unless you use JP strats.
 Needs configuration. 
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M5S%20Disco%20Infernal.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M5S%20Disco%20Infernal.cs
 ```
 
 ### **[Script]** [Beta] [NA/EU] Disco Infernal
 [Please read here on how to configure it and which strats are supported.](https://github.com/PunishXIV/Splatoon/pull/288#issuecomment-2852446469)
 ```
-https://github.com/PunishXIV/Splatoon/raw/03f45f70e6dff1c82faeadbe00f76e4abe028a30/SplatoonScripts/Duties/Dawntrail/M5S%20Disco%20Infernal%20raidplan.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/03f45f70e6dff1c82faeadbe00f76e4abe028a30/SplatoonScripts/Duties/Dawntrail/M5S%20Disco%20Infernal%20raidplan.cs
 ```

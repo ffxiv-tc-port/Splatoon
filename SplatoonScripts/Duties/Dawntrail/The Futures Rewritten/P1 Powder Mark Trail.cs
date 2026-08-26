@@ -4,7 +4,7 @@ using ECommons.GameFunctions;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.Schedulers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten;
 internal class P1_Powder_Mark_Trail : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1238];
-    public override Metadata? Metadata => new(1, "Redmoon");
+    public override Metadata? Metadata => new(2, "Redmoon");
 
     private uint _buffPlayer = 0;
     private uint _tooClosePlayer = 0;
@@ -62,7 +62,7 @@ internal class P1_Powder_Mark_Trail : SplatoonScript
         var status = pc.StatusList.Where(x => x.StatusId == 4166 && x.RemainingTime < 6.0f).ToList();
         if(status.Count == 0) return;
         Controller.GetElementByName("PowderMark1").refActorObjectID = _buffPlayer;
-        if(_buffPlayer == Svc.ClientState.LocalPlayer.EntityId) Controller.GetElementByName("PowderMark1").Filled = false;
+        if(_buffPlayer == Svc.Objects.LocalPlayer.EntityId) Controller.GetElementByName("PowderMark1").Filled = false;
         else Controller.GetElementByName("PowderMark1").Filled = true;
         Controller.GetElementByName("PowderMark1").Enabled = true;
 
@@ -85,7 +85,7 @@ internal class P1_Powder_Mark_Trail : SplatoonScript
 
         _tooClosePlayer = tooClosePlayer;
         Controller.GetElementByName("PowderMark2").refActorObjectID = _tooClosePlayer;
-        if(_tooClosePlayer == Svc.ClientState.LocalPlayer.EntityId) Controller.GetElementByName("PowderMark2").Filled = false;
+        if(_tooClosePlayer == Svc.Objects.LocalPlayer.EntityId) Controller.GetElementByName("PowderMark2").Filled = false;
         else Controller.GetElementByName("PowderMark2").Filled = true;
         Controller.GetElementByName("PowderMark2").Enabled = true;
     }

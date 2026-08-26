@@ -1,6 +1,6 @@
 [Script] [International] [Configurable] Tether cones.
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/P10S%20Tethers.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P10S%20Tethers.cs
 ```
 
 [International] Towers AOE
@@ -30,7 +30,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/
 
 [International] A hint above your head when stack/spread debuffs are about to go off.
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P10S%20Debuffs.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P10S%20Debuffs.cs
 ```
 
 [International] Intelligent spread debuff AOE. Shows your AOE and others when you're too close to them. Shows 3 seconds in advance.

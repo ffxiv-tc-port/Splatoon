@@ -1,14 +1,10 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Plugin.Services;
 using ECommons;
-using ECommons.Automation;
 using ECommons.Automation.NeoTaskManager;
-using ECommons.CircularBuffers;
 using ECommons.Configuration;
 using ECommons.Events;
 using ECommons.GameFunctions;
@@ -16,7 +12,6 @@ using ECommons.Hooks;
 using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using ECommons.ObjectLifeTracker;
-using ECommons.Reflection;
 using ECommons.SimpleGui;
 using ECommons.Singletons;
 using ECommons.WindowsFormsReflector;
@@ -35,6 +30,7 @@ using Splatoon.Structures;
 using System.Net.Http;
 using Colors = Splatoon.Utility.Colors;
 using Localization = ECommons.LanguageHelpers.Localization;
+using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 
 namespace Splatoon;
 public unsafe class Splatoon : IDalamudPlugin
@@ -107,6 +103,10 @@ public unsafe class Splatoon : IDalamudPlugin
         }
         Loaded = true;
         ECommonsMain.Init(pluginInterface, this, Module.ObjectLife, Module.ObjectFunctions, Module.DalamudReflector);
+        // 讓「呼叫了對方沒有的 IPC 方法」不再完全靜默。
+        // ⚠️ 這也涵蓋 SplatoonScripts：腳本是執行期編譯進同一個 ALC，
+        // 用的是同一份 ECommons.dll，所以 EzIPC 的靜態事件是同一個。
+        EzIpcFailureLog.Enable();
         Svc.Commands.RemoveHandler("/loadsplatoon");
         EzConfig.Migrate<Configuration>();
         Config = EzConfig.Init<Configuration>() ?? new();
@@ -257,6 +257,7 @@ public unsafe class Splatoon : IDalamudPlugin
         Safe(AttachedInfo.Dispose);
         Safe(ScriptingProcessor.Dispose);
         Safe(BuffEffectProcessor.Dispose);
+        Safe(EzIpcFailureLog.Disable);
         ECommonsMain.Dispose();
         P = null;
         //Svc.Chat.Print("Disposing");
@@ -426,12 +427,12 @@ public unsafe class Splatoon : IDalamudPlugin
             PlaceholderCache.Clear();
             LayoutAmount = 0;
             ElementAmount = 0;
-            if(LogObjects && Svc.ClientState.LocalPlayer != null)
+            if(LogObjects && Svc.Objects.LocalPlayer != null)
             {
                 foreach(var t in Svc.Objects)
                 {
                     var ischar = t is ICharacter;
-                    var obj = (t.Name.ToString(), t.EntityId, (ulong)t.Struct()->GetGameObjectId(), t.DataId, ischar ? ((ICharacter)t).Struct()->ModelContainer.ModelCharaId : 0, t.Struct()->GetNameId(), ischar ? ((ICharacter)t).NameId : 0, t.ObjectKind);
+                    var obj = (t.Name.ToString(), t.EntityId, (ulong)t.Struct()->GetGameObjectId(), t.BaseId, ischar ? ((ICharacter)t).Struct()->ModelContainer.ModelCharaId : 0, t.Struct()->GetNameId(), ischar ? ((ICharacter)t).NameId : 0, t.ObjectKind);
                     loggedObjectList.TryAdd(obj, new ObjectInfo());
                     loggedObjectList[obj].ExistenceTicks++;
                     loggedObjectList[obj].IsChar = ischar;
@@ -447,7 +448,7 @@ public unsafe class Splatoon : IDalamudPlugin
                         loggedObjectList[obj].Targetable = t.Struct()->GetIsTargetable();
                         if(loggedObjectList[obj].Targetable) loggedObjectList[obj].TargetableTicks++;
                     }
-                    loggedObjectList[obj].Distance = Vector3.Distance(Svc.ClientState.LocalPlayer.Position, t.Position);
+                    loggedObjectList[obj].Distance = Vector3.Distance(Svc.Objects.LocalPlayer.Position, t.Position);
                     loggedObjectList[obj].HitboxRadius = t.HitboxRadius;
                     loggedObjectList[obj].Life = t.GetLifeTimeSeconds();
                 }
@@ -458,8 +459,9 @@ public unsafe class Splatoon : IDalamudPlugin
             }
             PlayerPosCache = null;
             S.RenderManager.ClearDisplayObjects();
-            if(Svc.ClientState.LocalPlayer != null)
+            if(Svc.Objects.LocalPlayer != null)
             {
+                PhaseUpdater.UpdatePhaseIfNeeded();
                 if(ChatMessageQueue.Count > 5 * dequeueConcurrency)
                 {
                     dequeueConcurrency++;
@@ -479,8 +481,8 @@ public unsafe class Splatoon : IDalamudPlugin
                     }
                 }
                 //if (CurrentChatMessages.Count > 0) PluginLog.Verbose($"Messages dequeued: {CurrentChatMessages.Count}");
-                var pl = Svc.ClientState.LocalPlayer;
-                if(Svc.ClientState.LocalPlayer.Address == nint.Zero)
+                var pl = Svc.Objects.LocalPlayer;
+                if(Svc.Objects.LocalPlayer.Address == nint.Zero)
                 {
                     Log("Pointer to LocalPlayer.Address is zero");
                     return;
@@ -608,6 +610,7 @@ public unsafe class Splatoon : IDalamudPlugin
             CurrentChatMessages.Clear();
             BuffEffectProcessor.ActorEffectUpdate();
             ScriptingProcessor.OnUpdate();
+            CapturedPositions.Clear();
         }
         catch(Exception e)
         {
@@ -663,6 +666,8 @@ public unsafe class Splatoon : IDalamudPlugin
             }
         }
     }
+
+    internal static Dictionary<string, Dictionary<string, List<Vector3>>> CapturedPositions = [];
 
     internal static void ProcessElementsOfLayout(Layout l)
     {

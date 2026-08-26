@@ -2,6 +2,7 @@
 using Dalamud.Game;
 using Dalamud.Interface.Colors;
 using ECommons;
+using ECommons.Automation.NeoTaskManager;
 using ECommons.Configuration;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
@@ -17,6 +18,20 @@ using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 
 namespace Splatoon.SplatoonScripting;
+
+/// <summary>
+/// 帶設定型別的腳本基底。繼承它就可以直接用 <c>C</c> 取用自己的設定,
+/// 不必每次寫 <c>Controller.GetConfig&lt;MyConfig&gt;()</c>。
+/// </summary>
+/// <remarks>
+/// 這是純加法:<c>SplatoonScript</c> 本身完全沒有動,既有腳本全部照舊繼承它。
+/// T 只要求 <c>new()</c>,不要求實作 <c>IEzConfig</c> —— 與上游一致。
+/// </remarks>
+public abstract class SplatoonScript<T> : SplatoonScript where T : new()
+{
+    /// <summary>本腳本的設定實例。第一次取用時才從磁碟載入。</summary>
+    public T C => Controller.GetConfig<T>();
+}
 
 public abstract class SplatoonScript
 {
@@ -44,6 +59,12 @@ public abstract class SplatoonScript
     /// Indicates whether your script operates strictly within Splatoon, ECommons and Dalamud APIs. 
     /// </summary>
     public virtual bool Safe { get; } = false;
+
+    /// <summary>
+    /// 覆寫這個屬性可以改變本腳本的 <c>Controller.TaskManager</c> 預設組態。
+    /// 預設值逐字沿用上游:時限 30 秒、開啟除錯輸出。
+    /// </summary>
+    public virtual TaskManagerConfiguration TaskManagerConfiguration { get; } = new(timeLimitMS: 30000, showDebug: true);
 
     public InternalData InternalData { get; internal set; } = null!;
 
@@ -242,7 +263,9 @@ public abstract class SplatoonScript
             ClientLanguage.Japanese => jp,
             ClientLanguage.German => de,
             ClientLanguage.French => fr,
-            (ClientLanguage)4 => cn,
+            // TC(台服)客戶端在 Dalamud 13.0.0.16 之後回報 ClientLanguage 7(TraditionalChinese),
+            // 舊版回報 4(ChineseSimplified)。用數值比較才能同時相容 CI 釘的 13.0.0.6(列舉沒有 7 這個名字)與執行期新版。
+            (ClientLanguage)4 or (ClientLanguage)5 or (ClientLanguage)7 => cn,
             _ => null,
         } ?? en ?? jp ?? de ?? fr ?? cn ?? "<null>";
     }
@@ -700,6 +723,17 @@ public abstract class SplatoonScript
             return false;
         }
         ScriptingProcessor.OnReset(this);
+        try
+        {
+            // TaskManager 是延遲建立的:腳本沒用過就是 null,這裡什麼也不做。
+            // 用過就必須在停用時釋放,否則它會繼續跑排隊中的工作。
+            Controller.TaskManagerInternal?.Dispose();
+            Controller.TaskManagerInternal = null;
+        }
+        catch(Exception ex)
+        {
+            ScriptingProcessor.LogError(this, ex, "TaskManager.Dispose");
+        }
         try
         {
             PluginLog.Information($"Disabling script {this}");

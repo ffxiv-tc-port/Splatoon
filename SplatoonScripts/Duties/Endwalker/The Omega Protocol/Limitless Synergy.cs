@@ -5,7 +5,7 @@ using ECommons.GameFunctions;
 using ECommons.Hooks;
 using ECommons.Logging;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 {
     public class Limitless_Synergy : SplatoonScript
     {
-        public override Metadata? Metadata => new(3, "NightmareXIV");
+        public override Metadata? Metadata => new(4, "NightmareXIV");
         public override HashSet<uint> ValidTerritories => [1122];
 
         private Dictionary<uint, uint> Tethers = [];
@@ -35,7 +35,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
         public override void OnTetherCreate(uint source, uint target, uint data2, uint data3, uint data5)
         {
             if(!allowed) return;
-            if(Svc.Objects.Any(x => x.DataId == 15713 && x.IsTargetable()))
+            if(Svc.Objects.Any(x => x.BaseId == 15713 && x.IsTargetable()))
             {
                 Tethers[source] = target;
             }
