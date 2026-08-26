@@ -5,6 +5,7 @@ using ECommons.DalamudServices;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using Dalamud.Bindings.ImGui;
 using Splatoon;
@@ -21,7 +22,7 @@ public class Boss1_Spring_Crystal_Tower : SplatoonScript
 
     private State _state = State.None;
     public override HashSet<uint>? ValidTerritories => [1179, 1180];
-    public override Metadata? Metadata => new(3, "Garume");
+    public override Metadata? Metadata => new(4, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -126,10 +127,10 @@ public class Boss1_Spring_Crystal_Tower : SplatoonScript
             ImGui.Unindent();
         }
 
-        if(ImGuiEx.CollapsingHeader("Debug"))
+        if(ImGuiEx.CollapsingHeader("Debug".Loc()))
         {
             ImGui.Indent();
-            if(ImGui.Button("Reset")) Reset();
+            if(ImGui.Button("Reset".Loc())) Reset();
             ImGui.Text($"State: {_state}");
 
             var crystals = Svc.Objects.Where(x => x.BaseId is 0x409D or 0x40A4).ToArray();

@@ -58,14 +58,14 @@ internal partial class CGui
         if(el.type != 1)
         {
             ImGui.SameLine();
-            ImGui.Checkbox("Face##", ref el.FaceMe);
+            ImGui.Checkbox("Face".Loc() + "##", ref el.FaceMe);
             if(el.FaceMe)
             {
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(100f);
-                
 
-                if(ImGui.BeginCombo("Face chara##", el.faceplayer, ImGuiComboFlags.HeightLarge))
+
+                if(ImGui.BeginCombo("Face chara".Loc() + "##", el.faceplayer, ImGuiComboFlags.HeightLarge))
                 {
                     ImGui.SetNextItemWidth(150f);
                     ImGui.InputText("##enterManually", ref el.faceplayer);
@@ -80,7 +80,7 @@ internal partial class CGui
                 }
                 ImGui.SameLine();
                 ImGui.Checkbox("Invert".Loc(), ref el.FaceInvert);
-                ImGuiEx.HelpMarker("Instead of this element facing placeholder, placeholder will face this element");
+                ImGuiEx.HelpMarker("Instead of this element facing placeholder, placeholder will face this element".Loc());
             }
         }
     }

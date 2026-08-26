@@ -47,7 +47,7 @@ internal static class StreamDetector
             ImGui.SetWindowFontScale(1f);
             ImGuiEx.Text("Normally, most of plugins are completely safe to use. Square Enix will not be able to detect their usage.".Loc());
             ImGuiEx.Text(ImGuiColors.DalamudOrange, "However, streaming with third party tools visible may result in consequences.".Loc());
-            ImGuiEx.Text("Regardless of how innocent a plugin or modification might be, it IS a violation of FFXIV's terms of service.\nThis includes not only third party tools, but also official Dalamud plugins, Advanced Combat Tracker and visual mods as well.");
+            ImGuiEx.Text("Regardless of how innocent a plugin or modification might be, it IS a violation of FFXIV's terms of service.\nThis includes not only third party tools, but also official Dalamud plugins, Advanced Combat Tracker and visual mods as well.".Loc());
             ImGui.Separator();
             ImGui.SetWindowFontScale(1.5f);
             ImGuiEx.Text(ImGuiColors.DalamudYellow, "If you intended to stream your game, absolutely make sure that your plugins\nand other third party tools are NOT VISIBLE ON STREAM.".Loc());

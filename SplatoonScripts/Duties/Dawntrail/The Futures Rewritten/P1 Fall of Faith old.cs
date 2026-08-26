@@ -5,6 +5,7 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using ECommons.PartyFunctions;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
@@ -34,7 +35,7 @@ public class P1_Fall_of_Faith_old : SplatoonScript
 
     private int _tetherCount = 1;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(2, "Garume");
+    public override Metadata? Metadata => new(4, "Garume");
     private Config C => Controller.GetConfig<Config>();
 
     public override void OnStartingCast(uint source, uint castId)
@@ -177,14 +178,20 @@ public class P1_Fall_of_Faith_old : SplatoonScript
             foreach(var x in FakeParty.Get())
                 party.Add((x.Name.ToString(), x.GetJob()));
 
+            // InfoProxyCrossRealm 走 InfoModule 鏈,UIModule／InfoModule 為 null 或 proxy 未註冊時
+            // 都會回 null。跨界隊伍只是補充來源,取不到就跟「不在跨界隊伍裡」同義
+            // (GroupCount 為 0),FakeParty 那份照樣填得完,所以安靜跳過不記 log。
             var proxy = InfoProxyCrossRealm.Instance();
-            for(var i = 0; i < proxy->GroupCount; i++)
+            if(proxy != null)
             {
-                var group = proxy->CrossRealmGroups[i];
-                for(var c = 0; c < proxy->CrossRealmGroups[i].GroupMemberCount; c++)
+                for(var i = 0; i < proxy->GroupCount; i++)
                 {
-                    var x = group.GroupMembers[c];
-                    party.Add((x.Name.Read(), (Job)x.ClassJobId));
+                    var group = proxy->CrossRealmGroups[i];
+                    for(var c = 0; c < proxy->CrossRealmGroups[i].GroupMemberCount; c++)
+                    {
+                        var x = group.GroupMembers[c];
+                        party.Add((x.Name.Read(), (Job)x.ClassJobId));
+                    }
                 }
             }
 
@@ -245,7 +252,7 @@ public class P1_Fall_of_Faith_old : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGui.Text("General");
+        ImGui.Text("General".Loc());
 
         ImGuiEx.EnumCombo("Tether1Direction##Tether1", ref C.Tether1Direction);
         ImGuiEx.EnumCombo("Tether2Direction##Tether2", ref C.Tether2Direction);

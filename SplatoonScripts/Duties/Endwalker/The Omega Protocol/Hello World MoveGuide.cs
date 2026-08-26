@@ -13,6 +13,7 @@ using ECommons.GameFunctions;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.SplatoonAPI;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -33,7 +34,7 @@ using System.Threading.Tasks;
 namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 internal unsafe class Hello_World_MoveGuide : SplatoonScript
 {
-    public override Metadata? Metadata => new(3, "Redmoon");
+    public override Metadata? Metadata => new(4, "Redmoon");
     public override HashSet<uint> ValidTerritories => [1122];
 
     private enum State
@@ -225,9 +226,9 @@ internal unsafe class Hello_World_MoveGuide : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        if(ImGui.CollapsingHeader("Debug"))
+        if(ImGui.CollapsingHeader("Debug".Loc()))
         {
-            ImGui.Text("State: " + state.ToString());
+            ImGui.Text("State: ".Loc() + state.ToString());
             ImGui.Text("Latent Count: " + latentCount.ToString());
             ImGui.Text("IsLock: " + isLock.ToString());
 

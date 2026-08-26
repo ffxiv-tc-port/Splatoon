@@ -7,6 +7,7 @@ using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.Hooks;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using ECommons.PartyFunctions;
 using ECommons.Schedulers;
@@ -23,7 +24,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 public unsafe class Program_Loop : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(16, "NightmareXIV");
+    public override Metadata? Metadata => new(17, "NightmareXIV");
     private Config Conf => Controller.GetConfig<Config>();
     private HashSet<uint> TetheredPlayers = [];
     private List<uint> Towers = [];
@@ -518,7 +519,7 @@ public unsafe class Program_Loop : SplatoonScript
             ImGui.SetNextItemWidth(150f);
             ImGui.InputTextWithHint("##newplayer", "Name without world", ref NewPlayer, 50);
             ImGui.SameLine();
-            if(ImGui.Button("Add"))
+            if(ImGui.Button("Add".Loc()))
             {
                 Conf.Swappers.Add(NewPlayer);
                 NewPlayer = "";

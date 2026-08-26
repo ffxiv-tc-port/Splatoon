@@ -835,10 +835,26 @@ public static unsafe class Utils
 
     public static IPlayerCharacter GetRolePlaceholder(CombatRole role, int num)
     {
+        // Framework.Instance() 宣告成 [StaticAddress("48 8B 1D ...", 3, isPointer: true)]：產生器讀的是
+        // 「指標的位址」再多解參考一層，所以它真的會回 null(登入前、登出後、關閉中都是常態)；
+        // 不帶 isPointer 的那種才是「null 就擲、否則保證非 null」，光看 attribute 名稱分不出來。
+        // GetUIModule()／GetPronounModule() 是 [MemberFunction] 原生呼叫：對 null 的 this 呼叫
+        // 會在遊戲碼裡解參考 ＝ AccessViolationException，在 .NET Core 屬 corrupted-state
+        // exception，try/catch 完全攔不到 ⇒ 只能事前判空。原本只判了最末端的回傳值 nint.Zero，
+        // 中間三層完全裸奔。
+        // 三層一次取出並提到迴圈外：這三個都是行程單例，不會在同一次迴圈中途換掉，
+        // 每輪重取沒有意義。取不到就回 null —— 與本函式既有的失敗語意(解析不到就回 null)一致。
+        var framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance();
+        if(framework == null) return null;
+        var uiModule = framework->GetUIModule();
+        if(uiModule == null) return null;
+        var pronounModule = uiModule->GetPronounModule();
+        if(pronounModule == null) return null;
+
         var curIndex = 1;
         for(var i = 1; i <= 8; i++)
         {
-            var result = (nint)FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUIModule()->GetPronounModule()->ResolvePlaceholder($"<{i}>", 0, 0);
+            var result = (nint)pronounModule->ResolvePlaceholder($"<{i}>", 0, 0);
             if(result == nint.Zero) return null;
             var go = Svc.Objects.CreateObjectReference(result);
             if(go is IPlayerCharacter pc)

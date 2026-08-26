@@ -68,7 +68,7 @@ internal static class Triggers
                     {
                         var col = trigger.IsRegex;
                         if(col) ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
-                        ImGui.Checkbox("Regex", ref trigger.IsRegex);
+                        ImGui.Checkbox("Regex".Loc(), ref trigger.IsRegex);
                         if(col) ImGui.PopStyleColor();
                     });
                     //ImGui.InputTextWithHint("##textinput1", "Case-insensitive message", ref trigger.Match, 1000);

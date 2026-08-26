@@ -50,7 +50,7 @@ public abstract class RenderEngine : IDisposable
         ImGui.PushID(RenderEngineKind.ToString());
         if(CanBeDisabled)
         {
-            if(ImGuiEx.CollectionCheckbox("Enable", RenderEngineKind, P.Config.EnabledRenderers))
+            if(ImGuiEx.CollectionCheckbox("Enable".Loc(), RenderEngineKind, P.Config.EnabledRenderers))
             {
                 if(!P.Config.EnabledRenderers.Contains(RenderEngineKind) && P.Config.RenderEngineKind == RenderEngineKind)
                 {
@@ -63,22 +63,22 @@ public abstract class RenderEngine : IDisposable
         {
             var x = true;
             ImGui.BeginDisabled();
-            ImGui.Checkbox("Enable", ref x);
+            ImGui.Checkbox("Enable".Loc(), ref x);
             ImGui.EndDisabled();
-            ImGuiEx.HelpMarker("This render engine can not be disabled.");
+            ImGuiEx.HelpMarker("This render engine can not be disabled.".Loc());
         }
         ImGui.SameLine();
-        if(ImGui.RadioButton("Default", P.Config.RenderEngineKind == RenderEngineKind))
+        if(ImGui.RadioButton("Default".Loc(), P.Config.RenderEngineKind == RenderEngineKind))
         {
             P.Config.RenderEngineKind = RenderEngineKind;
         }
-        ImGuiEx.HelpMarker($"All drawings, unless overriden per element, will be drawn using this render engine.");
+        ImGuiEx.HelpMarker("All drawings, unless overriden per element, will be drawn using this render engine.".Loc());
         if(LoadError == null)
         {
             ImGuiEx.Text(EColor.GreenBright, $"Render engine loaded successfully.".Loc());
             if(!Enabled)
             {
-                ImGuiEx.TextWrapped(EColor.OrangeBright, $"You have disabled this render engine. However, until you restart Splatoon or game, it will remain loaded but inactive.");
+                ImGuiEx.TextWrapped(EColor.OrangeBright, "You have disabled this render engine. However, until you restart Splatoon or game, it will remain loaded but inactive.".Loc());
             }
         }
         else

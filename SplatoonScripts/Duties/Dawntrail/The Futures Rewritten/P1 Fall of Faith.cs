@@ -5,6 +5,7 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.PartyFunctions;
@@ -48,11 +49,12 @@ public class P1_Fall_of_Faith : SplatoonScript
 
     private int _tetherCount = 1;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(3, "Garume");
+    public override Metadata? Metadata => new(4, "Garume");
 
     public override Dictionary<int, string> Changelog => new()
     {
-        [3] = "設定介面的下拉選單選項改為顯示繁體中文(原本只有標籤是中文、選項是英文)"
+        [3] = "設定介面的下拉選單選項改為顯示繁體中文(原本只有標籤是中文、選項是英文)",
+        [4] = "設定介面文字改走 .Loc() 在地化系統(原本是寫死的繁體中文,非繁中客戶端只會看到跟本行一樣的原始英文;顯示內容不變)"
     };
 
     private Config C => Controller.GetConfig<Config>();
@@ -203,14 +205,14 @@ public class P1_Fall_of_Faith : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGui.Text("一般設定");
+        ImGui.Text("General".Loc());
 
-        ImGuiEx.EnumCombo("連結1方向##Tether1", ref C.Tether1Direction, names: DirectionNames);
-        ImGuiEx.EnumCombo("連結2方向##Tether2", ref C.Tether2Direction, names: DirectionNames);
-        ImGuiEx.EnumCombo("連結3方向##Tether1", ref C.Tether3Direction, names: DirectionNames);
-        ImGuiEx.EnumCombo("連結4方向##Tether1", ref C.Tether4Direction, names: DirectionNames);
-        ImGuiEx.EnumCombo("無連結12方向##NoTether12", ref C.NoTether12Direction, names: DirectionNames);
-        ImGuiEx.EnumCombo("無連結34方向##NoTether34", ref C.NoTether34Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("Tether1Direction".Loc() + "##Tether1", ref C.Tether1Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("Tether2Direction".Loc() + "##Tether2", ref C.Tether2Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("Tether3Direction".Loc() + "##Tether1", ref C.Tether3Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("Tether4Direction".Loc() + "##Tether1", ref C.Tether4Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("NoTether12Direction".Loc() + "##NoTether12", ref C.NoTether12Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("NoTether34Direction".Loc() + "##NoTether34", ref C.NoTether34Direction, names: DirectionNames);
 
         ImGui.Separator();
 
@@ -218,12 +220,12 @@ public class P1_Fall_of_Faith : SplatoonScript
 
         ImGui.Separator();
 
-        ImGui.Text("紅色連結文字：");
+        ImGui.Text("RedTetherText:".Loc());
         ImGui.SameLine();
         var redTether = C.RedTetherText.Get();
         C.RedTetherText.ImGuiEdit(ref redTether);
 
-        ImGui.Text("藍色連結文字：");
+        ImGui.Text("BlueTetherText:".Loc());
         ImGui.SameLine();
         var blueTether = C.BlueTetherText.Get();
         C.BlueTetherText.ImGuiEdit(ref blueTether);

@@ -18,6 +18,10 @@ namespace Splatoon.Memory
             }
             PhaseUpdater.UpdateFromDirector(a3);
             ScriptingProcessor.OnDirectorUpdate(a3);
+            // 上游的完整參數多載。🔴 台服 7.20 的 director update 函式只吃 7 個引數
+            // (離線反組譯 0x140B6A260 實證,第 8/9 個引數的堆疊槽從未被讀取),
+            // 我方 ECommons 的委派也就只有 7 個 —— a8／a9 補 0。
+            ScriptingProcessor.OnDirectorUpdate((nint)a1, (uint)a2, a3, a4, a5, a6, a7, 0, 0);
         }
     }
 }

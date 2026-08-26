@@ -640,6 +640,24 @@ internal static partial class ScriptingProcessor
                 catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnObjectEffect)); }
             }
         }
+        // 舊多載先派完再派上游那個 uint 多載。遊戲自己就是把這兩個引數當 16 位元讀的,
+        // 零延伸不會遺失資訊(詳見 SplatoonScript 上該多載的註解)。
+        OnObjectEffectWide(Target, Param1, Param2);
+    }
+
+    private static void OnObjectEffectWide(uint Target, uint Param1, uint Param2)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnObjectEffect(Target, Param1, Param2);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnObjectEffect)); }
+            }
+        }
     }
 
     internal static void OnStartingCast(uint source, uint castId)
@@ -758,6 +776,25 @@ internal static partial class ScriptingProcessor
         }
     }
 
+    /// <summary>
+    /// 上游那個完整參數版的 director update 派送。
+    /// 🔴 a8／a9 在台服 7.20 不存在,呼叫端一律補 0(詳見 SplatoonScript 上該多載的註解)。
+    /// </summary>
+    internal static void OnDirectorUpdate(nint directorPtr, uint targetId, DirectorUpdateCategory a3, uint a4, uint a5, int a6, int a7, int a8, int a9)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnDirectorUpdate(directorPtr, targetId, a3, a4, a5, a6, a7, a8, a9);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnDirectorUpdate)); }
+            }
+        }
+    }
+
     internal static void OnPhaseChange(int phase)
     {
         for(var i = 0; i < Scripts.Count; i++)
@@ -812,6 +849,25 @@ internal static partial class ScriptingProcessor
                 try
                 {
                     Scripts[i].OnActorControl(sourceId, command, p1, p2, p3, p4, p5, p6, targetId, replaying);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnActorControl)); }
+            }
+        }
+        // 舊多載先派完再派上游那個 12 參數多載,既有腳本的相對執行順序不變。
+        // 🔴 台服 7.20 的 ActorControl 只有 10 個引數(離線反組譯實證,詳見
+        // SplatoonScript 上該多載的註解),所以 p7／p8 補 0、targetId／replaying 照真實值傳。
+        OnActorControlWithP7P8(sourceId, command, p1, p2, p3, p4, p5, p6, 0, 0, targetId, replaying);
+    }
+
+    private static void OnActorControlWithP7P8(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnActorControl(sourceId, command, p1, p2, p3, p4, p5, p6, p7, p8, targetId, replaying);
                 }
                 catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnActorControl)); }
             }

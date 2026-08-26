@@ -36,6 +36,17 @@ public unsafe class Controller
     public Splatoon Plugin => Splatoon.P;
 
     /// <summary>
+    /// 腳本應該當成「我」的那個玩家。與 <see cref="SplatoonScript.BasePlayer"/> 完全等價。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 可能為 <c>null</c>(未登入/切區中),腳本要判空。
+    /// 上游把這個入口標為過時、要大家改用 <c>SplatoonScript.BasePlayer</c>,這裡照搬 ——
+    /// 過時只會產生警告不會擋編譯,所以照上游寫法的腳本照樣載入得起來。
+    /// </remarks>
+    [Obsolete("Use SplatoonScript.BasePlayer")]
+    public IPlayerCharacter BasePlayer => global::Splatoon.Splatoon.BasePlayer;
+
+    /// <summary>
     /// Indicates whether player is in combat.
     /// </summary>
     public bool InCombat => Svc.Condition[ConditionFlag.InCombat];
@@ -55,7 +66,18 @@ public unsafe class Controller
     /// </summary>
     public float CombatMiliseconds => InCombat ? Environment.TickCount64 - P.CombatStarted : -1;
 
-    public int Scene => *global::Splatoon.Memory.Scene.ActiveScene;
+    /// <summary>
+    /// 場景編號取不到時回傳的哨兵值。真實場景編號讀的是一個 byte（0..255），
+    /// 所以 -1 不可能與任何真實場景相撞；本 repo 內建腳本對 Scene 的用法全是
+    /// 與 1..7 做 == / != 比較，拿到 -1 的行為與「不是那個場景」一致。
+    /// </summary>
+    public const int SceneUnavailable = -1;
+
+    /// <summary>
+    /// Indicates current scene. Returns <see cref="SceneUnavailable"/> (-1) when the
+    /// graphics environment manager is not available yet (title/loading screen).
+    /// </summary>
+    public int Scene => global::Splatoon.Memory.Scene.Current ?? SceneUnavailable;
 
     /// <summary>
     /// Loads if unloaded and returns script configuration file.
@@ -388,11 +410,11 @@ public unsafe class Controller
                 for(var i = 0; i < P.PriorityPopupWindow.Assignments.Count; i++)
                 {
                     var ass = P.PriorityPopupWindow.Assignments[i];
-                    // 上游這裡比對的是 Splatoon.BasePlayer(錄影回放時可以換人)。
-                    // 我方本體沒有 BasePlayer 那層,直接用本機玩家 ——
-                    // 非回放情境下兩者等價。LocalPlayer 為 null 時 GetNameWithWorld 回 null,
-                    // 與 NameWithWorld 比對必為 false,不會擲例外。
-                    if(ass.IsInParty(false, out var m) && m.NameWithWorld == Svc.Objects.LocalPlayer.GetNameWithWorld())
+                    // 與上游一致改用 BasePlayer(錄影回放時可以換人)。
+                    // 📌 我方沒搬上游那段切換視角的 UI,BasePlayerOverride 恆為 "",
+                    // 所以 BasePlayer 目前恆等於 Svc.Objects.LocalPlayer —— 這一行是等價替換。
+                    // LocalPlayer 為 null 時 GetNameWithWorld 回 null,與 NameWithWorld 比對必為 false,不會擲例外。
+                    if(ass.IsInParty(false, out var m) && m.NameWithWorld == global::Splatoon.Splatoon.BasePlayer.GetNameWithWorld())
                     {
                         return PriorityPopupWindow.RolePositions.SafeSelect(i);
                     }

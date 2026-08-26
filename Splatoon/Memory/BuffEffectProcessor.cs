@@ -126,12 +126,24 @@ internal unsafe class BuffEffectProcessor : IDisposable
             if(sm == null) continue;
             if(statusArray == null) continue;
 
+            // NumValidStatuses 是遊戲寫入的未夾 byte（0..255），但來源與目的地都只有 60 格：
+            // 來源是 CS 的 StatusManager._status（FixedSizeArray60<Status>），目的地是本類在
+            // 建構時自己 AllocHGlobal 的 MAX_STATUS_NUM 格。直接拿它當複製長度，計數異常時
+            // 會越界寫入自配緩衝＝堆積毀損（表現成別處隨機崩潰，現場指不回這裡），
+            // 同時也會越界讀出遊戲結構之外。故先夾上界，寫入與比對迴圈都用夾後值。
+            var statusCount = Math.Min((int)sm->NumValidStatuses, MAX_STATUS_NUM);
+
             // New object
             if(_CharacterStatusInfoPtr[i].ObjectID != gameObject->EntityId)
             {
-                Unsafe.InitBlock(_CharacterStatusInfoPtr[i].StatusPtr, 0, (uint)sizeof(CharacterStatusInfo));
+                // 這裡要清的是「本槽位的狀態快取緩衝」，它在建構時是照
+                // sizeof(Status) * MAX_STATUS_NUM 配置的（見建構式），不是 CharacterStatusInfo 的大小。
+                // 原本傳 sizeof(CharacterStatusInfo) 只清掉緩衝開頭的一小段，其餘保留前一個
+                // 佔用同一個物件表槽位的角色留下的舊狀態；之後該角色狀態數變多時，比對迴圈會拿
+                // 那些殘留值當「上一幀的狀態」，於是發出根本沒發生過的 Remove／Gain 事件（假 buff 事件）。
+                Unsafe.InitBlock(_CharacterStatusInfoPtr[i].StatusPtr, 0, (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * MAX_STATUS_NUM);
                 _CharacterStatusInfoPtr[i].ObjectID = character->EntityId;
-                Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * sm->NumValidStatuses);
+                Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * (uint)statusCount);
                 continue;
             }
 
@@ -139,7 +151,7 @@ internal unsafe class BuffEffectProcessor : IDisposable
             // Check status change
             Status status;
             var isChange = false;
-            for(var j = 0; j < sm->NumValidStatuses; ++j)
+            for(var j = 0; j < statusCount; ++j)
             {
                 if(_CharacterStatusInfoPtr[i].StatusPtr[j].StatusId != statusArray[j].StatusId)
                 {
@@ -179,7 +191,7 @@ internal unsafe class BuffEffectProcessor : IDisposable
             }
 
             // Update status
-            Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * sm->NumValidStatuses);
+            Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * (uint)statusCount);
         }
     }
 

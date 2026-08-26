@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Dalamud.Game;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Colors;
 using ECommons;
 using ECommons.Automation.NeoTaskManager;
@@ -7,6 +8,7 @@ using ECommons.Configuration;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.LanguageHelpers;
+using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -39,6 +41,35 @@ public abstract class SplatoonScript
     {
         Controller = new(this);
     }
+
+    /// <summary>
+    /// 腳本應該當成「我」的那個玩家。一般遊玩時等於本機玩家;
+    /// 只有在副本錄影回放且使用者指定了視角時才會換人。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 可能為 <c>null</c>(未登入/切區中),腳本要判空。
+    /// </remarks>
+    public IPlayerCharacter BasePlayer => global::Splatoon.Splatoon.BasePlayer;
+
+    private EzThrottler<string>? _ezThrottler;
+
+    /// <summary>
+    /// 本腳本專屬的時間節流器(毫秒)。第一次取用時才配置。
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ 每個腳本各有一份,key 不會和別的腳本互撞 —— 這正是它相對於靜態
+    /// <c>ECommons.Throttlers.EzThrottler</c> 的意義(那份的 key 是全域且持久的)。
+    /// ⚠️ 同一個 key 的**第一次** <c>Throttle()</c> 一律回 <c>true</c>(放行)。
+    /// </remarks>
+    public EzThrottler<string> EzThrottler => _ezThrottler ??= new();
+
+    private FrameThrottler<string>? _frameThrottler;
+
+    /// <summary>
+    /// 本腳本專屬的影格節流器。第一次取用時才配置。
+    /// </summary>
+    /// <remarks>⚠️ 與 <see cref="EzThrottler"/> 相同:每腳本一份,同 key 首次必放行。</remarks>
+    public FrameThrottler<string> FrameThrottler => _frameThrottler ??= new();
 
     /// <summary>
     /// Controller provides easy access to various helper functions that may be helpful for your script.
@@ -128,6 +159,20 @@ public abstract class SplatoonScript
     public virtual void OnObjectEffect(uint target, ushort data1, ushort data2) { }
 
     /// <summary>
+    /// 上游版本的 object effect 多載,參數型別是 <see cref="uint"/> 而不是 <see cref="ushort"/>。
+    /// 值與 <see cref="OnObjectEffect(uint, ushort, ushort)"/> 完全相同,只是零延伸成 32 位元。
+    /// </summary>
+    /// <remarks>
+    /// 📌 離線反組譯實證(台服 0x141631900):遊戲自己就是把這兩個引數當 16 位元讀的
+    /// (<c>movzx r14d, dx</c> / <c>movzx ebp, r8w</c>),上游的 <see cref="uint"/> 只是加寬宣告,
+    /// 高 16 位元遊戲根本不看。⇒ 零延伸過來不會遺失任何資訊。
+    /// </remarks>
+    /// <param name="target">Targeted object's ID</param>
+    /// <param name="data1">First parameter of object effect.</param>
+    /// <param name="data2">Second parameter of object effect.</param>
+    public virtual void OnObjectEffect(uint target, uint data1, uint data2) { }
+
+    /// <summary>
     /// Will be called when a tether created between two game objects. This method will only be called if a script is enabled.
     /// </summary>
     /// <param name="source">Source object ID of pair.</param>
@@ -186,6 +231,19 @@ public abstract class SplatoonScript
     public virtual void OnDirectorUpdate(DirectorUpdateCategory category) { }
 
     /// <summary>
+    /// 上游版本的 director update 多載,帶完整參數。只是為了讓照上游寫的腳本編得過而存在。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>台服 7.20 沒有 a8／a9,這兩個參數恆為 0。</b>
+    /// 離線反組譯實證:台服的 director update 函式在 0x140B6A260(整支只有 76 位元組),
+    /// 它只讀到第 7 個引數(<c>[rsp+0x60]</c>／<c>[rsp+0x68]</c>／<c>[rsp+0x70]</c> 分別是 a5／a6／a7),
+    /// 第 8、9 個引數的槽位<b>從頭到尾沒有被碰過</b>。
+    /// 📌 上游 81 支腳本裡**沒有任何一支** override 這個多載(全部 66 個 OnDirectorUpdate
+    /// override 都是單參數版),所以這個缺口目前不影響任何腳本。
+    /// </remarks>
+    public virtual void OnDirectorUpdate(nint directorPtr, uint targetId, DirectorUpdateCategory a3, uint a4, uint a5, int a6, int a7, int a8, int a9) { }
+
+    /// <summary>
     /// Will be called after object creation.
     /// </summary>
     /// <param name="newObjectPtr"></param>
@@ -205,6 +263,23 @@ public abstract class SplatoonScript
     /// <param name="targetId"></param>
     /// <param name="replaying"></param>
     public virtual void OnActorControl(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, ulong targetId, byte replaying) { }
+
+    /// <summary>
+    /// 上游(全球服 7.3)版本的 ActorControl 多載,多了 <paramref name="p7"/>／<paramref name="p8"/>。
+    /// 只是為了讓照上游寫的腳本編得過而存在。<b>VOLATILE DATA WARNING.</b>
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>台服 7.20 沒有 p7／p8,這兩個參數恆為 0。</b>
+    /// 離線反組譯實證(image base 0x140000000):呼叫點 0x14080ADEA 之前,
+    /// 遊戲只寫到 <c>[rsp+0x48]</c> ——
+    /// <c>[rsp+0x40]</c> 是 qword 的 <paramref name="targetId"/>(值 0xE0000000)、
+    /// <c>[rsp+0x48]</c> 是 byte 的 <paramref name="replaying"/>,總共**只有 10 個引數**。
+    /// 上游那兩個多出來的參數是全球服後續版本才加的。
+    /// ⚠️ 所以這裡**刻意不照抄上游的 12 參數委派去掛 hook** —— 那樣會讓
+    /// <paramref name="targetId"/> 與 <paramref name="replaying"/> 整個往後錯兩格讀到未寫入的堆疊,
+    /// 而且是靜默的。真實值照 10 參數版傳,p7／p8 補 0。
+    /// </remarks>
+    public virtual void OnActorControl(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying) { }
 
     [Obsolete($"Please use {nameof(OnActionEffectEvent)}")]
     public virtual void OnActionEffect(uint ActionID, ushort animationID, ActionEffectType type, uint sourceID, ulong targetOID, uint damage) { }

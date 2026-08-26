@@ -27,6 +27,10 @@ internal unsafe class VbmCamera
 
     public unsafe void Update()
     {
+        // 📌 CameraManager.Instance() 刻意不判空——它只是 (CameraManager*)Control.Instance() 的
+        //    轉型,而 Control 是 [StaticAddress(..., isPointer: false)],特徵碼失配時擲例外、
+        //    成功時回傳靜態結構本身的位址,永遠不會回 null,判空會是死碼。
+        //    下一行的 GetActiveCamera() 回傳值才是真的可能為 null,那個已經有判。
         var controlCamera = CameraManager.Instance()->GetActiveCamera();
         var renderCamera = controlCamera != null ? controlCamera->SceneCamera.RenderCamera : null;
         if(renderCamera == null)
@@ -47,7 +51,13 @@ internal unsafe class VbmCamera
 
         CameraAzimuth = MathF.Atan2(View.M13, View.M33);
         CameraAltitude = MathF.Asin(View.M23);
+        // 🔴 Device 是 [StaticAddress(..., isPointer: true)],Instance() 回傳靜態槽「裡面的值」,
+        //    可以合法為 null(裝置重建、切換解析度的空窗)。直接 -> 解參考產生的
+        //    AccessViolationException 在 .NET Core 是 corrupted-state exception,try/catch 攔不到。
+        //    取不到就保留上一幀的 ViewportSize 不更新(fail-closed)。
         var device = FFXIVClientStructs.FFXIV.Client.Graphics.Kernel.Device.Instance();
+        if(device == null)
+            return;
         ViewportSize = new(device->Width, device->Height);
     }
 
@@ -56,7 +66,14 @@ internal unsafe class VbmCamera
         // Read current ViewProjectionMatrix plus game window size
         var windowPos = ImGuiHelpers.MainViewport.Pos;
         var viewProjectionMatrix = ViewProj;
+        // 🔴 同上:Device.Instance() 可以合法回 null。取不到就當作「這個點不在畫面上」
+        //    (fail-closed),不要對位址 0 解參考。
         var device = Device.Instance();
+        if(device == null)
+        {
+            screenPos = Vector2.Zero;
+            return false;
+        }
         float width = device->Width;
         float height = device->Height;
 

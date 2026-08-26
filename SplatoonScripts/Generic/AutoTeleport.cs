@@ -19,7 +19,7 @@ namespace SplatoonScriptsOfficial.Generic;
 public unsafe class AutoTeleport : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1252];
-    public override Metadata Metadata => new(1, "NightmareXIV");
+    public override Metadata Metadata => new(2, "NightmareXIV");
 
     delegate void DisplayPopupBanner(nint a1, int textureId, int a3, int a4);
 
@@ -70,7 +70,25 @@ public unsafe class AutoTeleport : SplatoonScript
         {
             return true;
         }
-        if(ActionManager.Instance()->GetActionStatus(ActionType.Action, 41343) == 0 && !AgentMap.Instance()->IsPlayerMoving)
+        // 🔴 AgentMap.Instance() 由 [Agent(AgentId.Map)] 產生:內部鏈
+        //    AgentModule -> UIModule -> Framework,任一層回 null 整條就回 null(登入前、
+        //    切場景時是常態),底層 [StaticAddress]/[MemberFunction] 特徵碼失配時改為擲
+        //    InvalidOperationException——兩種失效模式並存。裸解參考 null 原生指標是
+        //    AccessViolationException,在 .NET Core 屬 corrupted-state exception,
+        //    try/catch 攔不到 ⇒ 只能事前判空。
+        //    fail-closed:取不到 agent 就當成「還在移動」,這一輪不送 /return
+        //    (寧可不傳送,也不要在狀態不明時送出傳送指令)。工作每幀重跑,不寫 log。
+        AgentMap* agentMap;
+        try
+        {
+            agentMap = AgentMap.Instance();
+        }
+        catch
+        {
+            agentMap = null;
+        }
+
+        if(agentMap != null && ActionManager.Instance()->GetActionStatus(ActionType.Action, 41343) == 0 && !agentMap->IsPlayerMoving)
         {
             if(FrameThrottler.Check("ReturnThrottle") && EzThrottler.Throttle("ReturnOC"))
             {

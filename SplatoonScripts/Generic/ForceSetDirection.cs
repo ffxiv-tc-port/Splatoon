@@ -3,6 +3,7 @@ using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Throttlers;
@@ -20,7 +21,7 @@ public unsafe class ForceSetDirection : SplatoonScript
     private Vector3 _lastPosition = Vector3.Zero;
     private static ActionManager* ActionManager => FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
     public override HashSet<uint>? ValidTerritories => [];
-    public override Metadata? Metadata => new(4, "Garume");
+    public override Metadata? Metadata => new(5, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -111,7 +112,7 @@ public unsafe class ForceSetDirection : SplatoonScript
     public override void OnSettingsDraw()
     {
         ImGui.Text("Force the player to face a specific direction.");
-        ImGui.Checkbox("Enabled", ref C.Enabled);
+        ImGui.Checkbox("Enabled".Loc(), ref C.Enabled);
         if(!C.Enabled)
             return;
         ImGui.Indent();
@@ -143,7 +144,7 @@ public unsafe class ForceSetDirection : SplatoonScript
             "Only force the player to face the direction when the player is stopped. \nIt is always recommended to turn it on because it is dangerous!",
             EColor.Red);
         ImGui.Unindent();
-        ImGui.Checkbox("Debug", ref C.Debug);
+        ImGui.Checkbox("Debug".Loc(), ref C.Debug);
     }
 
     public override void OnSetup()

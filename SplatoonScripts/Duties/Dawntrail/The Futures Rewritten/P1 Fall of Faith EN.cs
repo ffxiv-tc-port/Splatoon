@@ -6,6 +6,7 @@ using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Throttlers;
@@ -21,7 +22,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten;
 public class P1_Fall_of_Faith_EN : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1238];
-    public override Metadata? Metadata => new(8, "NightmareXIV");
+    public override Metadata? Metadata => new(9, "NightmareXIV");
     private Config C => Controller.GetConfig<Config>();
     private List<TetherInfo> Tethers = [];
     private int PlayersRemaining => Svc.Objects.OfType<IPlayerCharacter>().Count(x => x.StatusList.Any(s => s.StatusId == 1051));
@@ -317,20 +318,20 @@ public class P1_Fall_of_Faith_EN : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGuiEx.Text($"設定機制的處理方位");
-        ImGuiEx.RadioButtonBool("東西向", "南北向", ref C.IsWest);
-        ImGui.Checkbox("無連結的雷分散也依連環爆走位順序處理", ref C.PrioLightningSpread);
+        ImGuiEx.Text("Configure mechanic handling direction".Loc());
+        ImGuiEx.RadioButtonBool("East-West".Loc(), "North-South".Loc(), ref C.IsWest);
+        ImGui.Checkbox("Untethered lightning spreads also follow the conga line order".Loc(), ref C.PrioLightningSpread);
         if(C.PrioLightningSpread)
         {
             ImGui.Indent();
-            ImGuiEx.RadioButtonBool("優先序較高者往右", "優先序較高者往左", ref C.PrioLightningSpreadInverse);
+            ImGuiEx.RadioButtonBool("Higher priority goes right".Loc(), "Higher priority goes left".Loc(), ref C.PrioLightningSpreadInverse);
             ImGui.Unindent();
         }
-        ImGuiEx.Text($"設定連環爆走位順序,由{(C.IsWest ? "西往東" : "北往南")}排列。若啟用,無連結的雷分散也使用同一優先序。");
+        ImGuiEx.Text("Configure the conga line order, arranged ??. If enabled, untethered lightning spreads also use the same priority order.".Loc(C.IsWest ? "West to East".Loc() : "North to South".Loc()));
         C.Priority.Draw();
-        if(ImGui.CollapsingHeader("Debug"))
+        if(ImGui.CollapsingHeader("Debug".Loc()))
         {
-            ImGui.Checkbox("Active", ref Active);
+            ImGui.Checkbox("Active".Loc(), ref Active);
             ImGuiEx.Text($"Tethers: \n{Tethers.Select(x => $"{x.ObjectID.GetObject()} - fire: {x.IsFire}").Print("\n")}");
             ImGuiEx.Text($"Players: {PlayersRemaining}");
             ImGuiEx.Text(Svc.Objects.OfType<IPlayerCharacter>().Select(x => $"{x.GetNameWithWorld()} - {GetDirection(x.Position.ToVector2())}").Print("\n"));
