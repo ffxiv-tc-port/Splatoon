@@ -4,8 +4,6 @@ using ECommons;
 using ECommons.EzEventManager;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
-using ImGuiNET;
-using PInvoke;
 
 namespace Splatoon.Services;
 

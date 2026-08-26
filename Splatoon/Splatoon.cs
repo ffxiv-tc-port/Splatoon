@@ -22,7 +22,7 @@ using ECommons.Singletons;
 using ECommons.WindowsFormsReflector;
 using Lumina.Excel.Sheets;
 using NotificationMasterAPI;
-using PInvoke;
+using FXWindows = TerraFX.Interop.Windows.Windows;
 using Splatoon.Gui;
 using Splatoon.Gui.Priority;
 using Splatoon.Gui.Scripting;
@@ -718,7 +718,7 @@ public unsafe class Splatoon : IDalamudPlugin
     {
         if(s2wInfo != null)
         {
-            var lmbdown = Bitmask.IsBitSet(User32.GetKeyState(0x01), 15);
+            var lmbdown = Bitmask.IsBitSet(FXWindows.GetKeyState(0x01), 15);
             var mousePos = ImGui.GetIO().MousePos;
             if(Svc.GameGui.ScreenToWorld(new Vector2(mousePos.X, mousePos.Y), out var worldPos, Config.maxdistance * 5))
             {

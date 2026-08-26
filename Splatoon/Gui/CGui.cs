@@ -3,7 +3,8 @@ using ECommons;
 using ECommons.Funding;
 using ECommons.LanguageHelpers;
 using Newtonsoft.Json;
-using PInvoke;
+using TerraFX.Interop.Windows;
+using FXWindows = TerraFX.Interop.Windows.Windows;
 using Splatoon.ConfigGui;
 using Splatoon.Gui;
 using Splatoon.Gui.Scripting;
@@ -232,10 +233,10 @@ internal unsafe partial class CGui : IDisposable
         {
             var point = new POINT() { x = (int)screenPos.X, y = (int)screenPos.Y };
             //Chat.Print(point.X + "/" + point.Y);
-            if(User32.ClientToScreen(Process.GetCurrentProcess().MainWindowHandle, ref point))
+            if(FXWindows.ClientToScreen((HWND)Process.GetCurrentProcess().MainWindowHandle, &point))
             {
                 //Chat.Print(point.X + "/" + point.Y);
-                User32.SetCursorPos(point.x, point.y);
+                FXWindows.SetCursorPos(point.x, point.y);
             }
         }
     }
