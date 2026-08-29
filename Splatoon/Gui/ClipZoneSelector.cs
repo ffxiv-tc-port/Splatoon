@@ -14,6 +14,10 @@ internal class ClipZoneSelector : Window
 
     public override void PreDraw()
     {
+        // Dalamud Window 基底類別的 PreDraw() 負責推每視窗不透明度(標題列右鍵選單那個滑桿)。
+        // 覆寫而不呼叫 base 會讓那個內建功能對本視窗靜默半失效;base 的 push 要在最外層,
+        // 才能與 PostDraw 結尾的 base.PostDraw() 構成後進先出的成對 pop。
+        base.PreDraw();
         ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         ImGui.SetNextWindowSize(ImGuiHelpers.MainViewport.Size);
@@ -142,6 +146,7 @@ internal class ClipZoneSelector : Window
             P.Config.ClipZones.RemoveAt(toRem);
         }
         ImGui.PopStyleVar(2);
+        base.PostDraw();
     }
 
     public override void Draw()
