@@ -179,11 +179,11 @@ SplatoonScriptsOfficial.Generic@AutoTeleport,2,https://raw.githubusercontent.com
 SplatoonScriptsOfficial.Generic@AutoUseItem,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoUseItem.cs
 SplatoonScriptsOfficial.Generic@CastExplorer,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CastExplorer.cs
 SplatoonScriptsOfficial.Generic@CheckEmote,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CheckEmote.cs
-SplatoonScriptsOfficial.Generic@CloseReplayWindows,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CloseReplayWindows.cs
+SplatoonScriptsOfficial.Generic@CloseReplayWindows,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CloseReplayWindows.cs
 SplatoonScriptsOfficial.Generic@CommandOnLogin,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CommandOnLogin.cs
 SplatoonScriptsOfficial.Generic@CustomResolutionSwitcher,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CustomResolutionSwitcher.cs
 SplatoonScriptsOfficial.Generic@DalamudFixer,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DalamudFixer.cs
-SplatoonScriptsOfficial.Generic@DenyAllTrades,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DenyAllTrades.cs
+SplatoonScriptsOfficial.Generic@DenyAllTrades,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DenyAllTrades.cs
 SplatoonScriptsOfficial.Generic@DisableHandleActionOutHook,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DisableHandleActionOutHook.cs
 SplatoonScriptsOfficial.Generic@EnemyAggro,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/EnemyAggro.cs
 SplatoonScriptsOfficial.Generic@EnforceSettings,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/EnforceSettings.cs
