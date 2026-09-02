@@ -65,18 +65,26 @@ internal unsafe class RedmoonTest4 :SplatoonScript
             ResNode = resNode;
         }
 
+        /// <summary>送出 callback 時第二個參數的實際數值（金 8／銀 4／無 0）。</summary>
+        /// <remarks>抽成屬性只是為了讓 <see cref="PressKey"/> 與 <see cref="Select"/> 用的是同一份值；數值本身沒有改。</remarks>
+        private uint AchievementValue => Achievement switch
+        {
+            Achevement.Gold => 8u,
+            Achevement.Silver => 4u,
+            _ => 0u,
+        };
+
+        /// <summary>這一筆在守衛裡的「參數組」鍵。</summary>
+        /// <remarks>
+        /// 🔴 守衛的粒度必須是（視窗，實例位址，<b>參數組</b>）而不是「一扇視窗只按一次」：
+        /// 這支腳本是對<b>同一扇</b> WKSMission 逐筆送不同的 RowId／index 去把每個任務的代幣讀出來，
+        /// 併成同一個鍵會讓第二筆之後全部被自己的守衛擋掉，整個列舉停在第一筆。
+        /// </remarks>
+        public string PressKey => $"12,{RowId},{AchievementValue},{index}";
+
         public void Select([DisallowNull] AtkUnitBase* wksMission)
         {
-            int achievement = 0;
-            if (Achievement == Achevement.Gold)
-            {
-                achievement = 8;
-            }
-            else if (Achievement == Achevement.Silver)
-            {
-                achievement = 4;
-            }
-            Callback.Fire(wksMission, true, 12, RowId, (uint)achievement, (uint)index);
+            Callback.Fire(wksMission, true, 12, RowId, AchievementValue, (uint)index);
         }
 
         public void GetTokenCounts([DisallowNull] AtkUnitBase* wksMission)
@@ -149,7 +157,17 @@ internal unsafe class RedmoonTest4 :SplatoonScript
     }
 
     public override HashSet<uint>? ValidTerritories { get; } = null;
-    public override Metadata? Metadata => new(1, "Redmoon");
+    public override Metadata? Metadata => new(2, "Redmoon");
+
+    public override Dictionary<int, string> Changelog => new()
+    {
+        [2] = """
+        修正：對視窗送出點擊之後有「正在關閉中」的幾幀，這期間視窗仍然通過就緒檢查，
+        此時再送一次就是攔不到的原生存取違規（遊戲當場關閉）。
+        現在同一扇視窗的同一組參數在它收掉之前只送一次；
+        除錯面板上那顆直接點確認框「是」的按鈕原本連就緒檢查都沒有，一併補上。
+        """
+    };
 
     private List<LeveData> _leveData = new();
     [DisallowNull]
@@ -158,8 +176,96 @@ internal unsafe class RedmoonTest4 :SplatoonScript
     private Job _job = 0;
     private bool _start = false;
 
+    /// <summary>宇宙探索任務清單視窗。</summary>
+    private const string WksMissionAddon = "WKSMission";
+    /// <summary>宇宙探索的常駐 HUD。</summary>
+    private const string WksHudAddon = "WKSHud";
+    /// <summary>確認框。</summary>
+    private const string SelectYesnoAddon = "SelectYesno";
+
+    /// <summary>會被守衛罩住的視窗名字，解除點逐一輪詢這一份。</summary>
+    private static readonly string[] GuardedAddons = [WksMissionAddon, WksHudAddon, SelectYesnoAddon];
+
+    /// <summary>
+    /// 每個視窗名字底下、「已經送過點擊的那一組參數」對應的實例位址與送出的時刻。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>位址只拿來做等值比較，永遠不解參</b>——所以 <see cref="TryBeginPress"/> 收的是
+    /// <see cref="nint"/> 而不是指標，讓「不解參」變成型別上就辦不到的事。
+    /// </remarks>
+    private readonly Dictionary<string, Dictionary<string, (nint Address, long At)>> _pressed = new(StringComparer.Ordinal);
+
+    /// <summary>多次互動窗（按下去視窗<b>不會</b>消失）的逃生口：15 幀，60fps 下約 250 毫秒。</summary>
+    /// <remarks>
+    /// WKSHud 與 WKSMission 按下之後都還留在畫面上、而且本來就要連續按（逐筆讀任務代幣），
+    /// 逃生口取太長會把正常流程變成慢動作。
+    /// </remarks>
+    private const long RoutineRePressTimeoutMs = 250;
+
+    /// <summary>「回答一次即終結」的視窗（確認框）的逃生口：2000 毫秒。</summary>
+    /// <remarks>
+    /// 遠大於「正在關閉中」那幾幀（60fps 下數十毫秒、卡頓時也就數百毫秒）。
+    /// 🔴 有逃生口是刻意的：萬一上一次的點擊根本沒生效、視窗就是還開著，
+    /// 沒有逾時的話會把崩潰換成「這顆按鈕從此按不動」的靜默失效。
+    /// </remarks>
+    private const long PressReleaseTimeoutMs = 2000;
+
+    /// <summary>
+    /// 登記「即將對這扇視窗送出這一組參數」。<b>回 <see langword="false"/> ＝這一輪絕對不能送。</b>
+    /// </summary>
+    /// <remarks>
+    /// 🔴🔴 就緒檢查三關（非 null／<c>IsVisible</c>／<c>UldManager.LoadedState == Loaded</c>）
+    /// <b>擋不住「送出之後正在關閉中」的那幾幀</b>：那期間三關全過，而視窗其實已經在拆，
+    /// 此時再送就是原生 AccessViolationException（.NET Core 的 corrupted-state exception，
+    /// <c>try/catch</c> 攔不到，遊戲當場關閉）。這裡走的是 <c>ClickAddonButton</c> ⇒ <c>ReceiveEvent</c>
+    /// （直接模擬點擊），比送 callback 更早踩到關閉中的視窗。
+    /// <para>
+    /// 一回 <see langword="true"/> 就已經把「送過了」記下去，所以呼叫點必須<b>緊接在送出動作之前</b>；
+    /// 登記完卻不送的話會白白封鎖到逾時為止。
+    /// </para>
+    /// <para>
+    /// 📌 位址不同就放行：同一個名字底下現在掛的是另一個實例，我們送過的那扇已經取不到了。
+    /// （位址被新視窗重用也不成問題：頂多多等到逾時，不會變成崩潰。）
+    /// </para>
+    /// <para>
+    /// ⚠️ 用牆鐘（<see cref="Environment.TickCount64"/>）而不是繪製幀計數器是刻意的：
+    /// 畫面隱藏（過場／隱藏 UI 熱鍵）期間繪製幀根本不前進，逃生口會永不到期。
+    /// </para>
+    /// </remarks>
+    private bool TryBeginPress(string addonName, nint address, string parameters, long timeoutMs)
+    {
+        if (!_pressed.TryGetValue(addonName, out var byParameters))
+        {
+            byParameters = new(StringComparer.Ordinal);
+            _pressed[addonName] = byParameters;
+        }
+        if (byParameters.TryGetValue(parameters, out var prev) && prev.Address == address
+            && Environment.TickCount64 - prev.At < timeoutMs)
+        {
+            return false;
+        }
+        byParameters[parameters] = (address, Environment.TickCount64);
+        return true;
+    }
+
+    /// <summary>視窗真的收掉了 ⇒ 解除封鎖，下一扇同名視窗照樣按。</summary>
+    /// <remarks>
+    /// ⚠️ 刻意<b>不</b>在 <see cref="OnReset"/>／<see cref="WarmReset"/> 裡清空：
+    /// 留著的舊項目是無害的（位址對不上就直接放行），
+    /// 而清空反而會讓一扇正在關閉中的視窗重新變成可按。
+    /// </remarks>
+    private void ReleaseWindowGuard(string addonName) => _pressed.Remove(addonName);
+
     public override void OnUpdate()
     {
+        // 🔴 解除點必須擺在所有 early return 之前：OnSettingsDraw 上那三顆按鈕在 _start 為 false 時
+        // 照樣按得下去，把輪詢擺在 _start 檢查之後會讓旗標永遠解不開。
+        // 用「TryGetAddonByName 取不到」當解除點而不是生命週期事件，是因為 OnUpdate 由
+        // Framework.Update 驅動、每一個遊戲幀都會被呼叫，視窗消失的那一幀一定看得到。
+        foreach (var addonName in GuardedAddons)
+        {
+            if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>(addonName, out _)) ReleaseWindowGuard(addonName);
+        }
         if (!_start)
         {
             this.OnReset();
@@ -205,7 +311,7 @@ internal unsafe class RedmoonTest4 :SplatoonScript
             ImGuiEx.Text($"DelayTime: {_delayTime}");
             ImGuiEx.Text($"SetupDone: {_setupDone}");
             ImGuiEx.Text($"LeveData Count: {_leveData.Count}");
-            if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>("WKSHud", out var wksHud))
+            if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>(WksHudAddon, out var wksHud))
             {
                 ImGuiEx.Text(EzColor.RedBright, "WKSHud not found");
                 return;
@@ -216,9 +322,13 @@ internal unsafe class RedmoonTest4 :SplatoonScript
             if (ImGui.Button("Toggle"))
             {
                 var btn = (AtkComponentButton*)btnData.Component;
-                btn->ClickAddonButton(wksHud);
+                // 守衛擺在送出動作正前方：連點兩下時第二下有機會正好落在視窗關閉中的那幾幀。
+                if (TryBeginPress(WksHudAddon, (nint)wksHud, "node6", RoutineRePressTimeoutMs))
+                {
+                    btn->ClickAddonButton(wksHud);
+                }
             }
-            if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>("WKSMission", out var addon)) return;
+            if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>(WksMissionAddon, out var addon)) return;
             if (addon == null || !addon->IsReady())
             {
                 _leveData.Clear();
@@ -257,12 +367,28 @@ internal unsafe class RedmoonTest4 :SplatoonScript
             }
             if (ImGui.Button("Click##Button94"))
             {
-                buttonPtr->ClickAddonButton(addon);
+                // ⚠️ 這顆按鈕按下去 WKSMission 會不會跟著收掉,離線查不出來(節點 94 的語意
+                // 要有客戶端在跑才驗得到)。分不出來就取保守的那一檔:萬一它其實是
+                // 「按下即關」,短逃生口會讓連點的第二下正好落在關閉中的那幾幀 = 原生存取違規。
+                // 這是手動的除錯按鈕、沒有任何迴圈等它,多等兩秒的代價幾乎是零。
+                if (TryBeginPress(WksMissionAddon, (nint)addon, "btn94", PressReleaseTimeoutMs))
+                {
+                    buttonPtr->ClickAddonButton(addon);
+                }
             }
 
-            if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>("SelectYesno", out var SelectYesno))
+            if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>(SelectYesnoAddon, out var SelectYesno))
             {
-                ImGuiEx.Text(EzColor.RedBright, "SelectYesno not found");
+                ImGuiEx.Text(EzColor.RedBright, "SelectYesno addon not found");
+                return;
+            }
+            // 🔴🔴 這一段原本連就緒檢查都沒有（同一個方法裡的 WKSHud 與 WKSMission 兩段都有），
+            // 直接對剛取到的指標呼叫 GetComponentButtonById 再 ClickAddonButton。
+            // 用 IsAddonReady(AtkUnitBase*) 而不是 addon->IsReady()：後者是傳值多載，
+            // 指標為 null 時複製動作發生在呼叫端，判空已經來不及。
+            if (!GenericHelpers.IsAddonReady(SelectYesno))
+            {
+                ImGuiEx.Text(EzColor.RedBright, "SelectYesno not ready");
                 return;
             }
 
@@ -274,7 +400,12 @@ internal unsafe class RedmoonTest4 :SplatoonScript
             }
             if (ImGui.Button("Click##SelectYesno"))
             {
-                buttonPtr->ClickAddonButton(SelectYesno);
+                // 確認框是「回答一次就結束」的視窗：按下去它就開始關，所以整扇窗併成同一個鍵、
+                // 逃生口取長的一檔（2000ms）。這是本波崩潰形狀最典型的那一種。
+                if (TryBeginPress(SelectYesnoAddon, (nint)SelectYesno, "yes", PressReleaseTimeoutMs))
+                {
+                    buttonPtr->ClickAddonButton(SelectYesno);
+                }
             }
         }
     }
@@ -288,7 +419,7 @@ internal unsafe class RedmoonTest4 :SplatoonScript
 
     private void SetUp()
     {
-        if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>("WKSMission", out var addon) ||
+        if (!GenericHelpers.TryGetAddonByName<AtkUnitBase>(WksMissionAddon, out var addon) ||
             addon == null ||
             !addon->IsReady())
         {
@@ -395,6 +526,8 @@ internal unsafe class RedmoonTest4 :SplatoonScript
                             leve.TokenLv3 == 0 &&
                             leve.TokenLv4 == 0)
                         {
+                            // 被擋下就這一輪不送、也不推遲 _delayTime，下一個 framework tick 原路再來。
+                            if (!TryBeginPress(WksMissionAddon, (nint)addon, leve.PressKey, RoutineRePressTimeoutMs)) return;
                             leve.Select(addon);
                             _delayTime = Environment.TickCount64 + 300;
                             return;
