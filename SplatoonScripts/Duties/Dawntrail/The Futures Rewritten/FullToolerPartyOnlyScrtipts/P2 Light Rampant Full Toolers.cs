@@ -384,6 +384,9 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
 
 
         DuoLog.Information($"neetPc: {neetPc.Count}, allHealer: {allHealer}, nonHealer: {nonHealer}");
+        // neetPc 只收「兩條線都沒有」的成員;中途狀態(已出線但還沒人回線)兩邊都不屬於,
+        // 所以 Count 可能是 0 或 1,下一行的兩個索引存取會擲 IndexOutOfRangeException。
+        if(neetPc.Count != 2) return false;
         DuoLog.Information($"neetPc0: {neetPc[0].Object.Name}, neetPc1: {neetPc[1].Object.Name}");
 
         // ヒラはどちらも線付き
