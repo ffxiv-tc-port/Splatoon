@@ -9,6 +9,7 @@ using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CSFramework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SplatoonScriptsOfficial.Generic;
 public unsafe class AutoRetainerCreation : SplatoonScript
@@ -17,10 +18,15 @@ public unsafe class AutoRetainerCreation : SplatoonScript
     public string SymbolsA = "qwrtpsdfghjklzxcvbnm";
     public string SymbolsB = "eyuioa";
 
-    public override Metadata? Metadata => new(3, "NightmareXIV");
+    public override Metadata? Metadata => new(4, "NightmareXIV");
 
     public override Dictionary<int, string> Changelog => new()
     {
+        [4] = """
+        逃生口從牆鐘改成遊戲幀：卡頓時牆鐘照樣前進，會讓「同一扇視窗只送一次」的封鎖
+        在最危險的那一刻提早放行（卡一次 300 毫秒的頓，250 毫秒的逃生口只撐一幀就開門）。
+        改成數遊戲幀之後，遊戲沒有推進封鎖就不會解開；取不到幀序時這一輪不送（fail-closed）。
+        """,
         [3] = """
         修正：僱員外觀確認鈕按下之後有「正在關閉中」的幾幀，這期間視窗仍然通過就緒檢查，
         對它再送一次點擊就是攔不到的原生存取違規（遊戲當場關閉）。
@@ -40,16 +46,43 @@ public unsafe class AutoRetainerCreation : SplatoonScript
     /// 項目數上限是四（三扇 _CharaMake* 加上 SelectString）。
     /// </para>
     /// </remarks>
-    private readonly Dictionary<string, (nint Address, long At)> PressedByAddon = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (nint Address, uint AtFrame)> PressedByAddon = new(StringComparer.Ordinal);
 
-    /// <summary>按下之後最久封鎖多久（毫秒）。到期＝判定「上一次沒生效」而不是「正在關閉」。</summary>
+    /// <summary>送出之後最久封鎖幾個<b>遊戲幀</b>。到期＝判定「上一次沒生效」而不是「正在關閉」。</summary>
     /// <remarks>
-    /// 用時鐘而不是幀數是刻意的：僱員外觀視窗開在載入密集的場景，幀率不穩，
-    /// 而且畫面隱藏（過場／隱藏 UI 熱鍵）期間繪製幀計數器根本不前進，逃生口會永不到期。
-    /// <see cref="Environment.TickCount64"/> 單調遞增且不受這些影響。
-    /// 2000ms 遠大於「關閉中」那幾幀（60fps 下數十毫秒、卡頓時也就數百毫秒）。
+    /// 🔴 逃生口用遊戲幀而不是牆鐘：視窗「正在關閉中」的長度是用<b>幀</b>算的，而牆鐘在卡頓時
+    /// 照樣前進 —— 卡一次 300 毫秒的頓，牆鐘版的逃生口只撐了一幀就開門，正好在最危險的那一刻放行。
+    /// 改用遊戲幀之後，遊戲沒有推進，逃生口就不會走。
+    /// <para>
+    /// 📌 這<b>不是</b>繪製幀計數器：<see cref="CurrentFrame"/> 取的是遊戲主迴圈的
+    /// <c>Framework.FrameCounter</c>，畫面隱藏（過場／隱藏 UI 熱鍵）期間照樣前進，
+    /// 所以逃生口不會永不到期。
+    /// </para>
+    /// <para>
+    /// 🔴 有逃生口是刻意的：萬一上一次的動作根本沒生效、視窗就是還開著，
+    /// 沒有逾時的話會把崩潰換成「這個流程從此卡住」的靜默失效。
+    /// 120 幀在 60fps 下約 2 秒，遠大於「關閉中」那幾幀。
+    /// </para>
     /// </remarks>
-    private const long PressReleaseTimeoutMs = 2000;
+    private const uint PressReleaseTimeoutFrames = 120;
+
+    /// <summary>目前的遊戲幀序；取不到 <c>Framework</c> 時回 <see langword="null"/>。</summary>
+    /// <remarks>
+    /// 🔴 <c>Framework.Instance()</c> 宣告成 <c>[StaticAddress(..., isPointer: true)]</c>：回的是靜態位址裡
+    /// 存放的那個指標，產生器只在特徵碼失配時擲例外、對取回的值<b>不判空</b>。登入前、登出後、
+    /// 關閉流程中它真的會是 null，裸解參考就是 AccessViolationException（.NET Core 的
+    /// corrupted-state exception，<c>try/catch</c> 攔不到）⇒ 只能事前判空。
+    /// <para>
+    /// 📌 <c>FrameCounter</c> 由遊戲主迴圈遞增，<b>不是</b>繪製幀計數器；ECommons 的
+    /// <c>FrameDelayTask</c>（「延遲 N 幀」）用的就是同一個來源。
+    /// </para>
+    /// </remarks>
+    private static uint? CurrentFrame()
+    {
+        var framework = CSFramework.Instance();
+        if(framework == null) return null;
+        return framework->FrameCounter;
+    }
 
     /// <summary>
     /// <c>SelectString</c> 在 <see cref="PressedByAddon"/> 裡的鍵。
@@ -164,12 +197,16 @@ public unsafe class AutoRetainerCreation : SplatoonScript
     /// </remarks>
     private bool TryBeginPress(string name, nint address)
     {
+        // 🔴 取不到幀序就這一輪不送（fail-closed）：沒有時間基準就判斷不了「這扇視窗是不是正在關閉中」。
+        var now = CurrentFrame();
+        if(now == null) return false;
+        // unchecked：FrameCounter 是 uint，溢位回繞時無號減法照樣給出正確的「過了幾幀」。
         if(PressedByAddon.TryGetValue(name, out var prev) && prev.Address == address
-            && Environment.TickCount64 - prev.At < PressReleaseTimeoutMs)
+            && unchecked(now.Value - prev.AtFrame) < PressReleaseTimeoutFrames)
         {
             return false;
         }
-        PressedByAddon[name] = (address, Environment.TickCount64);
+        PressedByAddon[name] = (address, now.Value);
         return true;
     }
 }

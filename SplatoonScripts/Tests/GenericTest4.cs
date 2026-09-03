@@ -19,15 +19,21 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Callback = ECommons.Automation.Callback;
+using CSFramework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 #pragma warning disable
 namespace SplatoonScriptsOfficial.Tests;
 public unsafe class GenericTest4 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => new();
-    public override Metadata? Metadata { get; } = new(8, "NightmareXIV");
+    public override Metadata? Metadata { get; } = new(9, "NightmareXIV");
 
     public override Dictionary<int, string> Changelog => new()
     {
+        [9] = """
+        逃生口從牆鐘改成遊戲幀：卡頓時牆鐘照樣前進，會讓「同一扇視窗只送一次」的封鎖
+        在最危險的那一刻提早放行（卡一次 300 毫秒的頓，250 毫秒的逃生口只撐一幀就開門）。
+        改成數遊戲幀之後，遊戲沒有推進封鎖就不會解開；取不到幀序時這一輪不送（fail-closed）。
+        """,
         [8] = """
         修正：對「任務搜尋器」視窗送 callback 之後有「正在關閉中」的幾幀，
         這期間視窗仍然通過就緒檢查，此時再送一次就是攔不到的原生存取違規（遊戲當場關閉）。
@@ -50,19 +56,37 @@ public unsafe class GenericTest4 : SplatoonScript
     /// 兩者會在同一扇視窗上前後接力，併成同一個鍵會把正常流程擋掉。
     /// </para>
     /// </remarks>
-    private readonly Dictionary<string, Dictionary<string, (nint Address, long At)>> Pressed = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Dictionary<string, (nint Address, uint AtFrame)>> Pressed = new(StringComparer.Ordinal);
 
-    /// <summary>同一組參數送出之後最久封鎖多久（毫秒）。到期＝判定「上一次沒生效」而不是「正在關閉」。</summary>
+    /// <summary>多次互動窗（按下去視窗<b>不會</b>消失）的逃生口：15 個<b>遊戲幀</b>，60fps 下約 250 毫秒。</summary>
     /// <remarks>
-    /// 這扇視窗按下這兩個按鈕都<b>不會</b>讓它消失（＝多次互動窗，和確認框那種「回答一次即終結」不同），
-    /// 所以逃生口取短的一檔：15 幀，60fps 下約 250 毫秒。<see cref="ClearDuty"/> 本來就是
-    /// 「每一輪重送直到按鈕變停用」的刻意重試迴圈，逃生口取太長會把它變成慢動作。
+    /// 這一類視窗本來就要連續按，逃生口取太長會把正常流程變成慢動作。
     /// <para>
-    /// 用牆鐘（<see cref="Environment.TickCount64"/>）而不是繪製幀計數器是刻意的：
-    /// 畫面隱藏（過場／隱藏 UI 熱鍵）期間繪製幀根本不前進，逃生口會永不到期。
+    /// 🔴 用遊戲幀而不是牆鐘：牆鐘在卡頓時照樣前進，會讓封鎖在最危險的那一刻提早放行。
+    /// 這不是繪製幀計數器 —— <see cref="CurrentFrame"/> 取的是遊戲主迴圈的
+    /// <c>Framework.FrameCounter</c>，畫面隱藏（過場／隱藏 UI 熱鍵）期間照樣前進，
+    /// 逃生口不會永不到期。
     /// </para>
     /// </remarks>
-    private const long RoutineRePressTimeoutMs = 250;
+    private const uint RoutineRePressTimeoutFrames = 15;
+
+    /// <summary>目前的遊戲幀序；取不到 <c>Framework</c> 時回 <see langword="null"/>。</summary>
+    /// <remarks>
+    /// 🔴 <c>Framework.Instance()</c> 宣告成 <c>[StaticAddress(..., isPointer: true)]</c>：回的是靜態位址裡
+    /// 存放的那個指標，產生器只在特徵碼失配時擲例外、對取回的值<b>不判空</b>。登入前、登出後、
+    /// 關閉流程中它真的會是 null，裸解參考就是 AccessViolationException（.NET Core 的
+    /// corrupted-state exception，<c>try/catch</c> 攔不到）⇒ 只能事前判空。
+    /// <para>
+    /// 📌 <c>FrameCounter</c> 由遊戲主迴圈遞增，<b>不是</b>繪製幀計數器；ECommons 的
+    /// <c>FrameDelayTask</c>（「延遲 N 幀」）用的就是同一個來源。
+    /// </para>
+    /// </remarks>
+    private static uint? CurrentFrame()
+    {
+        var framework = CSFramework.Instance();
+        if(framework == null) return null;
+        return framework->FrameCounter;
+    }
 
     /// <summary>這扇視窗在 <see cref="Pressed"/> 裡的鍵，同時也是查詢用的 addon 名字。</summary>
     private const string ContentsFinderAddon = "ContentsFinder";
@@ -89,19 +113,23 @@ public unsafe class GenericTest4 : SplatoonScript
     /// 與「視窗還沒出現」走同一條既有路徑，控制流完全不變；<see langword="null"/> 則會清掉整條佇列。
     /// </para>
     /// </remarks>
-    private bool TryBeginPress(string addonName, nint address, string parameters, long timeoutMs)
+    private bool TryBeginPress(string addonName, nint address, string parameters, uint timeoutFrames)
     {
+        // 🔴 取不到幀序就這一輪不送（fail-closed）：沒有時間基準就判斷不了「這扇視窗是不是正在關閉中」。
+        var now = CurrentFrame();
+        if(now == null) return false;
         if(!Pressed.TryGetValue(addonName, out var byParameters))
         {
             byParameters = new(StringComparer.Ordinal);
             Pressed[addonName] = byParameters;
         }
+        // unchecked：FrameCounter 是 uint，溢位回繞時無號減法照樣給出正確的「過了幾幀」。
         if(byParameters.TryGetValue(parameters, out var prev) && prev.Address == address
-            && Environment.TickCount64 - prev.At < timeoutMs)
+            && unchecked(now.Value - prev.AtFrame) < timeoutFrames)
         {
             return false;
         }
-        byParameters[parameters] = (address, Environment.TickCount64);
+        byParameters[parameters] = (address, now.Value);
         return true;
     }
 
@@ -248,7 +276,7 @@ public unsafe class GenericTest4 : SplatoonScript
                 // 🔴 這是刻意的重試迴圈：送出之後會落到最後那個 return false，於是每一輪都回來重送，
                 // 直到按鈕變停用為止 —— 而「正在關閉中」的那幾幀 IsAddonReady 照樣三關全過。
                 // 守衛擺在送出動作正前方：一回 true 就已經記成「送過了」。
-                if(!TryBeginPress(ContentsFinderAddon, (nint)addon, "12,1", RoutineRePressTimeoutMs)) return false;
+                if(!TryBeginPress(ContentsFinderAddon, (nint)addon, "12,1", RoutineRePressTimeoutFrames)) return false;
                 Callback.Fire(addon, true, 12, 1);
             }
             else
@@ -290,7 +318,7 @@ public unsafe class GenericTest4 : SplatoonScript
                     {
                         // 與 ClearDuty 送的是不同參數組（3,cnt 對 12,1），鍵刻意分開：
                         // 併成同一個鍵會讓緊接在 ClearDuty 之後的這一送被自己的守衛擋掉。
-                        if(!TryBeginPress(ContentsFinderAddon, (nint)(&addon->AtkUnitBase), $"3,{cnt}", RoutineRePressTimeoutMs)) return false;
+                        if(!TryBeginPress(ContentsFinderAddon, (nint)(&addon->AtkUnitBase), $"3,{cnt}", RoutineRePressTimeoutFrames)) return false;
                         Callback.Fire(&addon->AtkUnitBase, true, 3, cnt);
                         return true;
                     }

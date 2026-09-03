@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Callback = ECommons.Automation.Callback;
+using CSFramework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SplatoonScriptsOfficial.Tests;
 internal unsafe class RedmoonTest4 :SplatoonScript
@@ -157,10 +158,15 @@ internal unsafe class RedmoonTest4 :SplatoonScript
     }
 
     public override HashSet<uint>? ValidTerritories { get; } = null;
-    public override Metadata? Metadata => new(2, "Redmoon");
+    public override Metadata? Metadata => new(3, "Redmoon");
 
     public override Dictionary<int, string> Changelog => new()
     {
+        [3] = """
+        逃生口從牆鐘改成遊戲幀：卡頓時牆鐘照樣前進，會讓「同一扇視窗只送一次」的封鎖
+        在最危險的那一刻提早放行（卡一次 300 毫秒的頓，250 毫秒的逃生口只撐一幀就開門）。
+        改成數遊戲幀之後，遊戲沒有推進封鎖就不會解開；取不到幀序時這一輪不送（fail-closed）。
+        """,
         [2] = """
         修正：對視窗送出點擊之後有「正在關閉中」的幾幀，這期間視窗仍然通過就緒檢查，
         此時再送一次就是攔不到的原生存取違規（遊戲當場關閉）。
@@ -193,22 +199,55 @@ internal unsafe class RedmoonTest4 :SplatoonScript
     /// 🔴 <b>位址只拿來做等值比較，永遠不解參</b>——所以 <see cref="TryBeginPress"/> 收的是
     /// <see cref="nint"/> 而不是指標，讓「不解參」變成型別上就辦不到的事。
     /// </remarks>
-    private readonly Dictionary<string, Dictionary<string, (nint Address, long At)>> _pressed = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Dictionary<string, (nint Address, uint AtFrame)>> _pressed = new(StringComparer.Ordinal);
 
-    /// <summary>多次互動窗（按下去視窗<b>不會</b>消失）的逃生口：15 幀，60fps 下約 250 毫秒。</summary>
+    /// <summary>多次互動窗（按下去視窗<b>不會</b>消失）的逃生口：15 個<b>遊戲幀</b>，60fps 下約 250 毫秒。</summary>
     /// <remarks>
-    /// WKSHud 與 WKSMission 按下之後都還留在畫面上、而且本來就要連續按（逐筆讀任務代幣），
-    /// 逃生口取太長會把正常流程變成慢動作。
+    /// 這一類視窗本來就要連續按，逃生口取太長會把正常流程變成慢動作。
+    /// <para>
+    /// 🔴 用遊戲幀而不是牆鐘：牆鐘在卡頓時照樣前進，會讓封鎖在最危險的那一刻提早放行。
+    /// 這不是繪製幀計數器 —— <see cref="CurrentFrame"/> 取的是遊戲主迴圈的
+    /// <c>Framework.FrameCounter</c>，畫面隱藏（過場／隱藏 UI 熱鍵）期間照樣前進，
+    /// 逃生口不會永不到期。
+    /// </para>
     /// </remarks>
-    private const long RoutineRePressTimeoutMs = 250;
+    private const uint RoutineRePressTimeoutFrames = 15;
 
-    /// <summary>「回答一次即終結」的視窗（確認框）的逃生口：2000 毫秒。</summary>
+    /// <summary>送出之後最久封鎖幾個<b>遊戲幀</b>。到期＝判定「上一次沒生效」而不是「正在關閉」。</summary>
     /// <remarks>
-    /// 遠大於「正在關閉中」那幾幀（60fps 下數十毫秒、卡頓時也就數百毫秒）。
-    /// 🔴 有逃生口是刻意的：萬一上一次的點擊根本沒生效、視窗就是還開著，
-    /// 沒有逾時的話會把崩潰換成「這顆按鈕從此按不動」的靜默失效。
+    /// 🔴 逃生口用遊戲幀而不是牆鐘：視窗「正在關閉中」的長度是用<b>幀</b>算的，而牆鐘在卡頓時
+    /// 照樣前進 —— 卡一次 300 毫秒的頓，牆鐘版的逃生口只撐了一幀就開門，正好在最危險的那一刻放行。
+    /// 改用遊戲幀之後，遊戲沒有推進，逃生口就不會走。
+    /// <para>
+    /// 📌 這<b>不是</b>繪製幀計數器：<see cref="CurrentFrame"/> 取的是遊戲主迴圈的
+    /// <c>Framework.FrameCounter</c>，畫面隱藏（過場／隱藏 UI 熱鍵）期間照樣前進，
+    /// 所以逃生口不會永不到期。
+    /// </para>
+    /// <para>
+    /// 🔴 有逃生口是刻意的：萬一上一次的動作根本沒生效、視窗就是還開著，
+    /// 沒有逾時的話會把崩潰換成「這個流程從此卡住」的靜默失效。
+    /// 120 幀在 60fps 下約 2 秒，遠大於「關閉中」那幾幀。
+    /// </para>
     /// </remarks>
-    private const long PressReleaseTimeoutMs = 2000;
+    private const uint PressReleaseTimeoutFrames = 120;
+
+    /// <summary>目前的遊戲幀序；取不到 <c>Framework</c> 時回 <see langword="null"/>。</summary>
+    /// <remarks>
+    /// 🔴 <c>Framework.Instance()</c> 宣告成 <c>[StaticAddress(..., isPointer: true)]</c>：回的是靜態位址裡
+    /// 存放的那個指標，產生器只在特徵碼失配時擲例外、對取回的值<b>不判空</b>。登入前、登出後、
+    /// 關閉流程中它真的會是 null，裸解參考就是 AccessViolationException（.NET Core 的
+    /// corrupted-state exception，<c>try/catch</c> 攔不到）⇒ 只能事前判空。
+    /// <para>
+    /// 📌 <c>FrameCounter</c> 由遊戲主迴圈遞增，<b>不是</b>繪製幀計數器；ECommons 的
+    /// <c>FrameDelayTask</c>（「延遲 N 幀」）用的就是同一個來源。
+    /// </para>
+    /// </remarks>
+    private static uint? CurrentFrame()
+    {
+        var framework = CSFramework.Instance();
+        if(framework == null) return null;
+        return framework->FrameCounter;
+    }
 
     /// <summary>
     /// 登記「即將對這扇視窗送出這一組參數」。<b>回 <see langword="false"/> ＝這一輪絕對不能送。</b>
@@ -228,23 +267,28 @@ internal unsafe class RedmoonTest4 :SplatoonScript
     /// （位址被新視窗重用也不成問題：頂多多等到逾時，不會變成崩潰。）
     /// </para>
     /// <para>
-    /// ⚠️ 用牆鐘（<see cref="Environment.TickCount64"/>）而不是繪製幀計數器是刻意的：
-    /// 畫面隱藏（過場／隱藏 UI 熱鍵）期間繪製幀根本不前進，逃生口會永不到期。
+    /// 🔴 逃生口用<b>遊戲幀</b>而不是牆鐘：牆鐘在卡頓時照樣前進，會在最危險的那一刻提早放行。
+    /// 這不是繪製幀計數器 —— <see cref="CurrentFrame"/> 取的是遊戲主迴圈的
+    /// <c>Framework.FrameCounter</c>，畫面隱藏（過場／隱藏 UI 熱鍵）期間照樣前進，逃生口不會永不到期。
     /// </para>
     /// </remarks>
-    private bool TryBeginPress(string addonName, nint address, string parameters, long timeoutMs)
+    private bool TryBeginPress(string addonName, nint address, string parameters, uint timeoutFrames)
     {
+        // 🔴 取不到幀序就這一輪不送（fail-closed）：沒有時間基準就判斷不了「這扇視窗是不是正在關閉中」。
+        var now = CurrentFrame();
+        if (now == null) return false;
         if (!_pressed.TryGetValue(addonName, out var byParameters))
         {
             byParameters = new(StringComparer.Ordinal);
             _pressed[addonName] = byParameters;
         }
+        // unchecked：FrameCounter 是 uint，溢位回繞時無號減法照樣給出正確的「過了幾幀」。
         if (byParameters.TryGetValue(parameters, out var prev) && prev.Address == address
-            && Environment.TickCount64 - prev.At < timeoutMs)
+            && unchecked(now.Value - prev.AtFrame) < timeoutFrames)
         {
             return false;
         }
-        byParameters[parameters] = (address, Environment.TickCount64);
+        byParameters[parameters] = (address, now.Value);
         return true;
     }
 
@@ -323,7 +367,7 @@ internal unsafe class RedmoonTest4 :SplatoonScript
             {
                 var btn = (AtkComponentButton*)btnData.Component;
                 // 守衛擺在送出動作正前方：連點兩下時第二下有機會正好落在視窗關閉中的那幾幀。
-                if (TryBeginPress(WksHudAddon, (nint)wksHud, "node6", RoutineRePressTimeoutMs))
+                if (TryBeginPress(WksHudAddon, (nint)wksHud, "node6", RoutineRePressTimeoutFrames))
                 {
                     btn->ClickAddonButton(wksHud);
                 }
@@ -371,7 +415,7 @@ internal unsafe class RedmoonTest4 :SplatoonScript
                 // 要有客戶端在跑才驗得到)。分不出來就取保守的那一檔:萬一它其實是
                 // 「按下即關」,短逃生口會讓連點的第二下正好落在關閉中的那幾幀 = 原生存取違規。
                 // 這是手動的除錯按鈕、沒有任何迴圈等它,多等兩秒的代價幾乎是零。
-                if (TryBeginPress(WksMissionAddon, (nint)addon, "btn94", PressReleaseTimeoutMs))
+                if (TryBeginPress(WksMissionAddon, (nint)addon, "btn94", PressReleaseTimeoutFrames))
                 {
                     buttonPtr->ClickAddonButton(addon);
                 }
@@ -401,8 +445,8 @@ internal unsafe class RedmoonTest4 :SplatoonScript
             if (ImGui.Button("Click##SelectYesno"))
             {
                 // 確認框是「回答一次就結束」的視窗：按下去它就開始關，所以整扇窗併成同一個鍵、
-                // 逃生口取長的一檔（2000ms）。這是本波崩潰形狀最典型的那一種。
-                if (TryBeginPress(SelectYesnoAddon, (nint)SelectYesno, "yes", PressReleaseTimeoutMs))
+                // 逃生口取長的一檔（120 個遊戲幀，60fps 下約 2 秒）。這是本波崩潰形狀最典型的那一種。
+                if (TryBeginPress(SelectYesnoAddon, (nint)SelectYesno, "yes", PressReleaseTimeoutFrames))
                 {
                     buttonPtr->ClickAddonButton(SelectYesno);
                 }
@@ -527,7 +571,7 @@ internal unsafe class RedmoonTest4 :SplatoonScript
                             leve.TokenLv4 == 0)
                         {
                             // 被擋下就這一輪不送、也不推遲 _delayTime，下一個 framework tick 原路再來。
-                            if (!TryBeginPress(WksMissionAddon, (nint)addon, leve.PressKey, RoutineRePressTimeoutMs)) return;
+                            if (!TryBeginPress(WksMissionAddon, (nint)addon, leve.PressKey, RoutineRePressTimeoutFrames)) return;
                             leve.Select(addon);
                             _delayTime = Environment.TickCount64 + 300;
                             return;
