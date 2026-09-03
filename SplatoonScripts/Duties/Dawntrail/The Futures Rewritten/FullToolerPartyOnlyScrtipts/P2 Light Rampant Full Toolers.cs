@@ -119,7 +119,7 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
 
     #region public properties
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(11, "redmoon");
+    public override Metadata? Metadata => new(12, "redmoon");
     #endregion
 
     #region private properties
@@ -488,6 +488,7 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
             if(neetHealer == null)
             {
                 DuoLog.Information("Not Found Healer");
+                return false;
             }
             DuoLog.Information($"Healer: {neetHealer.Object.Name}");
             neetHealer.TowerDirection = Direction.East;
