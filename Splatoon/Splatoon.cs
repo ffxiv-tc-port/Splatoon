@@ -271,7 +271,15 @@ public unsafe class Splatoon : IDalamudPlugin
         Disposed = true;
         Safe(delegate
         {
-            Svc.Commands.RemoveHandler("/loadsplatoon");
+            // Load() 成功時已經把這個指令移掉了(見 Load 裡同一行)。卸載時再移一次,
+            // Dalamud 的 plugin-scoped CommandManager 會寫一行 ERR「Command X not found.」
+            // —— 那是我方重複呼叫造成的假錯誤,實機每次關遊戲必現。
+            // 先問實際狀態再移(而不是靠 Loaded 旗標),Load() 中途拋例外的路徑也照樣涵蓋。
+            if(Svc.Commands.Commands.ContainsKey("/loadsplatoon"))
+            {
+                Svc.Commands.RemoveHandler("/loadsplatoon");
+            }
+
             Svc.PluginInterface.UiBuilder.Draw -= loader.Draw;
         });
         if(!Loaded)

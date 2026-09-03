@@ -75,12 +75,26 @@ internal static partial class ScriptingProcessor
         S.InfoBar?.Update(true);
     }
 
+    /// <summary>
+    /// 這幾個腳本清單的異動只能在 framework thread 上做。
+    ///
+    /// <para>
+    /// ⚠️ 判準要跟 Dalamud <b>一模一樣</b>:<c>Framework.RunOnFrameworkThread</c> 在
+    /// <c>IsInFrameworkUpdateThread</c> <b>或</b> <c>IsFrameworkUnloading</c> 為真時就地執行
+    /// (本 pin 的 <c>Dalamud/Game/Framework.cs:173</c>)。卸載期間是後者為真、前者為假,
+    /// 於是「Dalamud 自己認可的就地執行路徑」會被舊版斷言判成違規 —— 實機每次關遊戲
+    /// 必定產生一行 ERR 加一整段堆疊(<c>Dispose() -> RunOnFrameworkThread -> ClearScripts</c>),
+    /// 而那不是缺陷。放行卸載路徑之後,真正的跨執行緒誤用仍然照樣被抓。
+    /// </para>
+    /// </summary>
     private static void AssertOnFrameworkThread()
     {
-        if(!Svc.Framework.IsInFrameworkUpdateThread)
+        if(Svc.Framework.IsInFrameworkUpdateThread || Svc.Framework.IsFrameworkUnloading)
         {
-            PluginLog.Error($"Operation performed outside of allowed bounds. Please report this to developer.\n{new StackTrace(true)}");
+            return;
         }
+
+        PluginLog.Error($"Operation performed outside of allowed bounds. Please report this to developer.\n{new StackTrace(true)}");
     }
 
     internal static bool AnyScriptUsesPriority(uint? territory = null)
