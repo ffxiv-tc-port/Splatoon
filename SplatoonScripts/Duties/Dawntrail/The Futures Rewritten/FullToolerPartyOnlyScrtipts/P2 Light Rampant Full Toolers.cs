@@ -393,28 +393,29 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
             var h1 = _partyDataList.Find(x => x.index == 0);
             var h2 = _partyDataList.Find(x => x.index == 7);
             if(h1 == null) return false;
+            if(h2 == null) return false;
 
             h1.TowerDirection = Direction.North;
             h2.TowerDirection = Direction.SouthEast;
 
             var pc = (h2.TetherPairId1 == h1.EntityId) ? _partyDataList.Find(x => x.EntityId == h2.TetherPairId2) : _partyDataList.Find(x => x.EntityId == h2.TetherPairId1);
-            DuoLog.Information($"pc: {pc.Object.Name}");
             if(pc == null) return false;
+            DuoLog.Information($"pc: {pc.Object.Name}");
             pc.TowerDirection = Direction.NorthWest;
 
             var pc2 = (pc.TetherPairId1 == h2.EntityId) ? _partyDataList.Find(x => x.EntityId == pc.TetherPairId2) : _partyDataList.Find(x => x.EntityId == pc.TetherPairId1);
-            DuoLog.Information($"pc2: {pc2.Object.Name}");
             if(pc2 == null) return false;
+            DuoLog.Information($"pc2: {pc2.Object.Name}");
             pc2.TowerDirection = Direction.South;
 
             var pc3 = (pc2.TetherPairId1 == pc.EntityId) ? _partyDataList.Find(x => x.EntityId == pc2.TetherPairId2) : _partyDataList.Find(x => x.EntityId == pc2.TetherPairId1);
-            DuoLog.Information($"pc3: {pc3.Object.Name}");
             if(pc3 == null) return false;
+            DuoLog.Information($"pc3: {pc3.Object.Name}");
             pc3.TowerDirection = Direction.NorthEast;
 
             var pc4 = (pc3.TetherPairId1 == pc2.EntityId) ? _partyDataList.Find(x => x.EntityId == pc3.TetherPairId2) : _partyDataList.Find(x => x.EntityId == pc3.TetherPairId1);
-            DuoLog.Information($"pc4: {pc4.Object.Name}");
             if(pc4 == null) return false;
+            DuoLog.Information($"pc4: {pc4.Object.Name}");
             pc4.TowerDirection = Direction.SouthWest;
 
             // NEETは適当
@@ -451,8 +452,12 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
             pc5.TowerDirection = Direction.SouthWest;
 
             // NEETは適当
-            neetPc.Find(x => x.index == 0).TowerDirection = Direction.West;
-            neetPc.Find(x => x.index == 7).TowerDirection = Direction.East;
+            var neetHealer1 = neetPc.Find(x => x.index == 0);
+            if(neetHealer1 == null) return false;
+            var neetHealer2 = neetPc.Find(x => x.index == 7);
+            if(neetHealer2 == null) return false;
+            neetHealer1.TowerDirection = Direction.West;
+            neetHealer2.TowerDirection = Direction.East;
         }
         // ヒラはどちらか線付き
         else
@@ -495,6 +500,7 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
 
             // NEETは適当
             var neet = neetPc.Find(x => x.EntityId != neetHealer.EntityId);
+            if(neet == null) return false;
             neet.TowerDirection = Direction.West;
         }
 
