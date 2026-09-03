@@ -30,7 +30,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail.AnotherMerchantTale;
 
 public unsafe class SwimmingInAirAutoFace : SplatoonScript
 {
-    public override Metadata Metadata => new(3, "Ahernika");
+    public override Metadata Metadata => new(4, "Ahernika");
     public override HashSet<uint>? ValidTerritories => [1317];
 
     private Config C => Controller.GetConfig<Config>();
@@ -966,8 +966,10 @@ public unsafe class SwimmingInAirAutoFace : SplatoonScript
         public bool DisableAutoRotDuringLock = false;
         public List<string> AutoRotToggleCommands = new()
         {
-            "/vbm ar toggle Xan Melle",
-            "/rotation auto"
+            // 本 fork 的 BossmodReborn 註冊的指令是 /bmr,上游 BossMod 才是 /vbm。
+            "/bmr ar toggle Xan Melle",
+            // 本 fork 的循環外掛是 WrathCombo(/wrath);RotationSolver(/rotation)不在艦隊裡。
+            "/wrath auto"
         };
     }
 }
