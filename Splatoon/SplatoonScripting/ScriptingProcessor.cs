@@ -163,32 +163,14 @@ internal static partial class ScriptingProcessor
 
             try
             {
-                PluginLog.Debug($"Starting downloading update list...");
-                var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/update.csv").Result;
-                result.EnsureSuccessStatusCode();
-                PluginLog.Debug($"Update list downloaded");
-                var updateList = result.Content.ReadAsStringAsync().Result;
-
-                var extra = P.Config.ExtraUpdateLinks.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                foreach(var x in extra)
-                {
-                    if(x.Length > 0)
-                    {
-                        try
-                        {
-                            PluginLog.Fatal($"!!! WARNING !!! Processing script update list {x}. THIS IS UNSAFE. IF YOU DID NOT ADDED THIS URL, IMMEDIATELY TERMINATE THE GAME AND CONTACT SPLATOON PLUGIN SUPPORT ASAP.");
-                            PluginLog.Debug($"Starting downloading custom update list...");
-                            var extraResult = P.HttpClient.GetAsync(x).Result;
-                            extraResult.EnsureSuccessStatusCode();
-                            PluginLog.Debug($"Custom update list downloaded");
-                            updateList += "\n" + extraResult.Content.ReadAsStringAsync().Result;
-                        }
-                        catch(Exception e)
-                        {
-                            e.Log();
-                        }
-                    }
-                }
+                // 下載動作已抽到 DownloadUpdateLists():自動更新與「可用腳本」瀏覽器共用
+                // 同一次下載結果與同一則 PluginLog.Fatal 警告,不再各寫一份。
+                // 這裡的合併方式與抽取前逐字等價:官方清單在前,每條 ExtraUpdateLinks 以 "\n" 接在後面。
+                var updateLists = DownloadUpdateLists();
+                // 順手把已經拿到手的清單餵給瀏覽器快取 —— 不多發一次請求。
+                // Ingest 自己吞例外,絕不讓瀏覽器的解析問題打斷既有的更新流程。
+                ScriptCatalog.Ingest(updateLists);
+                var updateList = updateLists.Select(x => x.Content).Join("\n");
 
                 List<string> Updates = [];
                 foreach(var line in updateList.Replace("\r", "").Split("\n"))
@@ -224,6 +206,48 @@ internal static partial class ScriptingProcessor
         {
             PluginLog.Error("Can not start new update before previous has finished");
         }
+    }
+
+    /// <summary>
+    /// 下載腳本更新清單的原始文字。回傳的第一筆一定是本 fork 的官方清單(Source 為 null),
+    /// 其後每一筆對應使用者自行設定的 ExtraUpdateLinks 一條,Source 就是那條網址本身。
+    ///
+    /// 抽出來是為了讓「自動更新」與「可用腳本瀏覽器」共用同一次下載、同一則
+    /// PluginLog.Fatal 警告 —— 那則警告是刻意留著的,不要拿掉。
+    /// 🔴 這個方法沿用既有的 .Result 同步寫法,會阻塞呼叫執行緒,只能在背景執行緒呼叫。
+    /// 🔴 官方清單下載失敗時會擲例外(EnsureSuccessStatusCode);使用者自訂清單下載失敗
+    ///    則只記 log 並略過,維持抽取前的行為。
+    /// </summary>
+    internal static List<(string Source, string Content)> DownloadUpdateLists()
+    {
+        List<(string Source, string Content)> ret = [];
+        PluginLog.Debug($"Starting downloading update list...");
+        var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/update.csv").Result;
+        result.EnsureSuccessStatusCode();
+        PluginLog.Debug($"Update list downloaded");
+        ret.Add((null, result.Content.ReadAsStringAsync().Result));
+
+        var extra = P.Config.ExtraUpdateLinks.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach(var x in extra)
+        {
+            if(x.Length > 0)
+            {
+                try
+                {
+                    PluginLog.Fatal($"!!! WARNING !!! Processing script update list {x}. THIS IS UNSAFE. IF YOU DID NOT ADDED THIS URL, IMMEDIATELY TERMINATE THE GAME AND CONTACT SPLATOON PLUGIN SUPPORT ASAP.");
+                    PluginLog.Debug($"Starting downloading custom update list...");
+                    var extraResult = P.HttpClient.GetAsync(x).Result;
+                    extraResult.EnsureSuccessStatusCode();
+                    PluginLog.Debug($"Custom update list downloaded");
+                    ret.Add((x, extraResult.Content.ReadAsStringAsync().Result));
+                }
+                catch(Exception e)
+                {
+                    e.Log();
+                }
+            }
+        }
+        return ret;
     }
 
     internal static bool IsUrlTrusted(string url)

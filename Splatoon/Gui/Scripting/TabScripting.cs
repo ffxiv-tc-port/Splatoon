@@ -25,6 +25,16 @@ internal static class TabScripting
         {
             ImGuiEx.TextWrapped(ImGuiColors.DalamudOrange, "Please note that scripts have direct and unrestricted access to your PC and game. Ensure that you know what you're installing.".Loc());
         }
+        // 可用腳本清單刻意併進這個分頁而不是另開視窗。上面那塊「安裝中 / 安全性警告」
+        // 留在子分頁列之外,兩個子分頁都看得到 —— 在瀏覽清單時按了安裝,進度一樣看得見。
+        ImGuiEx.EzTabBar("##scriptsSubTabs",
+            ("Installed scripts".Loc(), DrawInstalled, null, true),
+            ("Available scripts".Loc(), TabScriptBrowser.Draw, null, true)
+            );
+    }
+
+    private static void DrawInstalled()
+    {
         var force = ForceUpdate;
         if(ImGui.Checkbox($"Force Update".Loc(), ref force)) ForceUpdate = force;
         ImGuiEx.Tooltip("Enable this checkbox and click \"Reload and Update\" button to forcibly redownload all scripts, even should they have no updates, that were installed from the Internet.");
