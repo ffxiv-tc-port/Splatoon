@@ -433,6 +433,10 @@ public unsafe class Splatoon : IDalamudPlugin
                 if(dt == (long)DestroyCondition.TERRITORY_CHANGE)
                 {
                     dynamicElements.RemoveAt(i);
+                    // 🔴 移除之後必須離開內層迴圈：DestroyTime 可以含多筆，
+                    // 同一個 i 被 RemoveAt 兩次時，i 是最後一格就擲 ArgumentOutOfRangeException，
+                    // 否則會默默刪掉本來還活著的另一個元素。
+                    break;
                 }
             }
         }
@@ -625,24 +629,41 @@ public unsafe class Splatoon : IDalamudPlugin
                 {
                     var de = dynamicElements[i];
 
+                    // 🔴 這裡原本在內層 foreach 裡直接 RemoveAt(i) 之後 continue，而那個 continue
+                    // 綁的是內層迴圈、不是外層的 for：DestroyTime 是 long[]，HTTPServer 的
+                    // destroyAt 參數（Modules/HTTPServer.cs 的 dAtArray.ToArray()）可以塞進多筆，
+                    // 同一幀有兩個銷毀條件同時成立時就會對同一個 i 呼叫兩次 RemoveAt ——
+                    // i 是最後一格時擲 ArgumentOutOfRangeException，被 Tick() 最外層的 catch 吞掉，
+                    // 連帶把該幀剩下的 prevCombatState 更新與 ScriptingProcessor.OnUpdate() 全部跳過
+                    // （＝所有腳本那一幀完全不跑，而使用者只會看到 log 裡一行 Caught exception）；
+                    // i 不是最後一格時不擲例外，而是默默刪掉本來還活著的另一個元素。
+                    // 而且就算只有一筆條件成立，移除之後控制流仍會落下去，把已經銷毀的元素的
+                    // Layouts / Elements 再處理一輪。
+                    // ⇒ 內層只負責判定，移除與跳過由外層做。
+                    var destroyed = false;
                     foreach(var dt in de.DestroyTime)
                     {
                         if(dt == (long)DestroyCondition.COMBAT_EXIT)
                         {
                             if(!Svc.Condition[ConditionFlag.InCombat] && prevCombatState)
                             {
-                                dynamicElements.RemoveAt(i);
-                                continue;
+                                destroyed = true;
+                                break;
                             }
                         }
                         else if(dt > 0)
                         {
                             if(Environment.TickCount64 > dt)
                             {
-                                dynamicElements.RemoveAt(i);
-                                continue;
+                                destroyed = true;
+                                break;
                             }
                         }
+                    }
+                    if(destroyed)
+                    {
+                        dynamicElements.RemoveAt(i);
+                        continue;
                     }
                     foreach(var l in de.Layouts)
                     {
