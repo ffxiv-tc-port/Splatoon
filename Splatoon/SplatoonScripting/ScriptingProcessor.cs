@@ -16,7 +16,35 @@ internal static partial class ScriptingProcessor
     private static ImmutableList<SplatoonScript> ScriptsInternal = [];
     internal static IReadOnlyList<SplatoonScript> Scripts => ScriptsInternal;
     internal static ConcurrentQueue<(string code, string path)> LoadScriptQueue = new();
-    internal static volatile bool ThreadIsRunning = false;
+    /// <summary>
+    /// 編譯器執行緒是否正在跑。<b>唯讀</b>；要取得所有權請對
+    /// <see cref="ThreadIsRunningFlag"/> 做 <c>Interlocked.CompareExchange</c>，
+    /// 不要再寫成「先讀再寫」。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 原本是 <c>volatile bool</c> ＋ <c>if(!ThreadIsRunning) ThreadIsRunning = true;</c>。
+    /// <c>volatile</c> 保證的是「讀得到最新值」，<b>不是</b>「檢查與設定不可分割」——
+    /// <see cref="CompileAndLoad"/> 是從<b>多條背景執行緒</b>進來的
+    /// （<see cref="DownloadScript"/>／<see cref="ReloadAll"/>／<see cref="ReloadScript"/>／
+    /// <see cref="ReloadScripts"/> 全都把它包在 <c>Task.Run</c> 裡），
+    /// 兩條同時讀到 <see langword="false"/> 就會各自開一條編譯器執行緒。
+    /// <para>
+    /// ⚠️ 失敗形式不是崩潰而是<b>靜默的重工</b>：兩條執行緒搶寫同一份腳本快取檔
+    /// （<c>IOException</c> 被既有的 <c>catch</c> 記進 log 就吞掉 ＝ 快取寫入失敗而沒人知道），
+    /// 而尾端的 <c>BlockingBeginUpdate</c> 會跑兩次 ＝ 同一批腳本檔被下載並就地覆寫兩次。
+    /// 先收工的那一條還會把旗標清成 <see langword="false"/>，於是另一條還在跑時
+    /// UI 就顯示「不忙」、重載按鈕重新變成可按。
+    /// </para>
+    /// <para>
+    /// 📌 這條路徑在腳本分頁加上「可瀏覽、可一鍵安裝的官方腳本清單」之後才真的容易踩到：
+    /// 清單上每一列都有自己的安裝鈕，連按兩列就是兩次 <see cref="DownloadScript"/>，
+    /// 而那兩次各自跑在自己的 <c>Task.Run</c> 執行緒上。
+    /// </para>
+    /// </remarks>
+    internal static bool ThreadIsRunning => Volatile.Read(ref ThreadIsRunningFlag) != 0;
+
+    /// <summary><see cref="ThreadIsRunning"/> 的後備欄位。0 ＝沒有人在跑，1 ＝已經有一條編譯器執行緒擁有它。</summary>
+    private static int ThreadIsRunningFlag;
 
     /// <summary>
     /// 台服分支的腳本策展來源。上游的腳本版本閘門只比對「同名腳本的遠端版本較大」,
@@ -372,9 +400,13 @@ internal static partial class ScriptingProcessor
     {
         PluginLog.Debug($"Requested script loading");
         LoadScriptQueue.Enqueue((sourceCode, fpath));
-        if(!ThreadIsRunning)
+        // 🔴 取得所有權必須是不可分割的一步。原本的「先讀再寫」在兩條背景執行緒同時
+        //    進來時會各自開一條編譯器執行緒（成因與後果見 ThreadIsRunning 的註解）。
+        //    CompareExchange 回傳的是「換之前的舊值」，所以 == 0 才代表這一次是我搶到的；
+        //    搶輸的那一條什麼都不做就好 —— 腳本已經進了 LoadScriptQueue，
+        //    正在跑的那條編譯器執行緒會把它撿走（它閒置 10 輪才收工）。
+        if(Interlocked.CompareExchange(ref ThreadIsRunningFlag, 1, 0) == 0)
         {
-            ThreadIsRunning = true;
             PluginLog.Debug($"Beginning new thread");
             new Thread(() =>
             {
@@ -539,13 +571,13 @@ internal static partial class ScriptingProcessor
                             Thread.Sleep(10);
                         }
                     }
-                    ThreadIsRunning = false;
+                    Volatile.Write(ref ThreadIsRunningFlag, 0);
                 }
                 catch(Exception e)
                 {
                     e.Log();
                 }
-                ThreadIsRunning = false;
+                Volatile.Write(ref ThreadIsRunningFlag, 0);
                 PluginLog.Debug($"Compiler part of thread is finished");
 
                 if(!UpdateCompleted)
