@@ -1,28 +1,25 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Objects.Enums;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Plugin.Services;
 using ECommons;
-using ECommons.Automation;
 using ECommons.Automation.NeoTaskManager;
-using ECommons.CircularBuffers;
 using ECommons.Configuration;
 using ECommons.Events;
 using ECommons.GameFunctions;
+using ECommons.GameHelpers;
 using ECommons.Hooks;
 using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using ECommons.ObjectLifeTracker;
-using ECommons.Reflection;
 using ECommons.SimpleGui;
 using ECommons.Singletons;
 using ECommons.WindowsFormsReflector;
 using Lumina.Excel.Sheets;
 using NotificationMasterAPI;
-using PInvoke;
+using FXWindows = TerraFX.Interop.Windows.Windows;
 using Splatoon.Gui;
 using Splatoon.Gui.Priority;
 using Splatoon.Gui.Scripting;
@@ -35,6 +32,7 @@ using Splatoon.Structures;
 using System.Net.Http;
 using Colors = Splatoon.Utility.Colors;
 using Localization = ECommons.LanguageHelpers.Localization;
+using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 
 namespace Splatoon;
 public unsafe class Splatoon : IDalamudPlugin
@@ -48,6 +46,47 @@ public unsafe class Splatoon : IDalamudPlugin
     internal Commands CommandManager;
     internal Configuration Config;
     internal Dictionary<ushort, TerritoryType> Zones;
+
+    /// <summary>
+    /// 錄影回放時要「以誰的視角」解算腳本。空字串＝用本機玩家。
+    /// 一般遊玩時完全不參與判斷(見 <see cref="BasePlayer"/> 的第一個分支)。
+    /// </summary>
+    /// <remarks>
+    /// 上游在設定介面裡提供了切換這個值的下拉選單;我方目前只補 API 面,沒有搬那段 UI,
+    /// 所以這個值恆為 ""、<see cref="BasePlayer"/> 恆等於本機玩家 —— 與我方現行行為逐字相同。
+    /// </remarks>
+    public static string BasePlayerOverride = "";
+
+    /// <summary>
+    /// 腳本應該當成「我」的那個玩家。一般遊玩時就是本機玩家;
+    /// 只有在**副本錄影回放**且使用者指定了 <see cref="BasePlayerOverride"/> 時才會換人。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 可能回 <c>null</c>(未登入/切區中),呼叫端要判空 —— 與 <c>Svc.Objects.LocalPlayer</c> 同語意。
+    /// </remarks>
+    public static IPlayerCharacter BasePlayer
+    {
+        get
+        {
+            if(!Svc.Condition[ConditionFlag.DutyRecorderPlayback])
+            {
+                return Svc.Objects.LocalPlayer;
+            }
+            if(BasePlayerOverride == "")
+            {
+                return Svc.Objects.LocalPlayer;
+            }
+            foreach(var x in Svc.Objects)
+            {
+                if(x is IPlayerCharacter pc && pc.GetNameWithWorld() == BasePlayerOverride)
+                {
+                    return pc;
+                }
+            }
+            return Svc.Objects.LocalPlayer;
+        }
+    }
+
     internal long CombatStarted = 0;
     internal HashSet<Element> InjectedElements = [];
     //internal HashSet<(float x, float y, float z, float r, float angle)> draw = new HashSet<(float x, float y, float z, float r, float angle)>();
@@ -107,6 +146,10 @@ public unsafe class Splatoon : IDalamudPlugin
         }
         Loaded = true;
         ECommonsMain.Init(pluginInterface, this, Module.ObjectLife, Module.ObjectFunctions, Module.DalamudReflector);
+        // 讓「呼叫了對方沒有的 IPC 方法」不再完全靜默。
+        // ⚠️ 這也涵蓋 SplatoonScripts：腳本是執行期編譯進同一個 ALC，
+        // 用的是同一份 ECommons.dll，所以 EzIPC 的靜態事件是同一個。
+        EzIpcFailureLog.Enable();
         Svc.Commands.RemoveHandler("/loadsplatoon");
         EzConfig.Migrate<Configuration>();
         Config = EzConfig.Init<Configuration>() ?? new();
@@ -193,10 +236,11 @@ public unsafe class Splatoon : IDalamudPlugin
             ScriptingProcessor.TerritoryChanged();
         });
         Svc.ClientState.Logout += OnLogout;
-        HttpClient = new()
-        {
-            Timeout = TimeSpan.FromSeconds(10)
-        };
+        // 腳本黑名單／更新清單／腳本本體都在自家 repo,轉私有後要帶 Dalamud 設定裡的
+        // GitHub 權杖才抓得到;非本 org 的來源(使用者自訂清單、上游倉庫)不會被加上權杖。
+        // 呼叫端持有這個實例,由 Dispose() 釋放。
+        HttpClient = pluginInterface.CreateGitHubHttpClient();
+        HttpClient.Timeout = TimeSpan.FromSeconds(10);
         ObjectLife.OnObjectCreation = ScriptingProcessor.OnObjectCreation;
         //VFXManager = new();
         RenderableZoneSelector = new();
@@ -228,7 +272,14 @@ public unsafe class Splatoon : IDalamudPlugin
         Disposed = true;
         Safe(delegate
         {
-            Svc.Commands.RemoveHandler("/loadsplatoon");
+            // Load() 成功時已經把這個指令移掉了(見 Load 裡同一行)。卸載時再移一次,
+            // Dalamud 的 plugin-scoped CommandManager 會寫一行 ERR「Command X not found.」的假錯誤。
+            // 先問實際狀態再移(而不是靠 Loaded 旗標),Load() 中途拋例外的路徑也照樣涵蓋。
+            if(Svc.Commands.Commands.ContainsKey("/loadsplatoon"))
+            {
+                Svc.Commands.RemoveHandler("/loadsplatoon");
+            }
+
             Svc.PluginInterface.UiBuilder.Draw -= loader.Draw;
         });
         if(!Loaded)
@@ -256,7 +307,11 @@ public unsafe class Splatoon : IDalamudPlugin
         Safe(ObjectEffectProcessor.Dispose);
         Safe(AttachedInfo.Dispose);
         Safe(ScriptingProcessor.Dispose);
+        // 持有 GitHub 權杖的 handler 不要活過外掛本身。背景下載執行緒此刻若還在飛,
+        // 它會拿到 ObjectDisposedException,而各條下載路徑本來就各自有 catch。
+        Safe(() => HttpClient?.Dispose());
         Safe(BuffEffectProcessor.Dispose);
+        Safe(EzIpcFailureLog.Disable);
         ECommonsMain.Dispose();
         P = null;
         //Svc.Chat.Print("Disposing");
@@ -279,7 +334,7 @@ public unsafe class Splatoon : IDalamudPlugin
         InteropGenerator.Runtime.Resolver.GetInstance.Resolve();
 #endif
         var cfg = EzConfig.LoadConfiguration<Configuration>(EzConfig.DefaultConfigurationFileName);
-        Localization.Init(cfg.PluginLanguage);
+        Localization.Init(cfg.PluginLanguage ?? "ChineseTraditional"); // TC fork: default to zh-TW when no language is explicitly selected
         loader = new Loader(this);
     }
 
@@ -305,6 +360,13 @@ public unsafe class Splatoon : IDalamudPlugin
     }
 
     internal static readonly string[] InvalidSymbols = { "", "", "", "“", "”", "" };
+    // 文字裡沒有任何一個符號的首字也沒有換行時，RemoveSymbols＋換行替換必定原樣返回，可以直接附加。
+    // 清單裡有空字串／null 時捷徑整個停用（原式子會擲例外，要照舊擲），而且型別初始化不能因此失敗。
+    private static readonly bool ChatTextFastPath = InvalidSymbols.All(x => !string.IsNullOrEmpty(x));
+    private static readonly System.Buffers.SearchValues<char> ChatTextEditChars = System.Buffers.SearchValues.Create([.. InvalidSymbols.Where(x => !string.IsNullOrEmpty(x)).Select(x => x[0]), '\n']);
+    // 用 Interlocked 取走／放回而不是 [ThreadStatic]：處理器不保證只在框架執行緒進來，插件 TLS 在熱重載後有風險。
+    private static StringBuilder ChatTextBuilder;
+
     internal void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
         var inttype = (int)type;
@@ -313,21 +375,49 @@ public unsafe class Splatoon : IDalamudPlugin
             Phase++;
             CombatStarted = Environment.TickCount64;
         }
-        if(!type.EqualsAny(ECommons.Constants.NormalChatTypes))
+        if(!IsNormalChatType(type))
         {
-            var m = message.Payloads.Where(p => p is ITextProvider)
-                    .Cast<ITextProvider>()
-                    .Aggregate(new StringBuilder(), (sb, tp) => sb.Append(tp.Text.RemoveSymbols(InvalidSymbols).Replace("\n", " ")), sb => sb.ToString());
+            var m = BuildChatText(message);
             ChatMessageQueue.Enqueue(m);
-            if(P.Config.Logging && !((uint)type).EqualsAny(Utils.BlacklistedMessages))
+            if(P.Config.Logging && Array.IndexOf(Utils.BlacklistedMessages, (uint)type) < 0)
             {
                 Logger.Log($"[{type}] {m}");
             }
-            if(((uint)type).EqualsAny<uint>(10283, 12331, 68))
+            if(inttype is 10283 or 12331 or 68)
             {
                 LogWindow.Log($"[{type}] {m}");
             }
         }
+    }
+
+    // 不用 ECommons 的 EqualsAny：它對列舉每比一個元素裝箱兩次（非一般頻道的訊息每則約 1.4 KB）。
+    private static bool IsNormalChatType(XivChatType type)
+    {
+        var types = ECommons.Constants.NormalChatTypes;
+        for(var i = 0; i < types.Length; i++)
+        {
+            if(types[i] == type) return true;
+        }
+        return false;
+    }
+
+    private static string BuildChatText(SeString message)
+    {
+        var sb = System.Threading.Interlocked.Exchange(ref ChatTextBuilder, null) ?? new StringBuilder();
+        sb.Clear();
+        var payloads = message.Payloads;
+        for(var i = 0; i < payloads.Count; i++)
+        {
+            if(payloads[i] is ITextProvider tp)
+            {
+                var text = tp.Text;
+                // null 也走原本的式子：照舊在 RemoveSymbols 擲例外，不默默變成空字串。
+                sb.Append(!ChatTextFastPath || text == null || text.AsSpan().ContainsAny(ChatTextEditChars) ? text.RemoveSymbols(InvalidSymbols).Replace("\n", " ") : text);
+            }
+        }
+        var result = sb.ToString();
+        if(sb.Capacity <= 1024) System.Threading.Volatile.Write(ref ChatTextBuilder, sb);
+        return result;
     }
 
     internal void SetupShutdownHttp(bool enable)
@@ -381,6 +471,10 @@ public unsafe class Splatoon : IDalamudPlugin
                 if(dt == (long)DestroyCondition.TERRITORY_CHANGE)
                 {
                     dynamicElements.RemoveAt(i);
+                    // 🔴 移除之後必須離開內層迴圈：DestroyTime 可以含多筆，
+                    // 同一個 i 被 RemoveAt 兩次時，i 是最後一格就擲 ArgumentOutOfRangeException，
+                    // 否則會默默刪掉本來還活著的另一個元素。
+                    break;
                 }
             }
         }
@@ -426,12 +520,12 @@ public unsafe class Splatoon : IDalamudPlugin
             PlaceholderCache.Clear();
             LayoutAmount = 0;
             ElementAmount = 0;
-            if(LogObjects && Svc.ClientState.LocalPlayer != null)
+            if(LogObjects && Svc.Objects.LocalPlayer != null)
             {
                 foreach(var t in Svc.Objects)
                 {
                     var ischar = t is ICharacter;
-                    var obj = (t.Name.ToString(), t.EntityId, (ulong)t.Struct()->GetGameObjectId(), t.DataId, ischar ? ((ICharacter)t).Struct()->ModelContainer.ModelCharaId : 0, t.Struct()->GetNameId(), ischar ? ((ICharacter)t).NameId : 0, t.ObjectKind);
+                    var obj = (t.Name.ToString(), t.EntityId, (ulong)t.Struct()->GetGameObjectId(), t.BaseId, ischar ? ((ICharacter)t).Struct()->ModelContainer.ModelCharaId : 0, t.Struct()->GetNameId(), ischar ? ((ICharacter)t).NameId : 0, t.ObjectKind);
                     loggedObjectList.TryAdd(obj, new ObjectInfo());
                     loggedObjectList[obj].ExistenceTicks++;
                     loggedObjectList[obj].IsChar = ischar;
@@ -447,7 +541,7 @@ public unsafe class Splatoon : IDalamudPlugin
                         loggedObjectList[obj].Targetable = t.Struct()->GetIsTargetable();
                         if(loggedObjectList[obj].Targetable) loggedObjectList[obj].TargetableTicks++;
                     }
-                    loggedObjectList[obj].Distance = Vector3.Distance(Svc.ClientState.LocalPlayer.Position, t.Position);
+                    loggedObjectList[obj].Distance = Vector3.Distance(Svc.Objects.LocalPlayer.Position, t.Position);
                     loggedObjectList[obj].HitboxRadius = t.HitboxRadius;
                     loggedObjectList[obj].Life = t.GetLifeTimeSeconds();
                 }
@@ -458,8 +552,9 @@ public unsafe class Splatoon : IDalamudPlugin
             }
             PlayerPosCache = null;
             S.RenderManager.ClearDisplayObjects();
-            if(Svc.ClientState.LocalPlayer != null)
+            if(Svc.Objects.LocalPlayer != null)
             {
+                PhaseUpdater.UpdatePhaseIfNeeded();
                 if(ChatMessageQueue.Count > 5 * dequeueConcurrency)
                 {
                     dequeueConcurrency++;
@@ -479,8 +574,8 @@ public unsafe class Splatoon : IDalamudPlugin
                     }
                 }
                 //if (CurrentChatMessages.Count > 0) PluginLog.Verbose($"Messages dequeued: {CurrentChatMessages.Count}");
-                var pl = Svc.ClientState.LocalPlayer;
-                if(Svc.ClientState.LocalPlayer.Address == nint.Zero)
+                var pl = Svc.Objects.LocalPlayer;
+                if(Svc.Objects.LocalPlayer.Address == nint.Zero)
                 {
                     Log("Pointer to LocalPlayer.Address is zero");
                     return;
@@ -520,6 +615,7 @@ public unsafe class Splatoon : IDalamudPlugin
 
                 //if (CamAngleY > Config.maxcamY) return;
 
+                LayoutUtils.BeginObjectNameCache();
                 if(PinnedElementEditWindow.Script != null && PinnedElementEditWindow.EditingElement != null && !PinnedElementEditWindow.Script.InternalData.UnconditionalDraw)
                 {
                     S.RenderManager.GetRenderer(PinnedElementEditWindow.EditingElement).ProcessElement(PinnedElementEditWindow.EditingElement, null, true);
@@ -559,8 +655,29 @@ public unsafe class Splatoon : IDalamudPlugin
                     ProcessLayout(i);
                 }
 
-                ScriptingProcessor.Scripts.Each(x => { if(x.IsEnabled) x.Controller.Layouts.Values.Each(ProcessLayout); });
-                ScriptingProcessor.Scripts.Each(x => { if(x.IsEnabled || x.InternalData.UnconditionalDraw) x.Controller.Elements.Each(z => S.RenderManager.GetRenderer(z.Value).ProcessElement(z.Value, null, x.InternalData.UnconditionalDraw && x.InternalData.UnconditionalDrawElements.Contains(z.Key))); });
+                // 刻意不用 Each＋lambda：那樣每幀至少配一個委派，有腳本時每支再多閉包與裝箱的列舉器。
+                // 順序、兩趟各自讀一次腳本清單、例外直接往外傳都與 Each 版相同。
+                var scripts = ScriptingProcessor.Scripts;
+                for(var si = 0; si < scripts.Count; si++)
+                {
+                    var x = scripts[si];
+                    if(x.IsEnabled)
+                    {
+                        foreach(var l in x.Controller.Layouts.Values) ProcessLayout(l);
+                    }
+                }
+                scripts = ScriptingProcessor.Scripts;
+                for(var si = 0; si < scripts.Count; si++)
+                {
+                    var x = scripts[si];
+                    if(x.IsEnabled || x.InternalData.UnconditionalDraw)
+                    {
+                        foreach(var z in x.Controller.Elements)
+                        {
+                            S.RenderManager.GetRenderer(z.Value).ProcessElement(z.Value, null, x.InternalData.UnconditionalDraw && x.InternalData.UnconditionalDrawElements.Contains(z.Key));
+                        }
+                    }
+                }
                 foreach(var e in InjectedElements)
                 {
                     S.RenderManager.GetRenderer(e).ProcessElement(e);
@@ -572,24 +689,35 @@ public unsafe class Splatoon : IDalamudPlugin
                 {
                     var de = dynamicElements[i];
 
+                    // 🔴 內層 foreach 只負責判定，移除與跳過由外層做。DestroyTime 是 long[]、可以含多筆：
+                    // 在內層直接 RemoveAt(i) 時，同一幀有兩個銷毀條件成立就會對同一個 i 移除兩次 ——
+                    // i 是最後一格擲 ArgumentOutOfRangeException，否則默默刪掉本來還活著的另一個元素。
+                    // Tick() 整個包在最外層一個 catch 裡：這裡擲例外＝該幀剩下的 prevCombatState 更新與
+                    // ScriptingProcessor.OnUpdate() 全部跳過（所有腳本那一幀完全不跑）。
+                    var destroyed = false;
                     foreach(var dt in de.DestroyTime)
                     {
                         if(dt == (long)DestroyCondition.COMBAT_EXIT)
                         {
                             if(!Svc.Condition[ConditionFlag.InCombat] && prevCombatState)
                             {
-                                dynamicElements.RemoveAt(i);
-                                continue;
+                                destroyed = true;
+                                break;
                             }
                         }
                         else if(dt > 0)
                         {
                             if(Environment.TickCount64 > dt)
                             {
-                                dynamicElements.RemoveAt(i);
-                                continue;
+                                destroyed = true;
+                                break;
                             }
                         }
+                    }
+                    if(destroyed)
+                    {
+                        dynamicElements.RemoveAt(i);
+                        continue;
                     }
                     foreach(var l in de.Layouts)
                     {
@@ -600,6 +728,7 @@ public unsafe class Splatoon : IDalamudPlugin
                         S.RenderManager.GetRenderer(e).ProcessElement(e);
                     }
                 }
+                LayoutUtils.EndObjectNameCache();
             }
             else
             {
@@ -608,11 +737,16 @@ public unsafe class Splatoon : IDalamudPlugin
             CurrentChatMessages.Clear();
             BuffEffectProcessor.ActorEffectUpdate();
             ScriptingProcessor.OnUpdate();
+            CapturedPositions.Clear();
         }
         catch(Exception e)
         {
             Log("Caught exception: " + e.Message);
             Log(e.ToStringFull());
+        }
+        finally
+        {
+            LayoutUtils.EndObjectNameCache();
         }
     }
 
@@ -663,6 +797,8 @@ public unsafe class Splatoon : IDalamudPlugin
             }
         }
     }
+
+    internal static Dictionary<string, Dictionary<string, List<Vector3>>> CapturedPositions = [];
 
     internal static void ProcessElementsOfLayout(Layout l)
     {
@@ -718,7 +854,7 @@ public unsafe class Splatoon : IDalamudPlugin
     {
         if(s2wInfo != null)
         {
-            var lmbdown = Bitmask.IsBitSet(User32.GetKeyState(0x01), 15);
+            var lmbdown = Bitmask.IsBitSet(FXWindows.GetKeyState(0x01), 15);
             var mousePos = ImGui.GetIO().MousePos;
             if(Svc.GameGui.ScreenToWorld(new Vector2(mousePos.X, mousePos.Y), out var worldPos, Config.maxdistance * 5))
             {

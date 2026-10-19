@@ -23,7 +23,7 @@
 - Settings are not required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P5%20Wrath%20of%20the%20Heavens.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P5%20Wrath%20of%20the%20Heavens.cs
 ```
 
 ## Death of the Heavens
@@ -55,7 +55,7 @@ Red marker for doom, blue for non doom from the center of the arena, relativ nor
 
 [Beta] Script for resolving dooms 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/DSR%20Dooms.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/DSR%20Dooms.cs
 ```
 
 
@@ -90,7 +90,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/
 
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P5%20Death%20of%20the%20Heavens.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P5%20Death%20of%20the%20Heavens.cs
 ```
 
 [International][Beta][Untested] Caster Limit Break
@@ -104,5 +104,5 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/
 Additionally, it will not activate if LB2 is not fully charged.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P5%20Caster%20Limit%20Break.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P5%20Caster%20Limit%20Break.cs
 ```

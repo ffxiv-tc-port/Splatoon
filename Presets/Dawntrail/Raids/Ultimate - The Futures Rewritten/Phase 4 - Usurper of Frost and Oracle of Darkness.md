@@ -1,6 +1,6 @@
 ## [Beta] Auto target switcher
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P4%20AutoTargetSwitcher.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P4%20AutoTargetSwitcher.cs
 ```
 
 # Darklit Dragonsong
@@ -32,7 +32,7 @@ Hourglass swap type: clockwise
 ```
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P4%20Darklit.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P4%20Darklit.cs
 ```
 
 ## Hallowed Wings
@@ -55,7 +55,7 @@ Configuration guide:
 - - Knockback immunity return positions: will highlight from middle a bit north or south. Assumes you will use KB immunity and mitigations.
 - - [Nukemaru return positions](https://x.com/PoneKoni/status/1866137320883409367)
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P4%20Crystallize%20Time.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P4%20Crystallize%20Time.cs
 ```
 
 ## Ice/Wind + Red debuff hint

@@ -18,10 +18,11 @@ using ECommons.GameHelpers;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
@@ -52,13 +53,13 @@ public unsafe class P5_Death_of_the_Heavens : SplatoonScript
     public override HashSet<uint>? ValidTerritories => [968];
     private Config C => Controller.GetConfig<Config>();
 
-    public override Metadata? Metadata => new(8, "Garume, damolitionn");
+    public override Metadata? Metadata => new(10, "Garume, damolitionn");
 
     private IBattleChara? Thordan => Svc.Objects.OfType<IBattleChara>()
         .FirstOrDefault(x => x.NameId == 0xE30 && x.IsCharacterVisible());
 
     private IEnumerable<IGameObject> DeathSentence => Svc.Objects
-        .Where(x => x.DataId == 0x1EB685);
+        .Where(x => x.BaseId == 0x1EB685);
 
     private Vector2 GetBaitPosition(State state, BaitType bait)
     {
@@ -181,7 +182,7 @@ public unsafe class P5_Death_of_the_Heavens : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGui.Text("General");
+        ImGui.Text("General".Loc());
         ImGui.Indent();
         C.PriorityData.Draw();
         ImGui.Text("Pre Playstation Split");
@@ -608,7 +609,7 @@ public unsafe class P5_Death_of_the_Heavens : SplatoonScript
 
         public PrioData PriorityData = new();
 
-        public bool LockFace = true;
+        public bool LockFace = false;
         public bool LockFaceEnableWhenNotMoving = true;
         public Direction OrientationBase = Direction.North;
         public PrePlaystationSplit PrePlaystationSplit = PrePlaystationSplit.Horizontal;

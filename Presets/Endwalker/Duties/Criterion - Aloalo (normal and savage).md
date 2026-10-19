@@ -4,7 +4,7 @@
 
 !!! WARNING !!! Does not works with FIRST set of bombs for now. Works with 2nd and 3rd set. !!!
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Aloalo%20Bombs.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Aloalo%20Bombs.cs
 ```
 [EN] Aloalo Snipper - Bubble Shower
 ```

@@ -10,7 +10,7 @@ using ECommons.Logging;
 using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -19,6 +19,7 @@ namespace SplatoonScriptsOfficial.Generic;
 public unsafe class AutoTeleport : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1252];
+    public override Metadata Metadata => new(2, "NightmareXIV");
 
     delegate void DisplayPopupBanner(nint a1, int textureId, int a3, int a4);
 
@@ -69,7 +70,22 @@ public unsafe class AutoTeleport : SplatoonScript
         {
             return true;
         }
-        if(ActionManager.Instance()->GetActionStatus(ActionType.Action, 41343) == 0 && !AgentMap.Instance()->IsPlayerMoving)
+        // 🔴 AgentMap.Instance() 內部鏈 AgentModule -> UIModule -> Framework,任一層回 null 整條就回 null
+        //    (登入前、切場景時是常態),特徵碼失配時則是擲 InvalidOperationException。裸解參考 null 原生指標是
+        //    AccessViolationException,try/catch 攔不到 ⇒ 只能事前判空。
+        //    fail-closed:取不到 agent 就當成「還在移動」,這一輪不送 /return
+        //    (寧可不傳送,也不要在狀態不明時送出傳送指令)。工作每幀重跑,不寫 log。
+        AgentMap* agentMap;
+        try
+        {
+            agentMap = AgentMap.Instance();
+        }
+        catch
+        {
+            agentMap = null;
+        }
+
+        if(agentMap != null && ActionManager.Instance()->GetActionStatus(ActionType.Action, 41343) == 0 && !agentMap->IsPlayerMoving)
         {
             if(FrameThrottler.Check("ReturnThrottle") && EzThrottler.Throttle("ReturnOC"))
             {

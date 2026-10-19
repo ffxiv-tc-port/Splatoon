@@ -15,6 +15,14 @@ internal static class Triggers
             {
                 var trigger = layout.Triggers[n];
                 ImGui.PushID(trigger.GUID);
+                ImGui.PushStyleColor(ImGuiCol.Text, trigger.UserDisabled ? EColor.RedBright : EColor.GreenBright);
+                ImGui.PushFont(UiBuilder.IconFont);
+                // 我方 ECommons pin 無 noColor 參數(上游 3aeec9a),等價改寫為無色 toggle 按鈕
+                if(ImGui.Button((trigger.UserDisabled ? FontAwesomeIcon.Times : FontAwesomeIcon.Check).ToIconString())) trigger.UserDisabled = !trigger.UserDisabled;
+                ImGui.PopFont();
+                ImGui.PopStyleColor();
+                ImGuiEx.Tooltip($"This trigger is {(trigger.UserDisabled ? "disabled" : "enabled")}");
+                ImGui.SameLine();
                 if(ImGuiEx.IconButton(FontAwesomeIcon.Trash, enabled: ImGuiEx.Ctrl))
                 {
                     new TickScheduler(() => layout.Triggers.Remove(trigger));
@@ -60,7 +68,7 @@ internal static class Triggers
                     {
                         var col = trigger.IsRegex;
                         if(col) ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
-                        ImGui.Checkbox("Regex", ref trigger.IsRegex);
+                        ImGui.Checkbox("Regex".Loc(), ref trigger.IsRegex);
                         if(col) ImGui.PopStyleColor();
                     });
                     //ImGui.InputTextWithHint("##textinput1", "Case-insensitive message", ref trigger.Match, 1000);

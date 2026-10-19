@@ -19,7 +19,7 @@ namespace SplatoonScriptsOfficial.Tests
     {
         public override HashSet<uint> ValidTerritories => [];
         private HttpClient Client;
-        public override Metadata? Metadata { get; } = new(2, "NightmareXIV");
+        public override Metadata? Metadata { get; } = new(3, "NightmareXIV");
         public override void OnEnable()
         {
             Client = new()
@@ -107,7 +107,7 @@ namespace SplatoonScriptsOfficial.Tests
                     {
                         $"{obj.Name.GetText()}",
                         $"{obj.EntityId}",
-                        $"{obj.DataId}",
+                        $"{obj.BaseId}",
                         $"{obj.Struct()->GetNameId()}",
                         chr == null?"":$"{chr.Struct()->ModelContainer.ModelCharaId}",
                         chr == null?"":$"{chr.GetTransformationID()}",

@@ -19,7 +19,7 @@ Cruise Chaser Conal Cleaves: Shows CC's conal cleaves on odd marked players so y
 - tether to the bait location if you are baiting
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA_P2_Transition.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA_P2_Transition.cs
 ```
 
 [International] [Beta] [Script] P2 Transition 1211 script.
@@ -31,7 +31,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbrin
 > The displayed text is in Japanese, so please change it accordingly in the config.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P2%201211%20Transition.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P2%201211%20Transition.cs
 ```
 
 # P2: BJ/CC
@@ -75,7 +75,7 @@ It works in another language, but the displayed text is Japanese.
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P2%20Nisi.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P2%20Nisi.cs
 ```
 
 # P3: Alexander Prime
@@ -120,7 +120,7 @@ Configuration:
 - Select where you stand during each debuff.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P2%20Temporal%20Stasis.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P2%20Temporal%20Stasis.cs
 ```
 
 [Jp] [Beta] [Script] Wormhole Formation
@@ -134,7 +134,7 @@ It is called `34固定`.
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P3%20Wormhole%20Formation.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P3%20Wormhole%20Formation.cs
 ```
 
 # P4: Perfect Alexander
@@ -158,7 +158,7 @@ Trines Dodges: Need to import first two, third is optional. Indicates where the 
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P4%20Fate%20Projection%20α.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P4%20Fate%20Projection%20α.cs
 ```
 
 [JP] [Beta] [Script] Fate Projection β
@@ -166,5 +166,5 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbrin
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P4%20Fate%20Projection%20β.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Shadowbringers/The%20Epic%20Of%20Alexander/TEA%20P4%20Fate%20Projection%20β.cs
 ```

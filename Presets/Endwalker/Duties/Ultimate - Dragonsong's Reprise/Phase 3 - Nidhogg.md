@@ -59,7 +59,7 @@ DSR P3 Nidhogg Ring~{"ZoneLockH":[968],"DCond":5,"Elements":{"1":{"refX":100.0,"
 > The gaze-locking feature is unstable. If you can manage it yourself, it is recommended to turn it off.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P3%20Dive%20from%20Grace.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/Dragonsong's%20Reprise/P3%20Dive%20from%20Grace.cs
 ```
 
 ## Final phase

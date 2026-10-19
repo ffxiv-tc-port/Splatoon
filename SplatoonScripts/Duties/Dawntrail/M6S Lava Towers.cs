@@ -7,7 +7,7 @@ using ECommons.GameFunctions;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Newtonsoft.Json;
 using Splatoon.SplatoonScripting;
 using System;
@@ -19,7 +19,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 public unsafe class M6S_Lava_Towers : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1259];
-    public override Metadata? Metadata => new(6, "NightmareXIV");
+    public override Metadata? Metadata => new(7, "NightmareXIV");
 
     bool ReadyToSoak = false;
     bool IsSecondTowers = false;
@@ -86,7 +86,7 @@ public unsafe class M6S_Lava_Towers : SplatoonScript
     {
         Controller.GetRegisteredElements().Each(x => x.Value.Enabled = false);
 
-        if(Svc.Objects.OfType<IBattleNpc>().TryGetFirst(x => x.IsTargetable && x.DataId == 18335, out var result)
+        if(Svc.Objects.OfType<IBattleNpc>().TryGetFirst(x => x.IsTargetable && x.BaseId == 18335, out var result)
             && result.Struct()->GetCastInfo() != null && ((result.CastActionId == 42649 && result.CurrentCastTime <= 6.6f) || result.IsCasting(42679)))
         {
             this.ReadyToSoak = false;
@@ -268,7 +268,7 @@ public unsafe class M6S_Lava_Towers : SplatoonScript
         ImGuiEx.Combo("8 towers position", ref C.Position8, Towers.Keys.Where(x => x >= 89));
         if(ThreadLoadImageHandler.TryGetTextureWrap("https://github.com/PunishXIV/Splatoon/blob/main/Presets/Files/Dawntrail/image_230.png?raw=true", out var w))
         {
-            ImGui.Image(w.ImGuiHandle, w.Size);
+            ImGui.Image(w.Handle, w.Size);
         }
         if(ImGui.CollapsingHeader("Debug"))
         {

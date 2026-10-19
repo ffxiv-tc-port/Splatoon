@@ -24,7 +24,7 @@ public static class ImGuiUtils //came here to laugh on how scuffed it is? let's 
             ImGuiEx.InputHex(id, ref u);
             if(ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("Hexadecimal input");
+                ImGui.SetTooltip("Hexadecimal input".Loc());
             }
         }
         else
@@ -33,7 +33,7 @@ public static class ImGuiUtils //came here to laugh on how scuffed it is? let's 
             ImGuiEx.InputUint(id, ref u);
             if(ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("Decimal input");
+                ImGui.SetTooltip("Decimal input".Loc());
             }
         }
     }
@@ -144,7 +144,7 @@ public static class ImGuiUtils //came here to laugh on how scuffed it is? let's 
             edited = true;
         }
         ImGui.SameLine();
-        ImGuiEx.Text("Thickness:");
+        ImGuiEx.Text("Thickness:".Loc());
         ImGui.SameLine();
         ImGui.SetNextItemWidth(60f);
         if(ImGui.DragFloat("##strokeThiccness" + name, ref style.strokeThickness, 0.1f, 0f, float.MaxValue))
@@ -198,7 +198,7 @@ public static class ImGuiUtils //came here to laugh on how scuffed it is? let's 
                     edited = true;
                 }
                 if(!style.overrideFillColor) ImGui.EndDisabled();
-                ImGuiEx.HelpMarker("Unsupported in ImGui Legacy renderer");
+                ImGuiEx.HelpMarker("Unsupported in ImGui Legacy renderer".Loc());
             }
             ImGui.Unindent(CGui.WidthElement + 15f);
         }

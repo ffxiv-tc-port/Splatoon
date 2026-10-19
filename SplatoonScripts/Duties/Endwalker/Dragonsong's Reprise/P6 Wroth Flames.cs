@@ -18,7 +18,7 @@ using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.Serializables;
 using Splatoon.SplatoonScripting;
@@ -54,13 +54,13 @@ public unsafe class P6_Wroth_Flames : SplatoonScript
     private State _state = State.None;
     public override HashSet<uint>? ValidTerritories => [968];
 
-    public override Metadata? Metadata => new(7, "Garume, damolitionn");
+    public override Metadata? Metadata => new(8, "Garume, damolitionn");
 
     private Config C => Controller.GetConfig<Config>();
 
     private IBattleChara? Hraesvelgr => Svc.Objects
         .Where(o => o.IsTargetable)
-        .FirstOrDefault(o => o.DataId == 0x3145) as IBattleChara;
+        .FirstOrDefault(o => o.BaseId == 0x3145) as IBattleChara;
 
     public override void OnActionEffectEvent(ActionEffectSet set)
     {

@@ -25,22 +25,39 @@ internal static class TabScripting
         {
             ImGuiEx.TextWrapped(ImGuiColors.DalamudOrange, "Please note that scripts have direct and unrestricted access to your PC and game. Ensure that you know what you're installing.".Loc());
         }
+        // 可用腳本清單刻意併進這個分頁而不是另開視窗。上面那塊「安裝中 / 安全性警告」
+        // 留在子分頁列之外,兩個子分頁都看得到 —— 在瀏覽清單時按了安裝,進度一樣看得見。
+        ImGuiEx.EzTabBar("##scriptsSubTabs",
+            ("Installed scripts".Loc(), DrawInstalled, null, true),
+            ("Available scripts".Loc(), TabScriptBrowser.Draw, null, true)
+            );
+    }
+
+    private static void DrawInstalled()
+    {
         var force = ForceUpdate;
         if(ImGui.Checkbox($"Force Update".Loc(), ref force)) ForceUpdate = force;
         ImGuiEx.Tooltip("Enable this checkbox and click \"Reload and Update\" button to forcibly redownload all scripts, even should they have no updates, that were installed from the Internet.");
         ImGui.SameLine();
         if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Undo, "Reload and Update".Loc()))
         {
-            var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "ScriptCache");
-            foreach(var x in Directory.GetFiles(dir))
+            // Directory scan + deletes are disk I/O; run them off the UI thread. ReloadAll()
+            // itself still needs to run on the framework thread (it synchronously touches
+            // script state before dispatching its own background work), so hop back via
+            // RunOnFrameworkThread once the cache is cleared.
+            Task.Run(() =>
             {
-                if(x.EndsWith(".bin"))
+                var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "ScriptCache");
+                foreach(var x in Directory.GetFiles(dir))
                 {
-                    PluginLog.Information($"Deleting {x}");
-                    File.Delete(x);
+                    if(x.EndsWith(".bin"))
+                    {
+                        PluginLog.Information($"Deleting {x}");
+                        File.Delete(x);
+                    }
                 }
-            }
-            ScriptingProcessor.ReloadAll();
+                Svc.Framework.RunOnFrameworkThread(ScriptingProcessor.ReloadAll);
+            });
         }
         ImGuiEx.Tooltip("Clears cache, recompiles and reloads all scripts and checks them for updates immediately.");
         ImGui.SameLine();
@@ -50,6 +67,12 @@ internal static class TabScripting
             if(ScriptingProcessor.IsUrlTrusted(text))
             {
                 ScriptingProcessor.DownloadScript(text, false);
+            }
+            else if(IsSingleLineUrl(text))
+            {
+                // 網址編不過，照舊丟給編譯器只會留一段看不懂的編譯錯誤。
+                PluginLog.Information($"Script install refused: {text} is not on the trusted list (Tools - Trusted Repos)");
+                Notify.Error("The download address of this entry is not on the trusted list, so it can not be installed from here. If you trust it, add its address under Tools - Trusted Repos first.".Loc());
             }
             else
             {
@@ -76,7 +99,7 @@ internal static class TabScripting
                     }
                 }
             }
-            if(ImGui.Selectable("Default Configuration"))
+            if(ImGui.Selectable("Default Configuration".Loc()))
             {
                 foreach(var s in ScriptingProcessor.Scripts)
                 {
@@ -169,7 +192,7 @@ internal static class TabScripting
 
         void DrawScriptGroup(IEnumerable<SplatoonScript> scripts)
         {
-            if(ImGui.BeginTable("##scriptsTable", 7, ImGuiTableFlags.BordersInner | ImGuiTableFlags.BordersOuter | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
+            if(ImGui.BeginTable("##scriptsTable", 8, ImGuiTableFlags.BordersInner | ImGuiTableFlags.BordersOuter | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
             {
                 ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableSetupColumn("Configuration", ImGuiTableColumnFlags.WidthFixed, 120);
@@ -178,6 +201,7 @@ internal static class TabScripting
                 ImGui.TableSetupColumn("##c2");
                 ImGui.TableSetupColumn("##c3");
                 ImGui.TableSetupColumn("##c4");
+                ImGui.TableSetupColumn("##c5");
                 ImGui.TableHeadersRow();
                 foreach(var script in scripts)
                 {
@@ -309,6 +333,13 @@ internal static class TabScripting
 
                     ImGui.TableNextColumn();
 
+                    // 這個集合由 Controller.DisplayAttentionWindowLine 讀取:
+                    // 名字在集合裡的腳本,它排進注意視窗的內容會被直接丟掉。
+                    ImGuiEx.CollectionButtonCheckbox(FontAwesomeIcon.ExclamationTriangle, script.InternalData.FullName, P.Config.DisabledAttentionWindowScripts);
+                    ImGuiEx.Tooltip("Disable attention window for this script.".Loc());
+
+                    ImGui.TableNextColumn();
+
                     if(ImGuiEx.IconButton("\uf0e2"))
                     {
                         var isOpen = script.InternalData.ConfigOpen;
@@ -364,18 +395,26 @@ internal static class TabScripting
                         ex.Log();
                     }
                 }, null, false),
-                (openConfig.Controller.GetRegisteredElements().Count > 0 ? "Registered elements" : null, openConfig.DrawRegisteredElements, null, false),
-                ("Saved Configurations", openConfig.DrawConfigurations, null, false)
+                (openConfig.Controller.GetRegisteredElements().Count > 0 ? "Registered elements".Loc() : null, openConfig.DrawRegisteredElements, null, false),
+                ("Saved Configurations".Loc(), openConfig.DrawConfigurations, null, false)
                 );
 
             ImGuiEx.LineCentered("ScriptConfig", delegate
             {
-                if(ImGui.Button("Close and save configuration"))
+                if(ImGui.Button("Close and save configuration".Loc()))
                 {
                     openConfig.InternalData.ConfigOpen = false;
                     openConfig.Controller.SaveConfig();
                 }
             });
         }
+    }
+
+    private static bool IsSingleLineUrl(string text)
+    {
+        if(text == null) return false;
+        var t = text.Trim();
+        return !t.Contains('\n')
+            && (t.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || t.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -2,6 +2,8 @@
 using Splatoon.Serializables;
 
 namespace Splatoon.Utility;
+// 繪製時每個元素每幀都會呼叫 GetDisplayStyle 系列：type 判斷用模式比對，
+// 不用 EqualsAny（每次呼叫都配置 params 陣列、閉包與委派）。
 public static class ElementExtensions
 {
     internal static float GetDefaultFillIntensity(this Element e)
@@ -11,7 +13,7 @@ public static class ElementExtensions
         const uint defaultStrokeAlpha = 0xC8;
         var transparencyFromStroke = (float)strokeAlpha / defaultStrokeAlpha;
         var transparencyFromFillStep = 0.5f / e.FillStep;
-        if(e.type.EqualsAny(0, 1))
+        if(e.type is 0 or 1)
         {
             // Donut
             if(e.Donut > 0)
@@ -25,7 +27,7 @@ public static class ElementExtensions
             }
         }
         // Cone
-        if(e.type.EqualsAny(4, 5))
+        if(e.type is 4 or 5)
         {
             transparencyFromFillStep *= 4;
         }
@@ -53,7 +55,7 @@ public static class ElementExtensions
         if(needsPolygonalFillMigration)
         {
             // Non-donut circles are the only shapes that don't need fill migration because they had functioning Fill.
-            var isCircle = e.type.EqualsAny(0, 1) && e.Donut == 0;
+            var isCircle = (e.type is 0 or 1) && e.Donut == 0;
             if(!isCircle)
             {
                 e.Filled = true;

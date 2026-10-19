@@ -9,7 +9,7 @@ using ECommons.GameFunctions;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.Logging;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using Microsoft.VisualBasic.ApplicationServices;
 using Splatoon;
@@ -26,7 +26,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class DSR_Towers : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [968];
-        public override Metadata? Metadata => new(3, "Enthusiastus");
+        public override Metadata? Metadata => new(4, "Enthusiastus");
 
         private Element? SolutionElement;
 
@@ -43,7 +43,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         //IBattleNpc? Thordan => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == ThordanDataId) as IBattleNpc;
         private string TestOverride = "";
 
-        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.ClientState.LocalPlayer!;
+        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.Objects.LocalPlayer!;
         private Vector2 Center = new(100, 100);
 
         public override void OnSetup()
@@ -95,7 +95,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         {
             if(Message.Contains("(3640>29563)"))
             {
-                var towers = Svc.Objects.Where(x => x is IBattleNpc b && b.NameId == 3640 && b.DataId == 9020).OrderBy(x => x.Position.X).ThenBy(y => y.Position.Z);
+                var towers = Svc.Objects.Where(x => x is IBattleNpc b && b.NameId == 3640 && b.BaseId == 9020).OrderBy(x => x.Position.X).ThenBy(y => y.Position.Z);
                 var i = 0;
                 foreach(var x in towers)
                 {

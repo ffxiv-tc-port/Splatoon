@@ -23,6 +23,7 @@ public unsafe class Underkeep_ValiaPira : SplatoonScript
     public int RotationAngle = 0;
     public Vector2 ArenaMiddle = new(0, -331);
     public List<Vector3> BlacklistedZones = [];
+    public override Metadata Metadata => new(2, "NightmareXIV");
 
     public static class Entities
     {
@@ -61,12 +62,12 @@ public unsafe class Underkeep_ValiaPira : SplatoonScript
         return false;
     }
 
-    IEnumerable<IBattleNpc> Spheres => Svc.Objects.OfType<IBattleNpc>().Where(x => x.IsCharacterVisible() && !BlacklistedZones.Any(b => Vector3.Distance(b, x.Position) < 1)).Where(x => (x.DataId == Entities.Sphere && !HasTether(x)) || (x.DataId == Entities.TetheredSphere && HasTether(x)));
+    IEnumerable<IBattleNpc> Spheres => Svc.Objects.OfType<IBattleNpc>().Where(x => x.IsCharacterVisible() && !BlacklistedZones.Any(b => Vector3.Distance(b, x.Position) < 1)).Where(x => (x.BaseId == Entities.Sphere && !HasTether(x)) || (x.BaseId == Entities.TetheredSphere && HasTether(x)));
 
     public override void OnUpdate()
     {
         Controller.GetRegisteredElements().Each(x => x.Value.Enabled = false);
-        var cubes = Svc.Objects.OfType<IBattleNpc>().Where(x => x.DataId == Entities.Cube && x.IsCharacterVisible()).OrderBy(x => Rotate(x.Position).X).ToArray();
+        var cubes = Svc.Objects.OfType<IBattleNpc>().Where(x => x.BaseId == Entities.Cube && x.IsCharacterVisible()).OrderBy(x => Rotate(x.Position).X).ToArray();
         if(cubes.Length == 2)
         {
             DetermineRotation();
@@ -121,7 +122,7 @@ public unsafe class Underkeep_ValiaPira : SplatoonScript
 
     void DetermineRotation()
     {
-        if(Svc.Objects.TryGetFirst(x => x.DataId == 18313, out var obj) && !IsPointInsideSquare(ArenaMiddle, obj.Position.ToVector2(), 17.5f))
+        if(Svc.Objects.TryGetFirst(x => x.BaseId == 18313, out var obj) && !IsPointInsideSquare(ArenaMiddle, obj.Position.ToVector2(), 17.5f))
         {
             if(obj.Position.Z < -348) //spawned north
             {

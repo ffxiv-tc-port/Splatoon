@@ -20,7 +20,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     {
         public override HashSet<uint> ValidTerritories => [1088]; //We need our script to work in P8S only.
         private TickScheduler? Scheduler;
-        public override Metadata? Metadata => new(1, "NightmareXIV");
+        public override Metadata? Metadata => new(2, "NightmareXIV");
 
         public override void OnSetup()
         {
@@ -64,10 +64,10 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         public override void OnMapEffect(uint position, ushort data1, ushort data2) //here is where magic happens
         {
             if(data1 == 1 && data2 == 2 //if our map effect has the data we're looking for, in this case it's 1 and 2...
-                && Svc.ClientState.LocalPlayer?.StatusList.Any(x => x.StatusId == 2098 && x.RemainingTime > 7.5f) == true //...and the player has status with ID 2098 (which is Fire Resistance Down II) and remaining time of that debuff is 7.5 seconds or more, which means that player has just been hit...
+                && Svc.Objects.LocalPlayer?.StatusList.Any(x => x.StatusId == 2098 && x.RemainingTime > 7.5f) == true //...and the player has status with ID 2098 (which is Fire Resistance Down II) and remaining time of that debuff is 7.5 seconds or more, which means that player has just been hit...
                 && EffectData.TryGetValue(position, out var x) //...and we have MapEffect's position mapped...
                 && Positions.TryGetValue(x, out var loc) //...and we can get coordinates of mapped position which should always be true...
-                && (Svc.ClientState.LocalPlayer?.GetRole() == CombatRole.DPS) == IsDpsPosition(loc) //
+                && (Svc.Objects.LocalPlayer?.GetRole() == CombatRole.DPS) == IsDpsPosition(loc) //
                 && Controller.TryGetElementByName("TowerDisplay", out var e))
             {
                 e.Enabled = true;

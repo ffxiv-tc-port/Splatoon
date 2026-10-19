@@ -13,7 +13,7 @@ using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Schedulers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using Splatoon;
 using Splatoon.SplatoonScripting;
@@ -179,7 +179,7 @@ internal unsafe class P4_Crystallize_Time_Full_Toolers : SplatoonScript
     /* public properties                                                */
     /********************************************************************/
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(20, "redmoon");
+    public override Metadata? Metadata => new(21, "redmoon");
     #endregion
 
     #region private properties
@@ -204,7 +204,6 @@ internal unsafe class P4_Crystallize_Time_Full_Toolers : SplatoonScript
     private bool _StateProcEnd = false;
     private bool _StateProcEndCommon = false;
     private List<RemoveBuff> _removeBuffPosList = [];
-    private ActionManager* actionManager = ActionManager.Instance();
     private bool _usedSprint = false;
     private bool _usedArmsLength = false;
     private bool _BeforeReturnProcDone = false;
@@ -1765,6 +1764,7 @@ internal unsafe class P4_Crystallize_Time_Full_Toolers : SplatoonScript
             castID = 7548u; // ArmsLength
         }
 
+        var actionManager = ActionManager.Instance();
         if(Svc.Condition[ConditionFlag.DutyRecorderPlayback])
         {
             if(actionManager->AnimationLock == 0 && !actionManager->IsRecastTimerActive(ActionType.Action, castID))

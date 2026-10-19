@@ -1,30 +1,30 @@
 ### **[Script]** Color Riot
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M6S%20Color%20Riot.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M6S%20Color%20Riot.cs
 ```
 
 ### [Script] Phase 2 Target Enforcer
 Requires configuration. For melee, set radius to 3.
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M6S%20Target%20Enforcer.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M6S%20Target%20Enforcer.cs
 ```
 
 ### [Script] Cloud Navigation
 Requires configuration
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M6S%20Cloud%20Navigation.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M6S%20Cloud%20Navigation.cs
 ```
 
 ### [Script] Taste of Thunder (twister)
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M6S%20Taste%20of%20Thunder.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M6S%20Taste%20of%20Thunder.cs
 ```
 
 ### [Script] [Beta] Lava towers
 Resolves your tower. Requires configuration.
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/M6S%20Lava%20Towers.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/M6S%20Lava%20Towers.cs
 ```
 
 ### Double style

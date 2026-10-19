@@ -1,7 +1,11 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using ECommons.Configuration;
+using ECommons.Automation.NeoTaskManager;
 using ECommons.GameFunctions;
+using ECommons.GameHelpers;
+using Splatoon.Gui.Priority;
+using Splatoon.SplatoonScripting.Priority;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -15,7 +19,10 @@ public unsafe class Controller
     internal Dictionary<string, Layout> Layouts = [];
     internal Dictionary<string, Element> Elements = [];
     internal List<TickScheduler> TickSchedulers = [];
-    internal IEzConfig? Configuration;
+    // 上游把這裡從 IEzConfig? 放寬成 object?,是為了讓 SplatoonScript<T> 的 T 不必實作
+    // IEzConfig。EzConfig.LoadConfiguration<T>/SaveConfiguration 本來就只要求 new()/object,
+    // 所以放寬不影響任何既有腳本(既有的設定類別照樣可以實作 IEzConfig)。
+    internal object? Configuration;
     internal long AutoResetAt = long.MaxValue;
 
     internal int autoIncrement = 0;
@@ -27,6 +34,17 @@ public unsafe class Controller
     }
 
     public Splatoon Plugin => Splatoon.P;
+
+    /// <summary>
+    /// 腳本應該當成「我」的那個玩家。與 <see cref="SplatoonScript.BasePlayer"/> 完全等價。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 可能為 <c>null</c>(未登入/切區中),腳本要判空。
+    /// 上游把這個入口標為過時、要大家改用 <c>SplatoonScript.BasePlayer</c>,這裡照搬 ——
+    /// 過時只會產生警告不會擋編譯,所以照上游寫法的腳本照樣載入得起來。
+    /// </remarks>
+    [Obsolete("Use SplatoonScript.BasePlayer")]
+    public IPlayerCharacter BasePlayer => global::Splatoon.Splatoon.BasePlayer;
 
     /// <summary>
     /// Indicates whether player is in combat.
@@ -48,14 +66,25 @@ public unsafe class Controller
     /// </summary>
     public float CombatMiliseconds => InCombat ? Environment.TickCount64 - P.CombatStarted : -1;
 
-    public int Scene => *global::Splatoon.Memory.Scene.ActiveScene;
+    /// <summary>
+    /// 場景編號取不到時回傳的哨兵值。真實場景編號讀的是一個 byte（0..255），
+    /// 所以 -1 不可能與任何真實場景相撞；本 repo 內建腳本對 Scene 的用法全是
+    /// 與 1..7 做 == / != 比較，拿到 -1 的行為與「不是那個場景」一致。
+    /// </summary>
+    public const int SceneUnavailable = -1;
+
+    /// <summary>
+    /// Indicates current scene. Returns <see cref="SceneUnavailable"/> (-1) when the
+    /// graphics environment manager is not available yet (title/loading screen).
+    /// </summary>
+    public int Scene => global::Splatoon.Memory.Scene.Current ?? SceneUnavailable;
 
     /// <summary>
     /// Loads if unloaded and returns script configuration file.
     /// </summary>
-    /// <typeparam name="T">Configuration class, implementing IEzConfig</typeparam>
+    /// <typeparam name="T">Configuration class. 不需要實作 IEzConfig(上游已放寬此約束)。</typeparam>
     /// <returns>Loaded configuration</returns>
-    public T GetConfig<T>() where T : IEzConfig, new()
+    public T GetConfig<T>() where T : new()
     {
         Configuration ??= EzConfig.LoadConfiguration<T>(Script.InternalData.ConfigurationPath, false);
         return (T)Configuration;
@@ -347,5 +376,231 @@ public unsafe class Controller
     public void ScheduleReset(uint delayMs = uint.MaxValue)
     {
         AutoResetAt = Environment.TickCount64 + delayMs;
+    }
+
+
+    /// <summary>
+    /// 本腳本專屬的 NeoTaskManager 實例。第一次取用時才建立,腳本停用時釋放。
+    /// 預設組態由 <see cref="SplatoonScript.TaskManagerConfiguration"/> 提供,腳本可以覆寫。
+    /// </summary>
+    public TaskManager TaskManager
+    {
+        get
+        {
+            return TaskManagerInternal ??= new(Script.TaskManagerConfiguration);
+        }
+        internal set
+        {
+            TaskManagerInternal = value;
+        }
+    }
+
+    internal TaskManager? TaskManagerInternal = null;
+
+    /// <summary>
+    /// 目前玩家在優先度分配裡的定位(T1/T2/H1/...)。沒有分配到就回
+    /// <c>RolePosition.Not_Selected</c>(列舉的 0 值)。
+    /// </summary>
+    public RolePosition RolePosition
+    {
+        get
+        {
+            if(P.PriorityPopupWindow?.Assignments != null)
+            {
+                for(var i = 0; i < P.PriorityPopupWindow.Assignments.Count; i++)
+                {
+                    var ass = P.PriorityPopupWindow.Assignments[i];
+                    // 與上游一致改用 BasePlayer(錄影回放時可以換人)。
+                    // 📌 我方沒搬上游那段切換視角的 UI,BasePlayerOverride 恆為 "",
+                    // 所以 BasePlayer 目前恆等於 Svc.Objects.LocalPlayer —— 這一行是等價替換。
+                    // LocalPlayer 為 null 時 GetNameWithWorld 回 null,與 NameWithWorld 比對必為 false,不會擲例外。
+                    if(ass.IsInParty(false, out var m) && m.NameWithWorld == global::Splatoon.Splatoon.BasePlayer.GetNameWithWorld())
+                    {
+                        return PriorityPopupWindow.RolePositions.SafeSelect(i);
+                    }
+                }
+            }
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// 嘗試註冊一個從外掛匯出的元素,**以元素自己的名稱當 key**。
+    /// </summary>
+    /// <param name="ExportString">匯出字串。</param>
+    /// <param name="element">解碼出來的元素。</param>
+    /// <param name="overwrite">同名時是否覆寫。</param>
+    /// <returns>是否註冊成功。</returns>
+    public bool TryRegisterElementFromCode(string ExportString, [NotNullWhen(true)] out Element? element, bool overwrite = false)
+    {
+        return ScriptingEngine.TryDecodeElement(ExportString, out element) && TryRegisterElement(element.Name, element, overwrite);
+    }
+
+    /// <summary>
+    /// 註冊一個從外掛匯出的元素,以元素自己的名稱當 key。失敗擲例外。
+    /// </summary>
+    public void RegisterElementFromCode(string ExportString, bool overwrite = false)
+    {
+        if(!TryRegisterElementFromCode(ExportString, out _, overwrite))
+        {
+            throw new InvalidOperationException($"RegisterElementFromCode failed: Could not register element {ExportString.Trim(100)}");
+        }
+    }
+
+    /// <summary>
+    /// 一行一個匯出字串,逐行註冊。空行會被略過。任何一行失敗就擲例外。
+    /// </summary>
+    public void RegisterElementsFromMultilineCode(string ExportStringPerLine, bool overwrite = false)
+    {
+        foreach(var ExportString in ExportStringPerLine.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if(!TryRegisterElementFromCode(ExportString, out _, overwrite))
+            {
+                throw new InvalidOperationException($"RegisterElementFromCode failed: Could not register element {ExportString.Trim(100)}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 註冊一個從外掛匯出的佈局,以指定的 key 註冊。失敗擲例外。
+    /// </summary>
+    public void RegisterLayoutFromCode(string key, string code)
+    {
+        if(!TryRegisterLayoutFromCode(key, code, out _, false))
+        {
+            throw new InvalidOperationException($"Duplicate layout registration: {key}");
+        }
+    }
+
+    /// <summary>
+    /// 註冊一個從外掛匯出的佈局,**以佈局自己的名稱當 key**。失敗擲例外。
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ 這裡刻意**不是**轉呼叫 <c>TryRegisterLayoutFromCode(code, out _, false)</c>：
+    /// 那個既有多載用的 key 是 <c>unnamed-{AutoIncrement}</c>，而上游的
+    /// <c>RegisterLayoutFromCode(code)</c> 用的是佈局自己的 Name，呼叫端(上游腳本)
+    /// 會拿那個名字去 TryGetLayoutByName、也會靠它對應使用者的自訂覆寫。
+    /// 既有多載維持 unnamed-N 語意不改;這個多載採用上游語意。
+    /// </remarks>
+    public void RegisterLayoutFromCode(string code)
+    {
+        if(!ScriptingEngine.TryDecodeLayout(code, out var layout) || !TryRegisterLayout(layout.Name, layout, false))
+        {
+            throw new InvalidOperationException($"Duplicate layout registration: {code.Trim(100)}");
+        }
+    }
+
+    /// <summary>
+    /// 停用所有元素與佈局(不是移除註冊,只是把 Enabled 設 false)。
+    /// </summary>
+    public void Hide(bool elements = true, bool layouts = true)
+    {
+        if(elements)
+        {
+            foreach(var x in GetRegisteredElements())
+            {
+                x.Value.Enabled = false;
+            }
+        }
+        if(layouts)
+        {
+            foreach(var x in GetRegisteredLayouts())
+            {
+                x.Value.Enabled = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 用指定的內容覆蓋單一佈局。
+    /// </summary>
+    /// <remarks>
+    /// 上游這裡同時會寫進 OriginalLayoutsDirect(它有一組「註冊當下的原始副本」API)。
+    /// 我方本體沒有那組 API,所以只寫實際會被渲染的那份。
+    /// 另外沿用 JSONClone 而不是上游的 DSFClone —— 我方沒有那條序列化路徑。
+    /// </remarks>
+    public void ApplySingleLayoutOverride(string key, Layout value)
+    {
+        Layouts[key] = value.JSONClone();
+    }
+
+    /// <summary>
+    /// 用指定的內容覆蓋單一元素。其餘同 <see cref="ApplySingleLayoutOverride"/> 的說明。
+    /// </summary>
+    public void ApplySingleElementOverride(string key, Element value)
+    {
+        Elements[key] = value.JSONClone();
+    }
+
+    /// <summary>
+    /// 目前這一幀的「注意色」(ImGui packed uint)。用來標示必須立刻處理的元素。
+    /// 顏色的產生方式由使用者在「渲染引擎 - 注意色」設定。
+    /// </summary>
+    public uint AttentionColor => Utils.GetAttentionColor().ToUint();
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的內容。<br />
+    /// 重要:你交進來的 action 不會在呼叫的同一幀被執行。資料要先準備好再傳進來。<br />
+    /// 重要:你的 action 可能被呼叫多次。不要在裡面做會改狀態的事。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。
+    /// </summary>
+    public void DisplayAttentionWindowLine(Action action)
+    {
+        if(P.Config.DisabledAttentionWindowScripts.Contains(Script.InternalData.FullName)) return;
+        S.AttentionOverlayWindow.Title = Script.InternalData.Name.Replace("_", " ") ?? "";
+        S.AttentionOverlayWindow.ActionQueueCommand.Add((action, true));
+    }
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的文字。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。
+    /// </summary>
+    public void DisplayAttentionWindowLine(string text)
+    {
+        DisplayAttentionWindowLine(() => ImGuiEx.Text(text));
+    }
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的文字。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。<br />
+    /// 參數以 $1、$2、$3 ... 代入,從 1 開始。
+    /// </summary>
+    public void DisplayAttentionWindowLine(string text, params string[] arguments)
+    {
+        for(var i = 0; i < arguments.Length; i++)
+        {
+            var a = arguments[i];
+            text = text.Replace($"${i + 1}", a);
+        }
+        DisplayAttentionWindowLine(() => ImGuiEx.Text(text));
+    }
+
+    /// <summary>
+    /// 在注意視窗顯示一列置中的彩色文字。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。<br />
+    /// 參數以 $1、$2、$3 ... 代入,從 1 開始。
+    /// </summary>
+    public void DisplayAttentionWindowLine(Vector4? color, string text, params string[] arguments)
+    {
+        for(var i = 0; i < arguments.Length; i++)
+        {
+            var a = arguments[i];
+            text = text.Replace($"${i + 1}", a);
+        }
+        DisplayAttentionWindowLine(() => ImGuiEx.Text(color, text));
+    }
+
+    /// <summary>
+    /// 能用 <see cref="DisplayAttentionWindowLine(Action)"/> 就優先用它。<br />
+    /// 在注意視窗裡畫一段不做置中處理的原始內容。<br />
+    /// 重要:你交進來的 action 不會在呼叫的同一幀被執行。<br />
+    /// 重要:你的 action 可能被呼叫多次。不要在裡面做會改狀態的事。<br />
+    /// 要讓視窗保持開著,必須持續每幀呼叫這個方法。
+    /// </summary>
+    public void DisplayAttentionWindowRaw(Action action)
+    {
+        if(P.Config.DisabledAttentionWindowScripts.Contains(Script.InternalData.FullName)) return;
+        S.AttentionOverlayWindow.Title = Script.InternalData.Name.Replace("_", " ") ?? "";
+        S.AttentionOverlayWindow.ActionQueueCommand.Add((action, false));
     }
 }

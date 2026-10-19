@@ -10,11 +10,12 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
@@ -42,6 +43,41 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
         NorthWest = 315
     }
 
+    // 本腳本的設定介面是繁體中文,但 ImGuiEx.EnumCombo 沒有拿到 names 時 ECommons 直接畫 value.ToString()。
+    // 這幾張表只覆寫顯示字串,寫回設定的列舉值完全不變。
+    // 減益名稱取自台服 Status 表:0x99E 黑暗大暴雪 / 0x99F 黑暗大勁風 / 0x996 黑暗神聖 /
+    // 0x99D 黑暗大水花 / 0x99C 暗炎噴發。紅/藍沿用本檔既有的講法(上方就有「紅冰」「紅風」
+    // 「藍色減益」),沒有改成官方的聖龍爪/聖龍牙。
+    private static readonly Dictionary<Direction, string> DirectionNames = new()
+    {
+        [Direction.North] = "北",
+        [Direction.NorthEast] = "東北",
+        [Direction.East] = "東",
+        [Direction.SouthEast] = "東南",
+        [Direction.South] = "南",
+        [Direction.SouthWest] = "西南",
+        [Direction.West] = "西",
+        [Direction.NorthWest] = "西北"
+    };
+
+    private static readonly Dictionary<MoveType, string> MoveTypeNames = new()
+    {
+        [MoveType.RedBlizzardWest] = "紅・黑暗大暴雪(西)",
+        [MoveType.RedBlizzardEast] = "紅・黑暗大暴雪(東)",
+        [MoveType.RedAeroWest] = "紅・黑暗大勁風(西)",
+        [MoveType.RedAeroEast] = "紅・黑暗大勁風(東)",
+        [MoveType.BlueBlizzard] = "藍・黑暗大暴雪",
+        [MoveType.BlueHoly] = "藍・黑暗神聖",
+        [MoveType.BlueWater] = "藍・黑暗大水花",
+        [MoveType.BlueEruption] = "藍・暗炎噴發"
+    };
+
+    private static readonly Dictionary<HitTiming, string> HitTimingNames = new()
+    {
+        [HitTiming.Early] = "較早",
+        [HitTiming.Late] = "較晚"
+    };
+
     private readonly Vector2 _center = new(100, 100);
 
     private readonly List<IBattleChara> _earlyHourglassList = [];
@@ -67,13 +103,15 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
 
     private List<float> ExtraRandomness = [];
     private bool Initialized;
-    public override Metadata? Metadata => new(12, "Garume, NightmareXIV");
+    public override Metadata? Metadata => new(15, "Garume, NightmareXIV");
 
     public override Dictionary<int, string> Changelog => new()
     {
         [10] =
-            "A large addition of various functions as well as changes to general mechanic flow. Please validate settings and if possible verify that the script works fine in replay.",
-        [11] = "Added dragon explosion anticipation for eruption"
+            "新增大量功能並調整了整體機制流程。請確認設定，並盡可能在復盤中驗證腳本運作正常。",
+        [11] = "新增對龍爆炸前兆（爆發）的預判",
+        [13] = "設定介面的下拉選單選項改為顯示繁體中文(原本只有標籤是中文、選項是英文)",
+        [15] = "設定介面文字改走 .Loc() 在地化系統(原本是寫死的繁體中文,非繁中客戶端只會看到跟本行一樣的原始英文;顯示內容不變)"
     };
 
     private IPlayerCharacter BasePlayer
@@ -93,25 +131,25 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
     private float ReturnDebuffTime =>
         BasePlayer.StatusList?.FirstOrDefault(x => x.StatusId == (uint)Debuff.Return)?.RemainingTime ?? -1f;
 
-    private bool IsActive => Svc.Objects.Any(x => x.DataId == 17837) && !BasePlayer.IsDead;
+    private bool IsActive => Svc.Objects.Any(x => x.BaseId == 17837) && !BasePlayer.IsDead;
 
     public override HashSet<uint>? ValidTerritories => [1238];
 
     private Config C => Controller.GetConfig<Config>();
 
-    private static IBattleNpc? WestDragon => Svc.Objects.Where(x => x is { DataId: 0x45AC, Position.X: <= 100 })
+    private static IBattleNpc? WestDragon => Svc.Objects.Where(x => x is { BaseId: 0x45AC, Position.X: <= 100 })
         .Select(x => x as IBattleNpc).First();
 
-    private static IBattleNpc? EastDragon => Svc.Objects.Where(x => x is { DataId: 0x45AC, Position.X: > 100 })
+    private static IBattleNpc? EastDragon => Svc.Objects.Where(x => x is { BaseId: 0x45AC, Position.X: > 100 })
         .Select(x => x as IBattleNpc).First();
 
-    private static IEnumerable<IEventObj> Cleanses => Svc.Objects.Where(x => x is { DataId: 0x1EBD41 })
+    private static IEnumerable<IEventObj> Cleanses => Svc.Objects.Where(x => x is { BaseId: 0x1EBD41 })
         .OfType<IEventObj>()
         .OrderBy(x => x.Position.X);
 
     private MechanicStage GetStage()
     {
-        if(Svc.Objects.All(x => x.DataId != 17837)) return MechanicStage.Unknown;
+        if(Svc.Objects.All(x => x.BaseId != 17837)) return MechanicStage.Unknown;
         var time = SpellInWaitingDebuffTime;
         if(time > 0)
             return time switch
@@ -495,7 +533,7 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
     {
         try
         {
-            if(Svc.Objects.Any(x => x.DataId == 17837) && !BasePlayer.IsDead)
+            if(Svc.Objects.Any(x => x.BaseId == 17837) && !BasePlayer.IsDead)
             {
                 if(C.UseKbiAuto &&
                     BasePlayer.StatusList.Any(x =>
@@ -979,42 +1017,42 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
                                        This script has not been thoroughly tested.
                                        It may not work properly.
                                        If you encounter any bugs, please let us know.
-                                       """);
-        if(ImGuiEx.CollapsingHeader("General"))
+                                       """.Loc());
+        if(ImGuiEx.CollapsingHeader("General".Loc()))
         {
-            ImGuiEx.Text("Priority");
+            ImGuiEx.Text("Priority".Loc());
             ImGui.Indent();
-            ImGui.Text("West");
+            ImGui.Text("West".Loc());
             C.PriorityData.Draw();
-            ImGui.Text("East");
+            ImGui.Text("East".Loc());
             ImGui.Unindent();
             ImGui.Separator();
 
-            ImGuiEx.EnumCombo("Hit Timing", ref C.HitTiming);
-            ImGui.Checkbox("Should Go North When Red Blizzard Hit to Dragon", ref C.ShouldGoNorthRedBlizzard);
+            ImGuiEx.EnumCombo("Hit Timing".Loc(), ref C.HitTiming, names: HitTimingNames);
+            ImGui.Checkbox("Should Go North When Red Blizzard Hit to Dragon".Loc(), ref C.ShouldGoNorthRedBlizzard);
             ImGuiEx.HelpMarker(
-                "During Red Blizzard, if there is no one in the north, the navigation will appear in the north instead of the south.");
+                "During Red Blizzard, if there is no one in the north, the navigation will appear in the north instead of the south.".Loc());
             if(C.ShouldGoNorthRedBlizzard)
             {
                 ImGui.Indent();
-                ImGui.Checkbox("Automatically use sprint action ~1 seconds", ref C.UseSprintAuto);
+                ImGui.Checkbox("Automatically use sprint action ~1 seconds".Loc(), ref C.UseSprintAuto);
                 ImGui.Unindent();
             }
 
             ImGui.Separator();
-            ImGuiEx.Text("Sentence Moves");
+            ImGuiEx.Text("Sentence Moves".Loc());
             ImGui.Indent();
-            ImGui.Checkbox("PrioritizeMarker", ref C.PrioritizeMarker);
+            ImGui.Checkbox("PrioritizeMarker".Loc(), ref C.PrioritizeMarker);
             if(C.PrioritizeMarker)
             {
                 ImGui.Indent();
-                ImGui.InputText("Execute Command When Blue Debuff Gained", ref C.CommandWhenBlueDebuff, 30);
-                ImGui.Checkbox("Random Wait", ref C.ShouldUseRandomWait);
+                ImGui.InputText("Execute Command When Blue Debuff Gained".Loc(), ref C.CommandWhenBlueDebuff, 30);
+                ImGui.Checkbox("Random Wait".Loc(), ref C.ShouldUseRandomWait);
                 if(C.ShouldUseRandomWait)
                 {
                     var minWait = C.WaitRange.X;
                     var maxWait = C.WaitRange.Y;
-                    ImGui.SliderFloat2("Wait Range (sec)", ref C.WaitRange, 0f, 3f, "%.1f");
+                    ImGui.SliderFloat2("Wait Range (sec)".Loc(), ref C.WaitRange, 0f, 3f, "%.1f");
                     if(Math.Abs(minWait - C.WaitRange.X) > 0.01f)
                     {
                         if(C.WaitRange.X > C.WaitRange.Y)
@@ -1028,32 +1066,32 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
                 }
 
                 ImGui.Separator();
-                ImGuiEx.EnumCombo("When Attack 1", ref C.WhenAttack1);
-                ImGuiEx.EnumCombo("When Attack 2", ref C.WhenAttack2);
-                ImGuiEx.EnumCombo("When Attack 3", ref C.WhenAttack3);
-                ImGuiEx.EnumCombo("When Attack 4", ref C.WhenAttack4);
+                ImGuiEx.EnumCombo("When Attack 1".Loc(), ref C.WhenAttack1, names: DirectionNames);
+                ImGuiEx.EnumCombo("When Attack 2".Loc(), ref C.WhenAttack2, names: DirectionNames);
+                ImGuiEx.EnumCombo("When Attack 3".Loc(), ref C.WhenAttack3, names: DirectionNames);
+                ImGuiEx.EnumCombo("When Attack 4".Loc(), ref C.WhenAttack4, names: DirectionNames);
                 ImGui.Unindent();
             }
 
-            ImGuiEx.EnumCombo("West Sentence", ref C.WestSentence);
-            ImGuiEx.EnumCombo("South West Sentence", ref C.SouthWestSentence);
-            ImGuiEx.EnumCombo("South East Sentence", ref C.SouthEastSentence);
-            ImGuiEx.EnumCombo("East Sentence", ref C.EastSentence);
+            ImGuiEx.EnumCombo("West Sentence".Loc(), ref C.WestSentence, names: MoveTypeNames);
+            ImGuiEx.EnumCombo("South West Sentence".Loc(), ref C.SouthWestSentence, names: MoveTypeNames);
+            ImGuiEx.EnumCombo("South East Sentence".Loc(), ref C.SouthEastSentence, names: MoveTypeNames);
+            ImGuiEx.EnumCombo("East Sentence".Loc(), ref C.EastSentence, names: MoveTypeNames);
             ImGui.Unindent();
             ImGui.Separator();
 
-            ImGui.Checkbox("Highlight static Spirit taker position. ", ref C.HighlightSplitPosition);
+            ImGui.Checkbox("Highlight static Spirit taker position. ".Loc(), ref C.HighlightSplitPosition);
             ImGuiEx.TextWrapped(EColor.RedBright,
-                "You must go to Registered Elements section and put \"SplitPosition\" element to where you want it to be. Go to Eden's Promise: Eternity undersized for a preview, if necessary.");
+                "You must go to Registered Elements section and put \"SplitPosition\" element to where you want it to be. Go to Eden's Promise: Eternity undersized for a preview, if necessary.".Loc());
 
             if(C.HighlightSplitPosition)
                 if(Controller.TryGetElementByName("SplitPosition", out var element))
                 {
                     ImGui.Indent();
-                    ImGui.Text($"Position:{element.refX}, {element.refY}");
-                    ImGuiEx.EnumCombo("Edit Direction", ref _editSplitElementDirection);
-                    ImGui.InputFloat("Edit Radius", ref _editSplitElementRadius, 0.1f);
-                    if(ImGui.Button("Set"))
+                    ImGui.Text("Position:??, ??".Loc(element.refX, element.refY));
+                    ImGuiEx.EnumCombo("Edit Direction".Loc(), ref _editSplitElementDirection, names: DirectionNames);
+                    ImGui.InputFloat("Edit Radius".Loc(), ref _editSplitElementRadius, 0.1f);
+                    if(ImGui.Button("Set".Loc()))
                     {
                         var position = new Vector3(100, 0, 100) + MathHelper.RotateWorldPoint(Vector3.Zero,
                             ((int)_editSplitElementDirection).DegreesToRadians(),
@@ -1066,13 +1104,13 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
 
             ImGui.Separator();
 
-            ImGuiEx.Text("Place Return Moves");
+            ImGuiEx.Text("Place Return Moves".Loc());
             ImGui.Indent();
 
             var kbiRewind = C.KBIRewind;
             var nukemaruRewind = C.NukemaruRewind;
-            ImGui.Checkbox("Knockback immunity return positions (beta)", ref kbiRewind);
-            ImGui.Checkbox("Nukemaru's return positions", ref nukemaruRewind);
+            ImGui.Checkbox("Knockback immunity return positions (beta)".Loc(), ref kbiRewind);
+            ImGui.Checkbox("Nukemaru's return positions".Loc(), ref nukemaruRewind);
 
             if(!C.KBIRewind && kbiRewind)
                 nukemaruRewind = false;
@@ -1084,81 +1122,81 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
             if(C.NukemaruRewind)
             {
                 ImGui.Indent();
-                ImGuiEx.EnumCombo("When North East Wave", ref C.NukemaruRewindPositionWhenNorthEastWave);
-                ImGuiEx.EnumCombo("When South East Wave", ref C.NukemaruRewindPositionWhenSouthEastWave);
-                ImGuiEx.EnumCombo("When South West Wave", ref C.NukemaruRewindPositionWhenSouthWestWave);
-                ImGuiEx.EnumCombo("When North West Wave", ref C.NukemaruRewindPositionWhenNorthWestWave);
+                ImGuiEx.EnumCombo("When North East Wave".Loc(), ref C.NukemaruRewindPositionWhenNorthEastWave, names: DirectionNames);
+                ImGuiEx.EnumCombo("When South East Wave".Loc(), ref C.NukemaruRewindPositionWhenSouthEastWave, names: DirectionNames);
+                ImGuiEx.EnumCombo("When South West Wave".Loc(), ref C.NukemaruRewindPositionWhenSouthWestWave, names: DirectionNames);
+                ImGuiEx.EnumCombo("When North West Wave".Loc(), ref C.NukemaruRewindPositionWhenNorthWestWave, names: DirectionNames);
                 ImGui.Unindent();
             }
 
             if(C is { KBIRewind: false, NukemaruRewind: false })
             {
-                ImGui.Checkbox("Is Tank", ref C.IsTank);
+                ImGui.Checkbox("Is Tank".Loc(), ref C.IsTank);
 
-                ImGui.Text("When North East Wave:");
+                ImGui.Text("When North East Wave:".Loc());
                 ImGui.SameLine();
-                ImGuiEx.RadioButtonBool($"West##{nameof(C.IsWestWhenNorthEastWave)}",
-                    $"East##{nameof(C.IsWestWhenNorthEastWave)}", ref C.IsWestWhenNorthEastWave, true);
-                ImGui.Text("When South East Wave:");
+                ImGuiEx.RadioButtonBool("West".Loc() + "##" + nameof(C.IsWestWhenNorthEastWave),
+                    "East".Loc() + "##" + nameof(C.IsWestWhenNorthEastWave), ref C.IsWestWhenNorthEastWave, true);
+                ImGui.Text("When South East Wave:".Loc());
                 ImGui.SameLine();
-                ImGuiEx.RadioButtonBool($"West##{nameof(C.IsWestWhenSouthEastWave)}",
-                    $"East##{nameof(C.IsWestWhenSouthEastWave)}", ref C.IsWestWhenSouthEastWave, true);
-                ImGui.Text("When South West Wave:");
+                ImGuiEx.RadioButtonBool("West".Loc() + "##" + nameof(C.IsWestWhenSouthEastWave),
+                    "East".Loc() + "##" + nameof(C.IsWestWhenSouthEastWave), ref C.IsWestWhenSouthEastWave, true);
+                ImGui.Text("When South West Wave:".Loc());
                 ImGui.SameLine();
-                ImGuiEx.RadioButtonBool($"West##{nameof(C.IsWestWhenSouthWestWave)}",
-                    $"East##{nameof(C.IsWestWhenSouthWestWave)}", ref C.IsWestWhenSouthWestWave, true);
-                ImGui.Text("When North West Wave:");
+                ImGuiEx.RadioButtonBool("West".Loc() + "##" + nameof(C.IsWestWhenSouthWestWave),
+                    "East".Loc() + "##" + nameof(C.IsWestWhenSouthWestWave), ref C.IsWestWhenSouthWestWave, true);
+                ImGui.Text("When North West Wave:".Loc());
                 ImGui.SameLine();
-                ImGuiEx.RadioButtonBool($"West##{nameof(C.IsWestWhenNorthWestWave)}",
-                    $"East##{nameof(C.IsWestWhenNorthWestWave)}", ref C.IsWestWhenNorthWestWave, true);
+                ImGuiEx.RadioButtonBool("West".Loc() + "##" + nameof(C.IsWestWhenNorthWestWave),
+                    "East".Loc() + "##" + nameof(C.IsWestWhenNorthWestWave), ref C.IsWestWhenNorthWestWave, true);
             }
 
             ImGui.Unindent();
 
             ImGui.Separator();
 
-            ImGui.Text("Dialogue Text:");
+            ImGui.Text("Dialogue Text:".Loc());
             ImGui.Indent();
             var splitText = C.SplitText.Get();
-            ImGui.Text("Split Text:");
+            ImGui.Text("Split Text:".Loc());
             ImGui.SameLine();
             C.SplitText.ImGuiEdit(ref splitText);
 
             var hitDragonText = C.HitDragonText.Get();
-            ImGui.Text("Hit Dragon Text:");
+            ImGui.Text("Hit Dragon Text:".Loc());
             ImGui.SameLine();
             C.HitDragonText.ImGuiEdit(ref hitDragonText);
 
             var avoidWaveText = C.AvoidWaveText.Get();
-            ImGui.Text("Avoid Wave Text:");
+            ImGui.Text("Avoid Wave Text:".Loc());
             ImGui.SameLine();
             C.AvoidWaveText.ImGuiEdit(ref avoidWaveText);
 
             var cleanseText = C.CleanseText.Get();
-            ImGui.Text("Cleanse Text:");
+            ImGui.Text("Cleanse Text:".Loc());
             ImGui.SameLine();
             C.CleanseText.ImGuiEdit(ref cleanseText);
 
             var placeReturnText = C.PlaceReturnText.Get();
-            ImGui.Text("Place Return Text:");
+            ImGui.Text("Place Return Text:".Loc());
             ImGui.SameLine();
             C.PlaceReturnText.ImGuiEdit(ref placeReturnText);
 
             ImGui.Unindent();
 
             ImGui.Separator();
-            ImGui.Text("Bait Color:");
+            ImGui.Text("Bait Color:".Loc());
             ImGuiComponents.HelpMarker(
-                "Change the color of the bait and the text that will be displayed on your bait.\nSetting different values makes it rainbow.");
+                "Change the color of the bait and the text that will be displayed on your bait.\nSetting different values makes it rainbow.".Loc());
             ImGui.Indent();
-            ImGui.ColorEdit4("Color 1", ref C.BaitColor1, ImGuiColorEditFlags.NoInputs);
+            ImGui.ColorEdit4("Color 1".Loc(), ref C.BaitColor1, ImGuiColorEditFlags.NoInputs);
             ImGui.SameLine();
-            ImGui.ColorEdit4("Color 2", ref C.BaitColor2, ImGuiColorEditFlags.NoInputs);
+            ImGui.ColorEdit4("Color 2".Loc(), ref C.BaitColor2, ImGuiColorEditFlags.NoInputs);
             ImGui.Unindent();
 
             ImGui.Separator();
-            ImGui.Checkbox("Automatically use KB immunity action ~2 seconds before rewind", ref C.UseKbiAuto);
-            ImGui.Checkbox("Automatically use mitigation action ~4 seconds before rewind", ref C.UseMitigation);
+            ImGui.Checkbox("Automatically use KB immunity action ~2 seconds before rewind".Loc(), ref C.UseKbiAuto);
+            ImGui.Checkbox("Automatically use mitigation action ~4 seconds before rewind".Loc(), ref C.UseMitigation);
             if(C.UseMitigation)
             {
                 ImGui.Indent();
@@ -1166,11 +1204,11 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
                     () => Svc.Data.GetExcelSheet<Action>()
                         .Where(x => x.IsPlayerAction && x.ClassJobCategory.RowId != 0 && x.ActionCategory.RowId == 4)
                         .ToDictionary(x => x.RowId, x => x.Name.ExtractText()));
-                ImGuiEx.Combo("Select action", ref C.MitigationAction, actions.Keys, names: actions);
+                ImGuiEx.Combo("Select action".Loc(), ref C.MitigationAction, actions.Keys, names: actions);
                 ImGui.Unindent();
             }
 
-            ImGui.Checkbox("Automatically use tank mitigation action ~4 seconds before rewind",
+            ImGui.Checkbox("Automatically use tank mitigation action ~4 seconds before rewind".Loc(),
                 ref C.UseTankMitigation);
             if(C.UseTankMitigation)
             {
@@ -1182,29 +1220,29 @@ public unsafe class P4_Crystallize_Time : SplatoonScript
                                      x.ClassJobCategory.Value.PLD || x.ClassJobCategory.Value.GNB) &&
                                     x.ActionCategory.RowId == 4)
                         .ToDictionary(x => x.RowId, x => x.Name.ExtractText()));
-                ImGuiEx.Combo("Select tank action", ref C.TankMitigationAction, actions.Keys, names: actions);
+                ImGuiEx.Combo("Select tank action".Loc(), ref C.TankMitigationAction, actions.Keys, names: actions);
                 ImGui.Unindent();
             }
 
             ImGui.Separator();
 
-            ImGui.Checkbox("Show Other", ref C.ShowOther);
+            ImGui.Checkbox("Show Other".Loc(), ref C.ShowOther);
 
-            if(ImGui.CollapsingHeader("Prio list"))
+            if(ImGui.CollapsingHeader("Prio list".Loc()))
             {
                 ImGuiEx.Text(C.PriorityData.GetPlayers(x => true).Select(x => x.NameWithWorld).Print("\n"));
                 ImGui.Separator();
-                ImGuiEx.Text("Red bliz:");
+                ImGuiEx.Text("Red bliz:".Loc());
                 ImGuiEx.Text(C.PriorityData.GetPlayers(x => _players.First(y => y.Value.PlayerName == x.Name).Value is
                 { Color: Debuff.Red, Debuff: Debuff.Blizzard }).Select(x => x.NameWithWorld).Print("\n"));
                 ImGui.Separator();
-                ImGuiEx.Text("Red aero:");
+                ImGuiEx.Text("Red aero:".Loc());
                 ImGuiEx.Text(C.PriorityData.GetPlayers(x => _players.First(y => y.Value.PlayerName == x.Name).Value is
                 { Color: Debuff.Red, Debuff: Debuff.Aero }).Select(x => x.NameWithWorld).Print("\n"));
             }
         }
 
-        if(ImGuiEx.CollapsingHeader("Debug"))
+        if(ImGuiEx.CollapsingHeader("Debug".Loc()))
         {
             ImGuiEx.Text($"Stage: {GetStage()}, remaining time = {SpellInWaitingDebuffTime}");
             ImGui.SetNextItemWidth(200);

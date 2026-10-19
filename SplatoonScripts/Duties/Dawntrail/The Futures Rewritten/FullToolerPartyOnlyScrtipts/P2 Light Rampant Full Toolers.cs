@@ -9,7 +9,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Schedulers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
@@ -17,6 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Player = ECommons.GameHelpers.Player;
+
+using ECommons.DalamudServices.Legacy;
 
 namespace SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts;
 internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
@@ -116,7 +119,7 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
 
     #region public properties
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(10, "redmoon");
+    public override Metadata? Metadata => new(12, "redmoon");
     #endregion
 
     #region private properties
@@ -381,6 +384,9 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
 
 
         DuoLog.Information($"neetPc: {neetPc.Count}, allHealer: {allHealer}, nonHealer: {nonHealer}");
+        // neetPc 只收「兩條線都沒有」的成員;中途狀態(已出線但還沒人回線)兩邊都不屬於,
+        // 所以 Count 可能是 0 或 1,下一行的兩個索引存取會擲 IndexOutOfRangeException。
+        if(neetPc.Count != 2) return false;
         DuoLog.Information($"neetPc0: {neetPc[0].Object.Name}, neetPc1: {neetPc[1].Object.Name}");
 
         // ヒラはどちらも線付き
@@ -390,28 +396,29 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
             var h1 = _partyDataList.Find(x => x.index == 0);
             var h2 = _partyDataList.Find(x => x.index == 7);
             if(h1 == null) return false;
+            if(h2 == null) return false;
 
             h1.TowerDirection = Direction.North;
             h2.TowerDirection = Direction.SouthEast;
 
             var pc = (h2.TetherPairId1 == h1.EntityId) ? _partyDataList.Find(x => x.EntityId == h2.TetherPairId2) : _partyDataList.Find(x => x.EntityId == h2.TetherPairId1);
-            DuoLog.Information($"pc: {pc.Object.Name}");
             if(pc == null) return false;
+            DuoLog.Information($"pc: {pc.Object.Name}");
             pc.TowerDirection = Direction.NorthWest;
 
             var pc2 = (pc.TetherPairId1 == h2.EntityId) ? _partyDataList.Find(x => x.EntityId == pc.TetherPairId2) : _partyDataList.Find(x => x.EntityId == pc.TetherPairId1);
-            DuoLog.Information($"pc2: {pc2.Object.Name}");
             if(pc2 == null) return false;
+            DuoLog.Information($"pc2: {pc2.Object.Name}");
             pc2.TowerDirection = Direction.South;
 
             var pc3 = (pc2.TetherPairId1 == pc.EntityId) ? _partyDataList.Find(x => x.EntityId == pc2.TetherPairId2) : _partyDataList.Find(x => x.EntityId == pc2.TetherPairId1);
-            DuoLog.Information($"pc3: {pc3.Object.Name}");
             if(pc3 == null) return false;
+            DuoLog.Information($"pc3: {pc3.Object.Name}");
             pc3.TowerDirection = Direction.NorthEast;
 
             var pc4 = (pc3.TetherPairId1 == pc2.EntityId) ? _partyDataList.Find(x => x.EntityId == pc3.TetherPairId2) : _partyDataList.Find(x => x.EntityId == pc3.TetherPairId1);
-            DuoLog.Information($"pc4: {pc4.Object.Name}");
             if(pc4 == null) return false;
+            DuoLog.Information($"pc4: {pc4.Object.Name}");
             pc4.TowerDirection = Direction.SouthWest;
 
             // NEETは適当
@@ -448,8 +455,12 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
             pc5.TowerDirection = Direction.SouthWest;
 
             // NEETは適当
-            neetPc.Find(x => x.index == 0).TowerDirection = Direction.West;
-            neetPc.Find(x => x.index == 7).TowerDirection = Direction.East;
+            var neetHealer1 = neetPc.Find(x => x.index == 0);
+            if(neetHealer1 == null) return false;
+            var neetHealer2 = neetPc.Find(x => x.index == 7);
+            if(neetHealer2 == null) return false;
+            neetHealer1.TowerDirection = Direction.West;
+            neetHealer2.TowerDirection = Direction.East;
         }
         // ヒラはどちらか線付き
         else
@@ -485,12 +496,14 @@ internal class P2_Light_Rampant_Full_Toolers : SplatoonScript
             if(neetHealer == null)
             {
                 DuoLog.Information("Not Found Healer");
+                return false;
             }
             DuoLog.Information($"Healer: {neetHealer.Object.Name}");
             neetHealer.TowerDirection = Direction.East;
 
             // NEETは適当
             var neet = neetPc.Find(x => x.EntityId != neetHealer.EntityId);
+            if(neet == null) return false;
             neet.TowerDirection = Direction.West;
         }
 

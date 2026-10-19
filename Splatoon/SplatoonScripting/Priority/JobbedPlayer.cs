@@ -17,7 +17,7 @@ public class JobbedPlayer
         if(isRole)
         {
             ImGui.SetNextItemWidth(150f);
-            ImGuiEx.EnumCombo("##selRole", ref Role);
+            ImGuiEx.EnumCombo("##selRole", ref Role, names: LocEnum.Names<RolePosition>());
         }
         else
         {
@@ -38,7 +38,7 @@ public class JobbedPlayer
                 {
                     if(ThreadLoadImageHandler.TryGetIconTextureWrap(x.ClassJob.GetIcon(), true, out var tex))
                     {
-                        ImGui.Image(tex.ImGuiHandle, new(ImGui.GetFontSize()));
+                        ImGui.Image(tex.Handle, new(ImGui.GetFontSize()));
                         ImGui.SameLine(0, 1);
                     }
                     if(ImGui.Selectable($"{x.NameWithWorld}"))

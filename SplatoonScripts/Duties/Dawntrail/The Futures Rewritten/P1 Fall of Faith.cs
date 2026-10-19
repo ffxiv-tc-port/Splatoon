@@ -5,11 +5,12 @@ using ECommons.ExcelServices;
 using ECommons.GameFunctions;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.PartyFunctions;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using Splatoon.SplatoonScripting.Priority;
@@ -29,6 +30,17 @@ public class P1_Fall_of_Faith : SplatoonScript
         West
     }
 
+    // 本腳本的設定介面是繁體中文,但 ImGuiEx.EnumCombo 沒有拿到 names 時
+    // ECommons 直接畫 value.ToString(),所以標籤中文、選項英文。這張表只覆寫顯示字串,
+    // 寫回設定的列舉值完全不變。
+    private static readonly Dictionary<Direction, string> DirectionNames = new()
+    {
+        [Direction.North] = "北",
+        [Direction.East] = "東",
+        [Direction.South] = "南",
+        [Direction.West] = "西"
+    };
+
     private readonly ImGuiEx.RealtimeDragDrop<Job> DragDrop = new("DragDropJob", x => x.ToString());
 
     private Dictionary<string, PlayerData> _partyDatas = [];
@@ -37,7 +49,14 @@ public class P1_Fall_of_Faith : SplatoonScript
 
     private int _tetherCount = 1;
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(2, "Garume");
+    public override Metadata? Metadata => new(4, "Garume");
+
+    public override Dictionary<int, string> Changelog => new()
+    {
+        [3] = "設定介面的下拉選單選項改為顯示繁體中文(原本只有標籤是中文、選項是英文)",
+        [4] = "設定介面文字改走 .Loc() 在地化系統(原本是寫死的繁體中文,非繁中客戶端只會看到跟本行一樣的原始英文;顯示內容不變)"
+    };
+
     private Config C => Controller.GetConfig<Config>();
 
     public override void OnStartingCast(uint source, uint castId)
@@ -186,14 +205,14 @@ public class P1_Fall_of_Faith : SplatoonScript
 
     public override void OnSettingsDraw()
     {
-        ImGui.Text("General");
+        ImGui.Text("General".Loc());
 
-        ImGuiEx.EnumCombo("Tether1Direction##Tether1", ref C.Tether1Direction);
-        ImGuiEx.EnumCombo("Tether2Direction##Tether2", ref C.Tether2Direction);
-        ImGuiEx.EnumCombo("Tether3Direction##Tether1", ref C.Tether3Direction);
-        ImGuiEx.EnumCombo("Tether4Direction##Tether1", ref C.Tether4Direction);
-        ImGuiEx.EnumCombo("NoTether12Direction##NoTether12", ref C.NoTether12Direction);
-        ImGuiEx.EnumCombo("NoTether34Direction##NoTether34", ref C.NoTether34Direction);
+        ImGuiEx.EnumCombo("Tether1Direction".Loc() + "##Tether1", ref C.Tether1Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("Tether2Direction".Loc() + "##Tether2", ref C.Tether2Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("Tether3Direction".Loc() + "##Tether1", ref C.Tether3Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("Tether4Direction".Loc() + "##Tether1", ref C.Tether4Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("NoTether12Direction".Loc() + "##NoTether12", ref C.NoTether12Direction, names: DirectionNames);
+        ImGuiEx.EnumCombo("NoTether34Direction".Loc() + "##NoTether34", ref C.NoTether34Direction, names: DirectionNames);
 
         ImGui.Separator();
 
@@ -201,12 +220,12 @@ public class P1_Fall_of_Faith : SplatoonScript
 
         ImGui.Separator();
 
-        ImGui.Text("RedTetherText:");
+        ImGui.Text("RedTetherText:".Loc());
         ImGui.SameLine();
         var redTether = C.RedTetherText.Get();
         C.RedTetherText.ImGuiEdit(ref redTether);
 
-        ImGui.Text("BlueTetherText:");
+        ImGui.Text("BlueTetherText:".Loc());
         ImGui.SameLine();
         var blueTether = C.BlueTetherText.Get();
         C.BlueTetherText.ImGuiEdit(ref blueTether);

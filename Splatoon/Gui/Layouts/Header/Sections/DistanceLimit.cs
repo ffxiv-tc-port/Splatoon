@@ -24,10 +24,10 @@ internal static class DistanceLimit
             {
                 ImGuiEx.TextV("Hitbox:".Loc());
                 ImGui.SameLine();
-                ImGui.Checkbox("+my##", ref layout.DistanceLimitMyHitbox);
+                ImGui.Checkbox("+my".Loc() + "##", ref layout.DistanceLimitMyHitbox);
                 if(ImGui.IsItemHovered()) ImGui.SetTooltip("Add my hitbox value to distance calculation".Loc());
                 ImGui.SameLine();
-                ImGui.Checkbox("+target##", ref layout.DistanceLimitTargetHitbox);
+                ImGui.Checkbox("+target".Loc() + "##", ref layout.DistanceLimitTargetHitbox);
                 if(ImGui.IsItemHovered()) ImGui.SetTooltip("Add target's hitbox value to distance calculation".Loc());
             }
         }

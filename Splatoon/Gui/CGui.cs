@@ -3,7 +3,8 @@ using ECommons;
 using ECommons.Funding;
 using ECommons.LanguageHelpers;
 using Newtonsoft.Json;
-using PInvoke;
+using TerraFX.Interop.Windows;
+using FXWindows = TerraFX.Interop.Windows.Windows;
 using Splatoon.ConfigGui;
 using Splatoon.Gui;
 using Splatoon.Gui.Scripting;
@@ -82,7 +83,7 @@ internal unsafe partial class CGui : IDisposable
         ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, new Vector2(700, 200));
         var titleColored = false;
         var ctspan = TimeSpan.FromMilliseconds(Environment.TickCount64 - p.CombatStarted);
-        var title = $"Splatoon v{p.loader.splatoonVersion} | {GenericHelpers.GetTerritoryName(Svc.ClientState.TerritoryType).Replace("| ", "")} | {(p.CombatStarted == 0 ? "Not in combat".Loc() : $"{Loc("Combat")}: {ctspan.Minutes:D2}{(ctspan.Milliseconds < 500 ? ":" : " ")}{ctspan.Seconds:D2} ({(int)ctspan.TotalSeconds}.{(ctspan.Milliseconds / 100):D1}s)")} | {Loc("Phase")}: {p.Phase} | {Loc("Scene")}: {*Scene.ActiveScene} | {Loc("Layouts")}: {p.LayoutAmount} | {Loc("Elements")}: {p.ElementAmount} | {Utils.GetPlayerPositionXZY().X:F1}, {Utils.GetPlayerPositionXZY().Y:F1}###Splatoon";
+        var title = $"Splatoon v{p.loader.splatoonVersion} | {GenericHelpers.GetTerritoryName(Svc.ClientState.TerritoryType).Replace("| ", "")} | {(p.CombatStarted == 0 ? "Not in combat".Loc() : $"{Loc("Combat")}: {ctspan.Minutes:D2}{(ctspan.Milliseconds < 500 ? ":" : " ")}{ctspan.Seconds:D2} ({(int)ctspan.TotalSeconds}.{(ctspan.Milliseconds / 100):D1}s)")} | {Loc("Phase")}: {p.Phase} | {Loc("Scene")}: {Scene.Current?.ToString() ?? "?"} | {Loc("Layouts")}: {p.LayoutAmount} | {Loc("Elements")}: {p.ElementAmount} | {Utils.GetPlayerPositionXZY().X:F1}, {Utils.GetPlayerPositionXZY().Y:F1}###Splatoon";
         if(ImGui.Begin(title, ref Open))
         {
             try
@@ -232,10 +233,10 @@ internal unsafe partial class CGui : IDisposable
         {
             var point = new POINT() { x = (int)screenPos.X, y = (int)screenPos.Y };
             //Chat.Print(point.X + "/" + point.Y);
-            if(User32.ClientToScreen(Process.GetCurrentProcess().MainWindowHandle, ref point))
+            if(FXWindows.ClientToScreen((HWND)Process.GetCurrentProcess().MainWindowHandle, &point))
             {
                 //Chat.Print(point.X + "/" + point.Y);
-                User32.SetCursorPos(point.x, point.y);
+                FXWindows.SetCursorPos(point.x, point.y);
             }
         }
     }

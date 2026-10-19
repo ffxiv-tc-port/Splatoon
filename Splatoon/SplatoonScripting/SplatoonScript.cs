@@ -1,11 +1,14 @@
 ﻿#nullable enable
 using Dalamud.Game;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Interface.Colors;
 using ECommons;
+using ECommons.Automation.NeoTaskManager;
 using ECommons.Configuration;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.LanguageHelpers;
+using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,12 +21,54 @@ using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace Splatoon.SplatoonScripting;
 
+/// <summary>
+/// 帶設定型別的腳本基底。繼承它就可以直接用 <c>C</c> 取用自己的設定,
+/// 不必每次寫 <c>Controller.GetConfig&lt;MyConfig&gt;()</c>。
+/// </summary>
+/// <remarks>
+/// T 只要求 <c>new()</c>,不要求實作 <c>IEzConfig</c> —— 與上游一致。
+/// </remarks>
+public abstract class SplatoonScript<T> : SplatoonScript where T : new()
+{
+    /// <summary>本腳本的設定實例。第一次取用時才從磁碟載入。</summary>
+    public T C => Controller.GetConfig<T>();
+}
+
 public abstract class SplatoonScript
 {
     protected SplatoonScript()
     {
         Controller = new(this);
     }
+
+    /// <summary>
+    /// 腳本應該當成「我」的那個玩家。一般遊玩時等於本機玩家;
+    /// 只有在副本錄影回放且使用者指定了視角時才會換人。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 可能為 <c>null</c>(未登入/切區中),腳本要判空。
+    /// </remarks>
+    public IPlayerCharacter BasePlayer => global::Splatoon.Splatoon.BasePlayer;
+
+    private EzThrottler<string>? _ezThrottler;
+
+    /// <summary>
+    /// 本腳本專屬的時間節流器(毫秒)。第一次取用時才配置。
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ 每個腳本各有一份,key 不會和別的腳本互撞 —— 這正是它相對於靜態
+    /// <c>ECommons.Throttlers.EzThrottler</c> 的意義(那份的 key 是全域且持久的)。
+    /// ⚠️ 同一個 key 的**第一次** <c>Throttle()</c> 一律回 <c>true</c>(放行)。
+    /// </remarks>
+    public EzThrottler<string> EzThrottler => _ezThrottler ??= new();
+
+    private FrameThrottler<string>? _frameThrottler;
+
+    /// <summary>
+    /// 本腳本專屬的影格節流器。第一次取用時才配置。
+    /// </summary>
+    /// <remarks>⚠️ 與 <see cref="EzThrottler"/> 相同:每腳本一份,同 key 首次必放行。</remarks>
+    public FrameThrottler<string> FrameThrottler => _frameThrottler ??= new();
 
     /// <summary>
     /// Controller provides easy access to various helper functions that may be helpful for your script.
@@ -44,6 +89,12 @@ public abstract class SplatoonScript
     /// Indicates whether your script operates strictly within Splatoon, ECommons and Dalamud APIs. 
     /// </summary>
     public virtual bool Safe { get; } = false;
+
+    /// <summary>
+    /// 覆寫這個屬性可以改變本腳本的 <c>Controller.TaskManager</c> 預設組態。
+    /// 預設值逐字沿用上游:時限 30 秒、開啟除錯輸出。
+    /// </summary>
+    public virtual TaskManagerConfiguration TaskManagerConfiguration { get; } = new(timeLimitMS: 30000, showDebug: true);
 
     public InternalData InternalData { get; internal set; } = null!;
 
@@ -107,6 +158,19 @@ public abstract class SplatoonScript
     public virtual void OnObjectEffect(uint target, ushort data1, ushort data2) { }
 
     /// <summary>
+    /// 上游版本的 object effect 多載,參數型別是 <see cref="uint"/> 而不是 <see cref="ushort"/>。
+    /// 值與 <see cref="OnObjectEffect(uint, ushort, ushort)"/> 完全相同,只是零延伸成 32 位元。
+    /// </summary>
+    /// <remarks>
+    /// 📌 遊戲自己就是把這兩個引數當 16 位元讀的,上游的 <see cref="uint"/> 只是加寬宣告,
+    /// 高 16 位元遊戲根本不看 ⇒ 零延伸過來不會遺失任何資訊。
+    /// </remarks>
+    /// <param name="target">Targeted object's ID</param>
+    /// <param name="data1">First parameter of object effect.</param>
+    /// <param name="data2">Second parameter of object effect.</param>
+    public virtual void OnObjectEffect(uint target, uint data1, uint data2) { }
+
+    /// <summary>
     /// Will be called when a tether created between two game objects. This method will only be called if a script is enabled.
     /// </summary>
     /// <param name="source">Source object ID of pair.</param>
@@ -140,6 +204,19 @@ public abstract class SplatoonScript
     public virtual void OnStartingCast(uint source, uint castId) { }
 
     /// <summary>
+    /// Will be called when a hostile object starts casting. This method will only be called if a script is enabled.
+    /// </summary>
+    /// <remarks>
+    /// 型別名與簽章與上游相同，但資料來源不同：我方是每幀從遊戲已解析好的 CastInfo 組出來的，
+    /// 不是封包。差異與限制寫在 <c>Splatoon.Memory.PacketActorCast</c> 的說明裡。
+    /// 🔴 <paramref name="packet"/> 指向外掛生命週期內共用的同一塊緩衝，內容每次事件都會被覆寫——
+    /// 只能在本方法內就地讀，不要把指標存起來跨呼叫使用。
+    /// </remarks>
+    /// <param name="sourceId">Source entity id</param>
+    /// <param name="packet">Packet</param>
+    public virtual unsafe void OnStartingCast(uint sourceId, global::Splatoon.Memory.PacketActorCast* packet) { }
+
+    /// <summary>
     /// Will be called whenever plugin processes a message. These are the same messages which layout trigger system receives. This method will only be called if a script is enabled.
     /// </summary>
     /// <param name="Message"></param>
@@ -150,6 +227,15 @@ public abstract class SplatoonScript
     /// </summary>
     /// <param name="category">Director update category</param>
     public virtual void OnDirectorUpdate(DirectorUpdateCategory category) { }
+
+    /// <summary>
+    /// 上游版本的 director update 多載,帶完整參數。只是為了讓照上游寫的腳本編得過而存在。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>台服 7.20 沒有 a8／a9,這兩個參數恆為 0。</b>
+    /// 台服的 director update 函式只讀到第 7 個引數,第 8、9 個引數的槽位沒有被碰過。
+    /// </remarks>
+    public virtual void OnDirectorUpdate(nint directorPtr, uint targetId, DirectorUpdateCategory a3, uint a4, uint a5, int a6, int a7, int a8, int a9) { }
 
     /// <summary>
     /// Will be called after object creation.
@@ -171,6 +257,20 @@ public abstract class SplatoonScript
     /// <param name="targetId"></param>
     /// <param name="replaying"></param>
     public virtual void OnActorControl(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, ulong targetId, byte replaying) { }
+
+    /// <summary>
+    /// 上游(全球服 7.3)版本的 ActorControl 多載,多了 <paramref name="p7"/>／<paramref name="p8"/>。
+    /// 只是為了讓照上游寫的腳本編得過而存在。<b>VOLATILE DATA WARNING.</b>
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>台服 7.20 沒有 p7／p8,這兩個參數恆為 0。</b>
+    /// 台服的呼叫端只傳 10 個引數(到 <paramref name="replaying"/> 為止),
+    /// 上游那兩個多出來的參數是全球服後續版本才加的。
+    /// ⚠️ 所以這裡**刻意不照抄上游的 12 參數委派去掛 hook** —— 那樣會讓
+    /// <paramref name="targetId"/> 與 <paramref name="replaying"/> 整個往後錯兩格讀到未寫入的堆疊,
+    /// 而且是靜默的。真實值照 10 參數版傳,p7／p8 補 0。
+    /// </remarks>
+    public virtual void OnActorControl(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying) { }
 
     [Obsolete($"Please use {nameof(OnActionEffectEvent)}")]
     public virtual void OnActionEffect(uint ActionID, ushort animationID, ActionEffectType type, uint sourceID, ulong targetOID, uint damage) { }
@@ -242,7 +342,9 @@ public abstract class SplatoonScript
             ClientLanguage.Japanese => jp,
             ClientLanguage.German => de,
             ClientLanguage.French => fr,
-            (ClientLanguage)4 => cn,
+            // TC(台服)客戶端回報 ClientLanguage 7(TraditionalChinese),舊版 Dalamud 回報 4(ChineseSimplified)。
+            // 用數值比較,列舉裡沒有 7 這個名字的 Dalamud 版本也編得過。
+            (ClientLanguage)4 or (ClientLanguage)5 or (ClientLanguage)7 => cn,
             _ => null,
         } ?? en ?? jp ?? de ?? fr ?? cn ?? "<null>";
     }
@@ -592,6 +694,7 @@ public abstract class SplatoonScript
                             {
                                 InternalData.Overrides = x;
                                 Controller.ApplyOverrides();
+                                Controller.SaveOverrides();
                                 Notify.Success("Import success");
                             }
                             else
@@ -700,6 +803,17 @@ public abstract class SplatoonScript
             return false;
         }
         ScriptingProcessor.OnReset(this);
+        try
+        {
+            // TaskManager 是延遲建立的:腳本沒用過就是 null,這裡什麼也不做。
+            // 用過就必須在停用時釋放,否則它會繼續跑排隊中的工作。
+            Controller.TaskManagerInternal?.Dispose();
+            Controller.TaskManagerInternal = null;
+        }
+        catch(Exception ex)
+        {
+            ScriptingProcessor.LogError(this, ex, "TaskManager.Dispose");
+        }
         try
         {
             PluginLog.Information($"Disabling script {this}");

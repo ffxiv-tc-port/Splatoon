@@ -9,7 +9,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System;
@@ -67,7 +67,7 @@ internal unsafe class P4_Akh_Morn_Full_Toolers : SplatoonScript
     /* public properties                                                */
     /********************************************************************/
     public override HashSet<uint>? ValidTerritories => [1238];
-    public override Metadata? Metadata => new(3, "redmoon");
+    public override Metadata? Metadata => new(4, "redmoon");
     #endregion
 
     #region private properties
@@ -80,7 +80,6 @@ internal unsafe class P4_Akh_Morn_Full_Toolers : SplatoonScript
     private uint _RinEntityId = 0;
     private int _akhMornCount = 0;
     private bool _mitiBuff = false;
-    private ActionManager* actionManager = ActionManager.Instance();
     #endregion
 
     #region public methods
@@ -170,6 +169,7 @@ internal unsafe class P4_Akh_Morn_Full_Toolers : SplatoonScript
 
         if(_mitiBuff && (Player.Job == Job.DRK))
         {
+            var actionManager = ActionManager.Instance();
             if(actionManager->AnimationLock == 0 && !actionManager->IsRecastTimerActive(ActionType.Action, 7531u))
             {
                 actionManager->UseAction(ActionType.Action, 7531u);

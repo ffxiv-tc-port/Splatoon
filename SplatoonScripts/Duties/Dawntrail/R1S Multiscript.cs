@@ -16,7 +16,7 @@ public class R1S_Multiscript : SplatoonScript
 
     private List<Vector3> clonePositions = [];
 
-    public override Metadata? Metadata => new(3, "damolitionn");
+    public override Metadata? Metadata => new(4, "damolitionn");
 
     private bool IsLeapingCleave = false;
     private bool LeftFirst = false;
@@ -27,7 +27,7 @@ public class R1S_Multiscript : SplatoonScript
     private TickScheduler? sched = null;
     private Vector3 jumpTargetPosition;
 
-    private IBattleNpc? BlackCat => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.DataId == 17193 && b.IsTargetable) as IBattleNpc;
+    private IBattleNpc? BlackCat => Svc.Objects.FirstOrDefault(x => x is IBattleNpc b && b.BaseId == 17193 && b.IsTargetable) as IBattleNpc;
 
     public override void OnSetup()
     {
@@ -70,7 +70,7 @@ public class R1S_Multiscript : SplatoonScript
     {
         var obj = target.GetObject();
 
-        if(obj?.DataId == 17193)
+        if(obj?.BaseId == 17193)
         {
             if(clonePositions.Count >= 6)
             {
@@ -92,7 +92,7 @@ public class R1S_Multiscript : SplatoonScript
             }
         }
 
-        if(obj?.DataId == 17196 && clonePositions.Count == 9)
+        if(obj?.BaseId == 17196 && clonePositions.Count == 9)
         {
             if(vfxPath.Contains("vfx/common/eff/m0884_cast_dbl01p1.avfx"))
             {
@@ -101,7 +101,7 @@ public class R1S_Multiscript : SplatoonScript
             }
         }
 
-        if(obj?.DataId == 17196 && clonePositions.Count == 10)
+        if(obj?.BaseId == 17196 && clonePositions.Count == 10)
         {
             if(vfxPath.Contains("vfx/common/eff/m0884_cast_dbl01p1.avfx"))
             {
@@ -139,7 +139,7 @@ public class R1S_Multiscript : SplatoonScript
 
     public override void OnTetherCreate(uint source, uint target, uint data2, uint data3, uint data5)
     {
-        if(source.GetObject().DataId == 17196 && target.GetObject().DataId == 17193)
+        if(source.GetObject().BaseId == 17196 && target.GetObject().BaseId == 17193)
         {
             var position = source.GetObject().Position;
             clonePositions.Add(position);

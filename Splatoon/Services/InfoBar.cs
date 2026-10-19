@@ -3,6 +3,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using ECommons.Events;
 using ECommons.EzEventManager;
 using ECommons.GameHelpers;
+using ECommons.LanguageHelpers;
 using Splatoon.Gui.Priority;
 using Splatoon.SplatoonScripting;
 using System;
@@ -20,9 +21,25 @@ public class InfoBar : IDisposable
     private InfoBar()
     {
         Entry = Svc.DtrBar.Get(EntryName, "");
-        Entry.OnClick = () => P.PriorityPopupWindow.Open(true);
-        Entry.Tooltip = "Edit Splatoon priority";
+        Entry.OnClick = OnClick;
+        Entry.Tooltip = "Left click: open/close Splatoon priority editor".Loc() + "\n" + "Right click: open/close Splatoon settings".Loc();
         ProperOnLogin.RegisterAvailable(() => Update(true), true);
+    }
+
+    private void OnClick(DtrInteractionEvent ev)
+    {
+        if(ev.ClickType != MouseClickType.Left)
+        {
+            P.ConfigGui.Open = !P.ConfigGui.Open;
+        }
+        else if(P.PriorityPopupWindow.IsOpen)
+        {
+            P.PriorityPopupWindow.IsOpen = false;
+        }
+        else
+        {
+            P.PriorityPopupWindow.Open(true);
+        }
     }
 
     public void Dispose()

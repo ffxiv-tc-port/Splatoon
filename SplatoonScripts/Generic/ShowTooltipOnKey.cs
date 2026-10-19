@@ -10,19 +10,19 @@ using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
-using PInvoke;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using ECommons.Interop;
 
 namespace SplatoonScriptsOfficial.Generic
 {
     public unsafe class ShowTooltipOnKey : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [];
-        public override Metadata? Metadata => new(3, "NightmareXIV");
+        public override Metadata? Metadata => new(4, "NightmareXIV");
 
         private bool keyState = false;
         private Config Conf = null!;
@@ -34,10 +34,23 @@ namespace SplatoonScriptsOfficial.Generic
         private long AddonItemDetail_ShowDetour(long a1, byte a2, uint a3)
         {
             //DuoLog.Information($"{a1:X16}");
-            var ret = AddonItemDetail_ShowHook.Original(a1, a2, a3);
+            // 🔴 OnDisable() 會 Dispose 這個 hook,但 detour 仍可能在飛(自己的 in-flight 呼叫,或別的外掛把 hook
+            //    疊在同一位址上、經由它的 trampoline 轉進來)。Dispose 之後裸讀 .Original 會把例外擲回原生呼叫端,
+            //    MinHook 後端還是 use-after-free(AVE 攔不到)⇒ 用 .OriginalDisposeSafe(改用函式位址本身重建委派)。
+            // ⚠️ 只對 [Signature] → Hook<T>.FromAddress 型的 hook 成立(Hook.address ＝目標函式位址本身);
+            //    FromImport／FromFunctionPointerVariable 型(address ＝指標變數位址)絕不可照抄 —— 那會把資料當程式碼跳過去。
+            var hook = AddonItemDetail_ShowHook;
+            if(hook == null)
+            {
+                // 特徵碼標成 Fallibility.Fallible,失配時這個欄位會真的是 null —— 不過那種情況下
+                // hook 根本沒掛上,detour 也不會被呼叫。真的走到這裡就要看得見。
+                PluginLog.Information("[ShowTooltipOnKey] hook 在呼叫途中消失,本次跳過原函式呼叫。");
+                return 0;
+            }
+            var ret = hook.OriginalDisposeSafe(a1, a2, a3);
             try
             {
-                if(!Bitmask.IsBitSet(User32.GetKeyState((int)Conf.Key), 15))
+                if(!Bitmask.IsBitSet(TerraFX.Interop.Windows.Windows.GetKeyState((int)Conf.Key), 15))
                 {
                     ((AtkUnitBase*)a1)->IsVisible = false;
                 }
@@ -57,6 +70,8 @@ namespace SplatoonScriptsOfficial.Generic
 
         public override void OnDisable()
         {
+            // 🔴 刻意不把 AddonItemDetail_ShowHook 設成 null:仍在飛的 detour 讀到 null 會把
+            //    NullReferenceException 擲回原生呼叫端,比留著已 Dispose 的物件更糟。
             AddonItemDetail_ShowHook?.Disable();
             AddonItemDetail_ShowHook?.Dispose();
         }
@@ -86,7 +101,7 @@ namespace SplatoonScriptsOfficial.Generic
                     ImGuiEx.Text(GradientColor.Get(ImGuiColors.ParsedGreen, ImGuiColors.DalamudRed), "Now press new key...");
                     foreach(var x in Enum.GetValues<Keys>())
                     {
-                        if(Bitmask.IsBitSet(User32.GetKeyState((int)x), 15))
+                        if(Bitmask.IsBitSet(TerraFX.Interop.Windows.Windows.GetKeyState((int)x), 15))
                         {
                             ImGui.CloseCurrentPopup();
                             Conf.Key = x;

@@ -9,7 +9,7 @@ using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
 using ECommons.Throttlers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using Splatoon.Utility;
 using System;
@@ -19,12 +19,15 @@ using System.Numerics;
 using System.Text;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
+using Player = ECommons.GameHelpers.Player;
+
+using ECommons.DalamudServices.Legacy;
 
 namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 public class M8S_Quad_Beckon_Moonlight_Universal : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1263];
-    public override Metadata? Metadata => new(2, "NightmareXIV,Alex");
+    public override Metadata? Metadata => new(4, "NightmareXIV,Alex");
 
     public override void OnSetup()
     {
@@ -773,7 +776,7 @@ public class M8S_Quad_Beckon_Moonlight_Universal : SplatoonScript
     {
         foreach(var x in Svc.Objects.OfType<IBattleNpc>())
         {
-            if(x.DataId == 18217 && x.IsCharacterVisible() && x.GetTransformationID().EqualsAny<byte>(6, 7))
+            if(x.BaseId == 18217 && x.IsCharacterVisible() && x.GetTransformationID().EqualsAny<byte>(6, 7))
             {
                 if(!Order.Contains(x.EntityId))
                 {

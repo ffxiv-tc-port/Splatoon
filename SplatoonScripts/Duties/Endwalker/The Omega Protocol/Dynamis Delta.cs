@@ -8,7 +8,7 @@ using ECommons.GameFunctions;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using Splatoon.Utility;
 using System.Collections.Generic;
@@ -21,11 +21,11 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
     {
         public override HashSet<uint> ValidTerritories => [1122];
 
-        public override Metadata? Metadata => new(10, "NightmareXIV");
+        public override Metadata? Metadata => new(11, "NightmareXIV");
 
         private Config Conf => Controller.GetConfig<Config>();
 
-        private IPlayerCharacter Player => Svc.ClientState.LocalPlayer;
+        private IPlayerCharacter Player => Svc.Objects.LocalPlayer;
 
         private int Stage = 0;
         private uint myTether;
@@ -114,13 +114,13 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                             Alert("Green - to final (stretch)", ImGuiColors.HealerGreen);
                             Controller.GetElementByName("Final").Enabled = true;
                         }
-                        if(Svc.Objects.Count(x => x.DataId.EqualsAny<uint>(HandRed, HandBlue)) == 8)
+                        if(Svc.Objects.Count(x => x.BaseId.EqualsAny<uint>(HandRed, HandBlue)) == 8)
                         {
                             DuoLog.Information($"Snapshotting: you are {(myTether == Effects.UpcomingBlueTether ? "blue" : "green")} " + (isMeClose ? "close" : "far"));
                             foreach(var player in FakeParty.Get())
                             {
-                                var h = Svc.Objects.Where(x => x.DataId.EqualsAny<uint>(HandRed, HandBlue)).OrderBy(x => Vector3.Distance(x.Position, player.Position)).First();
-                                PlayerHands[player.EntityId] = h.DataId;
+                                var h = Svc.Objects.Where(x => x.BaseId.EqualsAny<uint>(HandRed, HandBlue)).OrderBy(x => Vector3.Distance(x.Position, player.Position)).First();
+                                PlayerHands[player.EntityId] = h.BaseId;
                                 PluginLog.Information($"Player {player} {player.Position}, hand {h} {h.Position} {(PlayerHands[player.EntityId] == HandBlue ? "blue" : "red")}");
                             }
                             Stage = 1;
@@ -129,7 +129,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                     }
                     else if(Stage == 1)
                     {
-                        if(isMeClose && PlayerHands[GetClosestPlayer().EntityId] == PlayerHands[Svc.ClientState.LocalPlayer.EntityId])
+                        if(isMeClose && PlayerHands[GetClosestPlayer().EntityId] == PlayerHands[Svc.Objects.LocalPlayer.EntityId])
                         {
                             Alert("Swap to other side!", GradientColor.Get(ImGuiColors.ParsedPink, 0xFF000000.ToVector4(), 200));
                         }
@@ -349,7 +349,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         private IPlayerCharacter GetClosestPlayer()
         {
-            return FakeParty.Get().Where(x => x.Address != Svc.ClientState.LocalPlayer.Address).OrderBy(x => Vector3.Distance(Svc.ClientState.LocalPlayer.Position, x.Position)).FirstOrDefault();
+            return FakeParty.Get().Where(x => x.Address != Svc.Objects.LocalPlayer.Address).OrderBy(x => Vector3.Distance(Svc.Objects.LocalPlayer.Position, x.Position)).FirstOrDefault();
         }
 
         public override void OnSettingsDraw()
@@ -399,7 +399,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
         {
             foreach(var x in Svc.Objects)
             {
-                if(x is IBattleChara b && b.DataId.EqualsAny<uint>(15719, 15718)) yield return x as IBattleChara;
+                if(x is IBattleChara b && b.BaseId.EqualsAny<uint>(15719, 15718)) yield return x as IBattleChara;
             }
         }
 

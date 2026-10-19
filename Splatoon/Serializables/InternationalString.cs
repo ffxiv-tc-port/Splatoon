@@ -18,14 +18,71 @@ public class InternationalString
     [DefaultValue("")] public string Fr = string.Empty;
     [DefaultValue("")] public string Other = string.Empty;
 
+    public InternationalString() { }
+
+    public InternationalString(string en = "", string jp = "", string de = "", string fr = "", string other = "")
+    {
+        this.En = en ?? string.Empty;
+        this.Jp = jp ?? string.Empty;
+        this.De = de ?? string.Empty;
+        this.Fr = fr ?? string.Empty;
+        this.Other = other ?? string.Empty;
+    }
+
+    /// <summary>
+    /// If you want to print strings depending on game locale, use this.
+    /// </summary>
+    /// <param name="default"></param>
+    /// <param name="en"></param>
+    /// <param name="jp"></param>
+    /// <param name="de"></param>
+    /// <param name="fr"></param>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public static string Print(string @default = "", string en = "", string jp = "", string de = "", string fr = "", string other = "")
+    {
+        return new InternationalString(en, jp, de, fr, other).Get(@default);
+    }
+
     public string Get(string defaultString = "", ClientLanguage? language = null)
     {
+        Normalize();
+        defaultString ??= string.Empty;
         language ??= Svc.Data.Language;
-        if(language == ClientLanguage.English) return En == string.Empty ? defaultString : En;
-        else if(language == ClientLanguage.Japanese) return Jp == string.Empty ? defaultString : Jp;
-        else if(language == ClientLanguage.German) return De == string.Empty ? defaultString : De;
-        else if(language == ClientLanguage.French) return Fr == string.Empty ? defaultString : Fr;
-        else return Other == string.Empty ? defaultString : Other;
+        var ret = language switch
+        {
+            ClientLanguage.English => En,
+            ClientLanguage.Japanese => Jp,
+            ClientLanguage.German => De,
+            ClientLanguage.French => Fr,
+            _ => Other
+        };
+
+        if(!ret.IsNullOrEmpty())
+            return ret;
+        if(!defaultString.IsNullOrEmpty())
+            return defaultString;
+        if(!En.IsNullOrEmpty())
+            return En;
+        if(!Other.IsNullOrEmpty())
+            return Other;
+        if(!Jp.IsNullOrEmpty())
+            return Jp;
+        if(!De.IsNullOrEmpty())
+            return De;
+        if(!Fr.IsNullOrEmpty())
+            return Fr;
+        return string.Empty;
+    }
+
+    private void Normalize()
+    {
+        guid ??= Guid.NewGuid().ToString();
+        En ??= string.Empty;
+        Jp ??= string.Empty;
+        De ??= string.Empty;
+        Fr ??= string.Empty;
+        Other ??= string.Empty;
     }
 
     internal ref string CurrentLangString
@@ -57,6 +114,8 @@ public class InternationalString
 
     public void ImGuiEdit(ref string DefaultValue, string helpMessage = null)
     {
+        Normalize();
+        DefaultValue ??= string.Empty;
         if(ImGui.BeginCombo($"##{guid}", Get(DefaultValue)))
         {
             ImGuiEx.LineCentered($"line{guid}", delegate
@@ -102,11 +161,13 @@ public class InternationalString
 
     public bool IsEmpty()
     {
+        Normalize();
         return En.IsNullOrEmpty() && Jp.IsNullOrEmpty() && De.IsNullOrEmpty() && Fr.IsNullOrEmpty() && Other.IsNullOrEmpty();
     }
 
     public ref string GetRefString(ClientLanguage language)
     {
+        Normalize();
         if(language == ClientLanguage.English) return ref En;
         else if(language == ClientLanguage.Japanese) return ref Jp;
         else if(language == ClientLanguage.German) return ref De;
@@ -116,6 +177,7 @@ public class InternationalString
 
     private void EditLangSpecificString(ClientLanguage language, ref string str)
     {
+        str ??= string.Empty;
         var col = false;
         if(str == string.Empty)
         {

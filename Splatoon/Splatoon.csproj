@@ -2,8 +2,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<Authors>NightmareXIV</Authors>
-		<Version>3.8.1.5</Version>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<BuildNumberFile>$(MSBuildProjectDirectory)\BuildNumber.txt</BuildNumberFile>
+		<_PreviousBuildNumber Condition="Exists('$(BuildNumberFile)')">$([System.IO.File]::ReadAllText('$(BuildNumberFile)').Trim())</_PreviousBuildNumber>
+		<_PreviousBuildNumber Condition="'$(_PreviousBuildNumber)' == ''">0</_PreviousBuildNumber>
+		<BuildNumber>$([MSBuild]::Add($(_PreviousBuildNumber), 1))</BuildNumber>
+		<VersionPrefix>7.15.0</VersionPrefix>
+		<Version>$(VersionPrefix).$(BuildNumber)</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+	</PropertyGroup>
+	<Target Name="PersistBuildNumber" AfterTargets="Build">
+		<WriteLinesToFile File="$(BuildNumberFile)" Lines="$(BuildNumber)" Overwrite="true" />
+	</Target>
 
 	<PropertyGroup>
 		<TargetFramework>net9.0-windows7.0</TargetFramework>
@@ -46,10 +59,12 @@
 	<PropertyGroup Label="Documentation">
 		<DocumentationFile></DocumentationFile>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!-- 文件註解照常由編譯器產生（留在 obj，文件註解語法檢查照舊），只是不複製進輸出目錄：執行期用不到，出貨包也就不帶它。 -->
+		<CopyDocumentationFileToOutputDirectory>false</CopyDocumentationFileToOutputDirectory>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+		<DalamudLibPath>$(appdata)\FFXIVSimpleLauncher\Dalamud\Injector\</DalamudLibPath>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -57,7 +72,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="DalamudPackager" Version="12.0.0" />
+	  <PackageReference Include="DalamudPackager" Version="13.0.0" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
 	  <PackageReference Include="NotificationMasterAPI" Version="1.0.0.1" />
 	</ItemGroup>
@@ -85,8 +100,8 @@
           <HintPath>$(DalamudLibPath)Dalamud.Common.dll</HintPath>
           <Private>False</Private>
       </Reference>
-		<Reference Include="ImGui.NET">
-			<HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+		<Reference Include="Dalamud.Bindings.ImGui">
+			<HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Lumina">
@@ -105,12 +120,8 @@
 			<HintPath>$(DalamudLibPath)SharpDX.Mathematics.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="PInvoke.User32.dll">
-			<HintPath>$(DalamudLibPath)PInvoke.User32.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="PInvoke.Windows.Core.dll">
-			<HintPath>$(DalamudLibPath)PInvoke.Windows.Core.dll</HintPath>
+		<Reference Include="TerraFX.Interop.Windows.dll">
+			<HintPath>$(DalamudLibPath)TerraFX.Interop.Windows.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
       <Reference Include="ImGuiScene.dll">
@@ -121,6 +132,9 @@
 
 	<ItemGroup>
 	  <None Update="LanguageChinese.ini">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="LanguageChineseTraditional.ini">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	  <None Update="LanguageGerman.ini">
@@ -139,4 +153,12 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
+
+	<!-- ECommons 的文件註解檔 ECommons.xml 執行期用不到：不複製進輸出目錄，出貨包也就不帶它（ECommons.pdb 照留，崩潰堆疊行號要用）。 -->
+	<Target Name="ExcludeECommonsXmlDoc" AfterTargets="ResolveAssemblyReferences">
+		<ItemGroup>
+			<_ECommonsXmlDoc Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'ECommons.xml'" />
+			<ReferenceCopyLocalPaths Remove="@(_ECommonsXmlDoc)" />
+		</ItemGroup>
+	</Target>
 </Project>

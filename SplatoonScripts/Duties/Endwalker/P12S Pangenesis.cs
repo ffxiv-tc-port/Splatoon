@@ -7,9 +7,10 @@ using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.Hooks;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using ECommons.Schedulers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         private DebuffType MyDebuff = DebuffType.None;
 
         public override HashSet<uint> ValidTerritories => [1154];
-        public override Metadata? Metadata => new(5, "tatad2");
+        public override Metadata? Metadata => new(7, "tatad2");
 
         private string ElementNamePrefix = "P12SSC";
         private int towerCount = 0;
@@ -43,7 +44,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         private string TestOverride = "";
 
-        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.ClientState.LocalPlayer!;
+        private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.Objects.LocalPlayer!;
 
         public override void OnEnable()
         {
@@ -252,12 +253,12 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
         {
             ImGui.SetNextItemWidth(200f);
             ImGuiEx.EnumCombo("Select strat", ref C.Strat);
-            if(ImGui.CollapsingHeader("Debug"))
+            if(ImGui.CollapsingHeader("Debug".Loc()))
             {
                 ImGuiEx.Text($"LastTowerBlack: {lastTowerBlack}");
                 ImGuiEx.Text($"towerCount: {towerCount}");
                 ImGuiEx.Text($"MyDebuff: {MyDebuff}");
-                if(ImGui.Button("Reset")) Reset();
+                if(ImGui.Button("Reset".Loc())) Reset();
                 ImGui.SetNextItemWidth(200f);
                 ImGui.InputText("TestOverride", ref TestOverride, 50);
                 ImGuiEx.Text($"{PC}");

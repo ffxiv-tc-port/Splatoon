@@ -21,7 +21,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P12S_Limit_Cut : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1154];
-        public override Metadata? Metadata => new(2, "NightmareXIV");
+        public override Metadata? Metadata => new(3, "NightmareXIV");
         private const uint Puddle = 33527;
         private const uint Laser = 33520;
         private bool mechanicActive = false;
@@ -132,7 +132,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         private int GetMyNumber()
         {
-            if(AttachedInfo.VFXInfos.TryGetValue(Svc.ClientState.LocalPlayer.Address, out var info))
+            if(AttachedInfo.VFXInfos.TryGetValue(Svc.Objects.LocalPlayer.Address, out var info))
             {
                 if(info.OrderBy(x => x.Value.Age).TryGetFirst(x => x.Key.StartsWith("vfx/lockon/eff/sph_lockon2_num0"), out var effect))
                 {

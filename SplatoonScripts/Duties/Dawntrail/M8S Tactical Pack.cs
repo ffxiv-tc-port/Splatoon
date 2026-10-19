@@ -37,19 +37,19 @@ public class M8S_Tactical_Pack : SplatoonScript
 
     private State _state = State.None;
     public override HashSet<uint>? ValidTerritories => [1263];
-    public override Metadata? Metadata => new(4, "Garume");
+    public override Metadata? Metadata => new(5, "Garume");
 
     private static IBattleNpc? OrangeDragon => Svc.Objects
-        .FirstOrDefault(x => x.DataId == OrangeDragonDataId) as IBattleNpc;
+        .FirstOrDefault(x => x.BaseId == OrangeDragonDataId) as IBattleNpc;
 
     private static IBattleNpc? GreenDragon => Svc.Objects
-        .FirstOrDefault(x => x.DataId == GreenDragonDataId) as IBattleNpc;
+        .FirstOrDefault(x => x.BaseId == GreenDragonDataId) as IBattleNpc;
 
     private static IBattleNpc? OrangeCube => Svc.Objects
-        .FirstOrDefault(x => x.DataId == OrangeCubeDataId) as IBattleNpc;
+        .FirstOrDefault(x => x.BaseId == OrangeCubeDataId) as IBattleNpc;
 
     private static IBattleNpc? GreenSphere => Svc.Objects
-        .FirstOrDefault(x => x.DataId == GreenSphereDataId) as IBattleNpc;
+        .FirstOrDefault(x => x.BaseId == GreenSphereDataId) as IBattleNpc;
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -211,12 +211,12 @@ public class M8S_Tactical_Pack : SplatoonScript
     {
         PluginLog.Warning($"taget: {target}, source: {source}, data2: {data2}, data3: {data3}, data5: {data5}");
         PluginLog.Warning($"source: {source.GetObject().Address} player: {Player.Object.Address}");
-        if (target.GetObject().DataId is OrangeDragonDataId or GreenDragonDataId &&
+        if (target.GetObject().BaseId is OrangeDragonDataId or GreenDragonDataId &&
             _state == State.None &&
             source.GetObject().Address == Player.Object.Address)
         {
             _state = State.TetherCreated;
-            _isGreen = target.GetObject().DataId == OrangeDragonDataId;
+            _isGreen = target.GetObject().BaseId == OrangeDragonDataId;
             var pos = _isGreen ? GreenDragon!.Position : OrangeDragon!.Position;
             if (Controller.TryGetElementByName("Tether", out var element))
             {

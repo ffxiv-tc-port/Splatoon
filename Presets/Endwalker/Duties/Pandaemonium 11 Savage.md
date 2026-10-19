@@ -4,7 +4,7 @@
 
 More functions will be added with time
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/P11S%20Multiscript.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P11S%20Multiscript.cs
 ```
 
 [International] Portals lasers

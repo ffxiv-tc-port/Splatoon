@@ -1,7 +1,7 @@
 ## [WIP] Ultimate Relativity
 It highlights positions.
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P3%20Ultimate%20Relativity.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P3%20Ultimate%20Relativity.cs
 ```
 
 Provide complete navigation with two modes: **Priority-Based Mode** and **Marker-Based Mode.**
@@ -52,7 +52,7 @@ To prevent marker assignment conflicts, use **Random Wait** as necessary.
 ## [WIP] Apocalypse Script
 Entirely visualises Apocalypse explosions
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P3%20Apocalypse.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P3%20Apocalypse.cs
 ```
 
 ## Ultimate Relativity laser bait hint

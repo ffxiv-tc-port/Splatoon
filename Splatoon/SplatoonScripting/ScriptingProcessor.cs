@@ -16,16 +16,40 @@ internal static partial class ScriptingProcessor
     private static ImmutableList<SplatoonScript> ScriptsInternal = [];
     internal static IReadOnlyList<SplatoonScript> Scripts => ScriptsInternal;
     internal static ConcurrentQueue<(string code, string path)> LoadScriptQueue = new();
-    internal static volatile bool ThreadIsRunning = false;
+    /// <summary>
+    /// 編譯器執行緒是否正在跑。<b>唯讀</b>；要取得所有權請對
+    /// <see cref="ThreadIsRunningFlag"/> 做 <c>Interlocked.CompareExchange</c>，
+    /// 不要再寫成「先讀再寫」。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <see cref="CompileAndLoad"/> 是從<b>多條背景執行緒</b>進來的
+    /// （<see cref="DownloadScript"/>／<see cref="ReloadAll"/>／<see cref="ReloadScript"/>／
+    /// <see cref="ReloadScripts"/> 全都把它包在 <c>Task.Run</c> 裡），「先讀再寫」會讓
+    /// 兩條同時讀到 <see langword="false"/> 而各自開一條編譯器執行緒。
+    /// ⚠️ 失敗形式不是崩潰而是<b>靜默的重工</b>：兩條搶寫同一份腳本快取檔（<c>IOException</c> 只進 log），
+    /// 尾端的 <c>BlockingBeginUpdate</c> 跑兩次，先收工的那一條還會把旗標清掉、UI 顯示「不忙」。
+    /// </remarks>
+    internal static bool ThreadIsRunning => Volatile.Read(ref ThreadIsRunningFlag) != 0;
+
+    /// <summary><see cref="ThreadIsRunning"/> 的後備欄位。0 ＝沒有人在跑，1 ＝已經有一條編譯器執行緒擁有它。</summary>
+    private static int ThreadIsRunningFlag;
+
+    /// <summary>
+    /// 台服分支的腳本策展來源。上游的腳本版本閘門只比對「同名腳本的遠端版本較大」、不檢查 API 世代,
+    /// 而覆寫是就地寫檔不留備份 —— 指向上游會讓我們針對台服修過的腳本被國際服版本靜默蓋掉。
+    /// 刻意使用 "HEAD" 而不是寫死分支名:HEAD 永遠跟著 repo 的預設分支走。
+    /// 寫死分支在改名/換版本分支之後會 404,而這裡的下載失敗只會被 e.Log() 吞掉,
+    /// 使用者看不到任何徵兆。
+    /// </summary>
+    internal const string ScriptRepoBaseURL = "https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts";
+
+    // 只信任本 org：上游腳本針對國際服寫，在台服可能讀錯資料。
+    // 要信任其他來源由使用者自己加進 ExtraTrustedRepos。
     internal static readonly string[] TrustedURLs =
     [
-        "https://github.com/NightmareXIV/",
-        "https://www.github.com/NightmareXIV/",
-        "https://raw.githubusercontent.com/NightmareXIV/",
-        "https://github.com/PunishXIV/",
-        "https://www.github.com/PunishXIV/",
-        "https://raw.githubusercontent.com/PunishXIV/",
-        "https://nightmarexiv.com/"
+        "https://github.com/ffxiv-tc-port/",
+        "https://www.github.com/ffxiv-tc-port/",
+        "https://raw.githubusercontent.com/ffxiv-tc-port/",
     ];
     internal static ImmutableList<BlacklistData> Blacklist = ImmutableList<BlacklistData>.Empty;
     internal static volatile bool UpdateCompleted = false;
@@ -60,12 +84,21 @@ internal static partial class ScriptingProcessor
         S.InfoBar?.Update(true);
     }
 
+    /// <summary>
+    /// 這幾個腳本清單的異動只能在 framework thread 上做。
+    /// ⚠️ 判準要跟 Dalamud <b>一模一樣</b>:<c>Framework.RunOnFrameworkThread</c> 在
+    /// <c>IsInFrameworkUpdateThread</c> <b>或</b> <c>IsFrameworkUnloading</c> 為真時就地執行。
+    /// 卸載期間是後者為真、前者為假(<c>Dispose() -> RunOnFrameworkThread -> ClearScripts</c>),
+    /// 所以兩者都要放行;真正的跨執行緒誤用仍然照樣被抓。
+    /// </summary>
     private static void AssertOnFrameworkThread()
     {
-        if(!Svc.Framework.IsInFrameworkUpdateThread)
+        if(Svc.Framework.IsInFrameworkUpdateThread || Svc.Framework.IsFrameworkUnloading)
         {
-            PluginLog.Error($"Operation performed outside of allowed bounds. Please report this to developer.\n{new StackTrace(true)}");
+            return;
         }
+
+        PluginLog.Error($"Operation performed outside of allowed bounds. Please report this to developer.\n{new StackTrace(true)}");
     }
 
     internal static bool AnyScriptUsesPriority(uint? territory = null)
@@ -105,7 +138,8 @@ internal static partial class ScriptingProcessor
             try
             {
                 PluginLog.Debug($"Starting downloading blacklist...");
-                var result = P.HttpClient.GetAsync("https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/blacklist.csv").Result;
+                var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/blacklist.csv").Result;
+                OrgDownloadLog.Report("腳本黑名單", $"{ScriptRepoBaseURL}/blacklist.csv", result);
                 result.EnsureSuccessStatusCode();
                 PluginLog.Debug($"Blacklist download complete");
                 var blacklist = result.Content.ReadAsStringAsync().Result;
@@ -148,32 +182,13 @@ internal static partial class ScriptingProcessor
 
             try
             {
-                PluginLog.Debug($"Starting downloading update list...");
-                var result = P.HttpClient.GetAsync("https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/update.csv").Result;
-                result.EnsureSuccessStatusCode();
-                PluginLog.Debug($"Update list downloaded");
-                var updateList = result.Content.ReadAsStringAsync().Result;
-
-                var extra = P.Config.ExtraUpdateLinks.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                foreach(var x in extra)
-                {
-                    if(x.Length > 0)
-                    {
-                        try
-                        {
-                            PluginLog.Fatal($"!!! WARNING !!! Processing script update list {x}. THIS IS UNSAFE. IF YOU DID NOT ADDED THIS URL, IMMEDIATELY TERMINATE THE GAME AND CONTACT SPLATOON PLUGIN SUPPORT ASAP.");
-                            PluginLog.Debug($"Starting downloading custom update list...");
-                            var extraResult = P.HttpClient.GetAsync(x).Result;
-                            extraResult.EnsureSuccessStatusCode();
-                            PluginLog.Debug($"Custom update list downloaded");
-                            updateList += "\n" + extraResult.Content.ReadAsStringAsync().Result;
-                        }
-                        catch(Exception e)
-                        {
-                            e.Log();
-                        }
-                    }
-                }
+                // 自動更新與「可用腳本」瀏覽器共用 DownloadUpdateLists() 的同一次下載結果
+                // 與同一則 PluginLog.Fatal 警告。合併順序:官方清單在前,每條 ExtraUpdateLinks 接在後面。
+                var updateLists = DownloadUpdateLists();
+                // 順手把已經拿到手的清單餵給瀏覽器快取 —— 不多發一次請求。
+                // Ingest 自己吞例外,絕不讓瀏覽器的解析問題打斷既有的更新流程。
+                ScriptCatalog.Ingest(updateLists);
+                var updateList = updateLists.Select(x => x.Content).Join("\n");
 
                 List<string> Updates = [];
                 foreach(var line in updateList.Replace("\r", "").Split("\n"))
@@ -211,6 +226,47 @@ internal static partial class ScriptingProcessor
         }
     }
 
+    /// <summary>
+    /// 下載腳本更新清單的原始文字。回傳的第一筆一定是本 fork 的官方清單(Source 為 null),
+    /// 其後每一筆對應使用者自行設定的 ExtraUpdateLinks 一條,Source 就是那條網址本身。
+    /// 自動更新與「可用腳本瀏覽器」共用同一次下載、同一則 PluginLog.Fatal 警告(刻意留著的,不要拿掉)。
+    /// 🔴 這個方法沿用既有的 .Result 同步寫法,會阻塞呼叫執行緒,只能在背景執行緒呼叫。
+    /// 🔴 官方清單下載失敗時會擲例外(EnsureSuccessStatusCode);使用者自訂清單下載失敗只記 log 並略過。
+    /// </summary>
+    internal static List<(string Source, string Content)> DownloadUpdateLists()
+    {
+        List<(string Source, string Content)> ret = [];
+        PluginLog.Debug($"Starting downloading update list...");
+        var result = P.HttpClient.GetAsync($"{ScriptRepoBaseURL}/update.csv").Result;
+        OrgDownloadLog.Report("腳本更新清單", $"{ScriptRepoBaseURL}/update.csv", result);
+        result.EnsureSuccessStatusCode();
+        PluginLog.Debug($"Update list downloaded");
+        ret.Add((null, result.Content.ReadAsStringAsync().Result));
+
+        var extra = P.Config.ExtraUpdateLinks.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach(var x in extra)
+        {
+            if(x.Length > 0)
+            {
+                try
+                {
+                    PluginLog.Fatal($"!!! WARNING !!! Processing script update list {x}. THIS IS UNSAFE. IF YOU DID NOT ADDED THIS URL, IMMEDIATELY TERMINATE THE GAME AND CONTACT SPLATOON PLUGIN SUPPORT ASAP.");
+                    PluginLog.Debug($"Starting downloading custom update list...");
+                    var extraResult = P.HttpClient.GetAsync(x).Result;
+                    OrgDownloadLog.Report("自訂腳本更新清單", x, extraResult);
+                    extraResult.EnsureSuccessStatusCode();
+                    PluginLog.Debug($"Custom update list downloaded");
+                    ret.Add((x, extraResult.Content.ReadAsStringAsync().Result));
+                }
+                catch(Exception e)
+                {
+                    e.Log();
+                }
+            }
+        }
+        return ret;
+    }
+
     internal static bool IsUrlTrusted(string url)
     {
         var extra = P.Config.ExtraTrustedRepos.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -235,7 +291,12 @@ internal static partial class ScriptingProcessor
     {
         try
         {
-            var result = P.HttpClient.GetStringAsync(url).Result;
+            // 改用 GetAsync 是為了在 EnsureSuccessStatusCode 擲例外之前先拿到狀態碼:
+            // 自家 repo 轉私有後沒填權杖就是 404,原本只會留下一行難以歸因的例外。
+            var response = P.HttpClient.GetAsync(url).Result;
+            OrgDownloadLog.Report("腳本檔", url, response);
+            response.EnsureSuccessStatusCode();
+            var result = response.Content.ReadAsStringAsync().Result;
             CompileAndLoad(result, null, isFirst, true);
         }
         catch(Exception e)
@@ -255,15 +316,22 @@ internal static partial class ScriptingProcessor
         UpdateCompleted = false;
         Scripts.Each(x => x.Disable());
         ClearScripts();
-        var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "Scripts");
-        if(!Directory.Exists(dir))
+        // Directory enumeration and file reads are disk I/O and can be slow with many scripts;
+        // run them off the UI/framework thread. CompileAndLoad itself only enqueues onto a
+        // ConcurrentQueue and (if needed) starts the existing compiler Thread, so it's safe to
+        // call from here; that thread already publishes results back via RunOnFrameworkThread.
+        Task.Run(() =>
         {
-            Directory.CreateDirectory(dir);
-        }
-        foreach(var f in Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories))
-        {
-            CompileAndLoad(File.ReadAllText(f, Encoding.UTF8), f, true);
-        }
+            var dir = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "Scripts");
+            if(!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            foreach(var f in Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories))
+            {
+                CompileAndLoad(File.ReadAllText(f, Encoding.UTF8), f, true);
+            }
+        });
     }
 
     internal static void ReloadScript(SplatoonScript s, bool ignoreCache = false)
@@ -275,7 +343,11 @@ internal static partial class ScriptingProcessor
         }
         s.Disable();
         RemoveScript(s);
-        CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, false, ignoreCache);
+        // File read is disk I/O; background it (see ReloadAll comment above).
+        Task.Run(() =>
+        {
+            CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, false, ignoreCache);
+        });
     }
 
     internal static void ReloadScripts(IEnumerable<SplatoonScript> scripts, bool isFirst)
@@ -285,21 +357,36 @@ internal static partial class ScriptingProcessor
             DuoLog.Error("Can not reload yet, please wait");
             return;
         }
-        foreach(var s in scripts)
+        // Materialize first: Disable()/RemoveScript() must run on the framework thread now
+        // (RemoveScript mutates the shared ScriptsInternal list and asserts as much), while the
+        // file reads below are backgrounded, so we can't lazily re-enumerate `scripts` later.
+        var scriptsList = scripts as IReadOnlyCollection<SplatoonScript> ?? scripts.ToList();
+        foreach(var s in scriptsList)
         {
             s.Disable();
             RemoveScript(s);
-            CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, isFirst);
         }
+        // File reads are disk I/O; background them (see ReloadAll comment above).
+        Task.Run(() =>
+        {
+            foreach(var s in scriptsList)
+            {
+                CompileAndLoad(File.ReadAllText(s.InternalData.Path, Encoding.UTF8), s.InternalData.Path, isFirst);
+            }
+        });
     }
 
     internal static void CompileAndLoad(string sourceCode, string fpath, bool isFirst, bool ignoreCache = false)
     {
         PluginLog.Debug($"Requested script loading");
         LoadScriptQueue.Enqueue((sourceCode, fpath));
-        if(!ThreadIsRunning)
+        // 🔴 取得所有權必須是不可分割的一步。原本的「先讀再寫」在兩條背景執行緒同時
+        //    進來時會各自開一條編譯器執行緒（成因與後果見 ThreadIsRunning 的註解）。
+        //    CompareExchange 回傳的是「換之前的舊值」，所以 == 0 才代表這一次是我搶到的；
+        //    搶輸的那一條什麼都不做就好 —— 腳本已經進了 LoadScriptQueue，
+        //    正在跑的那條編譯器執行緒會把它撿走（它閒置 10 輪才收工）。
+        if(Interlocked.CompareExchange(ref ThreadIsRunningFlag, 1, 0) == 0)
         {
-            ThreadIsRunning = true;
             PluginLog.Debug($"Beginning new thread");
             new Thread(() =>
             {
@@ -362,7 +449,21 @@ internal static partial class ScriptingProcessor
                                             var assembly = Compiler.Load(code, pdb);
                                             foreach(var t in assembly.GetTypes())
                                             {
-                                                if(t.BaseType?.FullName == "Splatoon.SplatoonScripting.SplatoonScript")
+                                                // 🔴 腳本是靠「直接基底類別的全名」被認出來的,泛型基底 SplatoonScript<T> 也必須在這裡認得
+                                                // —— 否則繼承它的腳本會**靜默地完全不被載入**(編得過、檔案在、清單裡就是沒有它)。
+                                                // 刻意不照抄上游的 t.BaseType.IsAssignableTo(typeof(SplatoonScript)):
+                                                // 那會連「繼承自另一個腳本類別」的深層子類也一起註冊,是行為擴大。
+                                                // 這裡維持精確比對,只多認一個泛型基底。
+                                                var bt = t.BaseType;
+                                                // 泛型基底的 BaseType 是封閉型別(FullName 帶 [[...]] 的型別引數),
+                                                // 所以先取它的泛型定義再比對名字。
+                                                var btd = bt != null && bt.IsGenericType ? bt.GetGenericTypeDefinition() : bt;
+                                                // 這裡刻意沿用既有寫法用 FullName 字串比對而不是 typeof(...) ——
+                                                // 腳本組件是載進外掛自己的 AssemblyLoadContext 的,用型別識別比對要賭
+                                                // 兩邊解析到同一個 Splatoon 組件實例;比名字沒有這個賭注。
+                                                var isScript = btd?.FullName == "Splatoon.SplatoonScripting.SplatoonScript"
+                                                    || btd?.FullName == "Splatoon.SplatoonScripting.SplatoonScript`1";
+                                                if(isScript)
                                                 {
                                                     var instance = (SplatoonScript)assembly.CreateInstance(t.FullName);
                                                     instance.InternalData = new(result.path, instance)
@@ -393,6 +494,9 @@ internal static partial class ScriptingProcessor
                                                         var newPath = Path.Combine(dir, $"{instance.InternalData.Name}.cs");
                                                         instance.InternalData.Path = newPath;
                                                         File.WriteAllText(newPath, result.code, Encoding.UTF8);
+                                                        // 建構時 Path 還是 null，覆寫是對著相對路徑讀的；換成真路徑後要重讀，
+                                                        // 否則刪掉再重裝時舊覆寫不會套用，下一次存檔還會把磁碟上的覆寫檔當成沒有而刪掉。
+                                                        instance.InternalData.ReloadOverrides();
                                                         DuoLog.Debug($"Script installed to {newPath}");
                                                     }
                                                     else if(rewrite)
@@ -449,13 +553,13 @@ internal static partial class ScriptingProcessor
                             Thread.Sleep(10);
                         }
                     }
-                    ThreadIsRunning = false;
+                    Volatile.Write(ref ThreadIsRunningFlag, 0);
                 }
                 catch(Exception e)
                 {
                     e.Log();
                 }
-                ThreadIsRunning = false;
+                Volatile.Write(ref ThreadIsRunningFlag, 0);
                 PluginLog.Debug($"Compiler part of thread is finished");
 
                 if(!UpdateCompleted)
@@ -560,6 +664,28 @@ internal static partial class ScriptingProcessor
         catch(Exception e) { script.LogError(e, nameof(SplatoonScript.OnReset)); }
     }
 
+    /// <summary>
+    /// 手動重置（<c>/splatoon reset</c>）時對每個啟用中的腳本呼叫 <see cref="Controller.Reset"/>。
+    /// 要在框架執行緒呼叫；某支腳本擲例外只記錄，不影響其他腳本。
+    /// </summary>
+    internal static void ResetEnabledScripts()
+    {
+        var scripts = Scripts;
+        var count = 0;
+        for(var i = 0; i < scripts.Count; i++)
+        {
+            var script = scripts[i];
+            if(!script.IsEnabled) continue;
+            count++;
+            try
+            {
+                script.Controller.Reset();
+            }
+            catch(Exception e) { script.LogError(e, "Controller.Reset"); }
+        }
+        PluginLog.Information($"Manual reset: reset {count} enabled script(s)");
+    }
+
     internal static void OnMapEffect(uint Position, ushort Param1, ushort Param2)
     {
         for(var i = 0; i < Scripts.Count; i++)
@@ -588,6 +714,24 @@ internal static partial class ScriptingProcessor
                 catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnObjectEffect)); }
             }
         }
+        // 舊多載先派完再派上游那個 uint 多載。遊戲自己就是把這兩個引數當 16 位元讀的,
+        // 零延伸不會遺失資訊(詳見 SplatoonScript 上該多載的註解)。
+        OnObjectEffectWide(Target, Param1, Param2);
+    }
+
+    private static void OnObjectEffectWide(uint Target, uint Param1, uint Param2)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnObjectEffect(Target, Param1, Param2);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnObjectEffect)); }
+            }
+        }
     }
 
     internal static void OnStartingCast(uint source, uint castId)
@@ -601,6 +745,28 @@ internal static partial class ScriptingProcessor
                     Scripts[i].OnStartingCast(source, castId);
                 }
                 catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnObjectEffect)); }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 施法開始事件的第二種多載，帶完整的施法資訊（招式類型、目標、詠唱長度、朝向、目標地點）。
+    /// </summary>
+    /// <remarks>
+    /// 呼叫順序：<c>AttachedInfo.Tick</c> 一律先派這一支、再派上面的 <c>(uint, uint)</c> 那一支——
+    /// 上游是 hook（早）→ 輪詢（晚），有腳本同時 override 兩者並靠先後順序區分來源，順序顛倒會改變它們的行為。
+    /// </remarks>
+    internal static unsafe void OnStartingCast(uint sourceId, global::Splatoon.Memory.PacketActorCast* packet)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnStartingCast(sourceId, packet);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnStartingCast)); }
             }
         }
     }
@@ -684,6 +850,25 @@ internal static partial class ScriptingProcessor
         }
     }
 
+    /// <summary>
+    /// 上游那個完整參數版的 director update 派送。
+    /// 🔴 a8／a9 在台服 7.20 不存在,呼叫端一律補 0(詳見 SplatoonScript 上該多載的註解)。
+    /// </summary>
+    internal static void OnDirectorUpdate(nint directorPtr, uint targetId, DirectorUpdateCategory a3, uint a4, uint a5, int a6, int a7, int a8, int a9)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnDirectorUpdate(directorPtr, targetId, a3, a4, a5, a6, a7, a8, a9);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnDirectorUpdate)); }
+            }
+        }
+    }
+
     internal static void OnPhaseChange(int phase)
     {
         for(var i = 0; i < Scripts.Count; i++)
@@ -738,6 +923,25 @@ internal static partial class ScriptingProcessor
                 try
                 {
                     Scripts[i].OnActorControl(sourceId, command, p1, p2, p3, p4, p5, p6, targetId, replaying);
+                }
+                catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnActorControl)); }
+            }
+        }
+        // 舊多載先派完再派上游那個 12 參數多載,既有腳本的相對執行順序不變。
+        // 🔴 台服 7.20 的 ActorControl 只有 10 個引數(詳見
+        // SplatoonScript 上該多載的註解),所以 p7／p8 補 0、targetId／replaying 照真實值傳。
+        OnActorControlWithP7P8(sourceId, command, p1, p2, p3, p4, p5, p6, 0, 0, targetId, replaying);
+    }
+
+    private static void OnActorControlWithP7P8(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying)
+    {
+        for(var i = 0; i < Scripts.Count; i++)
+        {
+            if(Scripts[i].IsEnabled)
+            {
+                try
+                {
+                    Scripts[i].OnActorControl(sourceId, command, p1, p2, p3, p4, p5, p6, p7, p8, targetId, replaying);
                 }
                 catch(Exception e) { Scripts[i].LogError(e, nameof(SplatoonScript.OnActorControl)); }
             }
@@ -835,7 +1039,10 @@ internal static partial class ScriptingProcessor
         {
             Scripts[i].Disable();
         }
-        ClearScripts();
+        // 上游 446567f5 用 Svc.Framework.Run 包住;我方改用 RunOnFrameworkThread——
+        // 已在 framework thread 時 inline 執行(正常卸載路徑行為不變),
+        // 跨執行緒呼叫時才 marshal,避免 Run 一律延到下一 tick(可能落在卸載之後)。
+        Svc.Framework.RunOnFrameworkThread(ClearScripts);
     }
 
     internal static void LogError(this SplatoonScript s, Exception e, string methodName)

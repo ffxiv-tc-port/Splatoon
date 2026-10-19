@@ -7,7 +7,7 @@ using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.Serializables;
 using Splatoon.SplatoonScripting;
@@ -603,7 +603,7 @@ public unsafe class P3_Dive_from_Grace : SplatoonScript
         public Vector4 BaitColor1 = 0xFFFF00FF.ToVector4();
         public Vector4 BaitColor2 = 0xFFFFFF00.ToVector4();
         public bool LockFaceEnableWhenNotMoving = true;
-        public bool LookFace = true;
+        public bool LookFace = false;
         public bool ShouldConsiderCircleDonut;
     }
 }

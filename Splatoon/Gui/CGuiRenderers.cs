@@ -12,8 +12,49 @@ namespace Splatoon;
 internal partial class CGui
 {
     private bool Tested = false;
+    private bool ShowAttentionWindow = false;
+    private int DemoRows = 3;
+
+    // 注意視窗預覽用的假內容。刻意寫成長度不一的句子,才看得出視窗會被撐到多寬。
+    private static readonly string[] PreviewLines =
+    [
+        "Adjust this window so it does not overlap the UI you need.",
+        "Attention window preview line.",
+        "This is what a script's message looks like.",
+        "Short line.",
+        "A considerably longer line, so you can see how wide the window can get.",
+        "Another preview line.",
+        "Yet another preview line.",
+        "Last preview line.",
+    ];
+
+    // WindowBasePosition 的三個成員在 X 軸與 Y 軸要讀成不同的字(左中右 vs 上中下),
+    // 所以不能用 LocEnum.Names<WindowBasePosition>()(那是按型別的單一對照表)。
+    // 快取的理由與失效條件與 LocEnum 相同:這段在每幀的 Draw 裡,
+    // 而 Splatoon 的一般設定可以在執行期切換介面語言,所以語言變了就要重建。
+    private Dictionary<WindowBasePosition, string> AttentionX;
+    private Dictionary<WindowBasePosition, string> AttentionY;
+    private string AttentionNamesLanguage;
+    private void EnsureAttentionNames()
+    {
+        if(AttentionX != null && AttentionNamesLanguage == Localization.CurrentLanguage) return;
+        AttentionX = new()
+        {
+            [WindowBasePosition.Start] = "Left".Loc(),
+            [WindowBasePosition.Middle] = "Middle".Loc(),
+            [WindowBasePosition.End] = "Right".Loc(),
+        };
+        AttentionY = new()
+        {
+            [WindowBasePosition.Start] = "Top".Loc(),
+            [WindowBasePosition.Middle] = "Middle".Loc(),
+            [WindowBasePosition.End] = "Bottom".Loc(),
+        };
+        AttentionNamesLanguage = Localization.CurrentLanguage;
+    }
     private void DisplayRenderers()
     {
+        EnsureAttentionNames();
         if(Utils.IsLinux())
         {
             new NuiBuilder()
@@ -77,6 +118,70 @@ internal partial class CGui
                 ImGui.Checkbox($"Draw Splatoon's element under other plugins elements and windows".Loc(), ref P.Config.SplatoonLowerZ);
             })
 
+            .Section("Attention Color".Loc())
+            .TextWrapped("Attention color is used to highlight the most important and most critical elements, requiring immediate resolution. Typically it can only be used by scripts.".Loc())
+            .Widget(() =>
+            {
+                ImGui.SetNextItemWidth(200f);
+                ImGuiEx.EnumCombo("Attention Color Type".Loc(), ref P.Config.AttentionColorType, names: LocEnum.Names<AttentionColorType>());
+                if(P.Config.AttentionColorType.EqualsAny(AttentionColorType.Rainbow, AttentionColorType.Gradient))
+                {
+                    ImGui.SetNextItemWidth(200f);
+                    ImGui.InputFloat("Color switching cycle, seconds".Loc(), ref P.Config.AttentionColorCycle);
+                }
+                if(P.Config.AttentionColorType.EqualsAny(AttentionColorType.Gradient, AttentionColorType.Fixed))
+                {
+                    ImGui.ColorEdit4("Color 1".Loc(), ref P.Config.AttentionColor1, ImGuiColorEditFlags.NoInputs);
+                }
+                if(P.Config.AttentionColorType.EqualsAny(AttentionColorType.Gradient))
+                {
+                    ImGui.ColorEdit4("Color 2".Loc(), ref P.Config.AttentionColor2, ImGuiColorEditFlags.NoInputs);
+                }
+                ImGui.SameLine();
+                ImGuiEx.Text(Utils.GetAttentionColor(), "  ####  ");
+                ImGuiEx.Tooltip("Live preview of the current attention color.".Loc());
+            })
+
+            .Section("Attention Window".Loc())
+            .Widget(() =>
+            {
+                ImGuiEx.TextWrapped("Attention window is a way for a script to display an useful message during a mechanic. Here you can configure where it appears and how big it is.".Loc());
+                ImGui.Checkbox("Show attention window preview".Loc(), ref ShowAttentionWindow);
+                if(ShowAttentionWindow)
+                {
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(100f);
+                    ImGuiEx.SliderInt("Num rows".Loc(), ref DemoRows, 1, 8);
+                    S.AttentionOverlayWindow.Title = "Attention window".Loc();
+                    // 預覽是靠「持續每幀把列排進佇列」達成的,和腳本走的是同一條路徑 ——
+                    // 取消勾選就不再排入,佇列在下一幀被 PostDraw 清空,視窗自己消失。
+                    PreviewLines.Take(DemoRows).Each(x => S.AttentionOverlayWindow.ActionQueueCommand.Add((() => ImGuiEx.Text(x.Loc()), true)));
+                }
+                ImGuiEx.Text("Window screen position:".Loc());
+                ImGui.Indent();
+                ImGui.SetNextItemWidth(150f);
+                ImGuiEx.EnumCombo("##attentionY", ref P.Config.AttentionBasePositionY, AttentionY);
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(150f);
+                ImGuiEx.EnumCombo("##attentionX", ref P.Config.AttentionBasePositionX, AttentionX);
+                ImGui.SetNextItemWidth(140f);
+                ImGui.DragFloat("Offset X".Loc(), ref P.Config.AttentionBaseOffset.X);
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(140f);
+                ImGui.DragFloat("Offset Y".Loc(), ref P.Config.AttentionBaseOffset.Y);
+                ImGui.Unindent();
+                ImGui.SetNextItemWidth(150f);
+                ImGui.DragFloat("Font size".Loc(), ref P.Config.AttentionFontSize, 0.02f, 0.1f, 10f);
+                ImGui.SameLine();
+                if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Check, "Apply".Loc()))
+                {
+                    // 字型 handle 要重建才會套用新的大小。不能在繪製迴圈中途做,
+                    // 所以丟到下一個 tick(這也是上游的做法)。
+                    new TickScheduler(() => S.AttentionOverlayWindow.RebuildFont());
+                }
+                ImGui.Checkbox("Disable appearance blinking".Loc(), ref P.Config.AttentionNoAnimate);
+            })
+
             .Section("DirectX11 Renderer".Loc())
             .Widget(() =>
             {
@@ -87,6 +192,11 @@ internal partial class CGui
                 ImGui.SameLine();
                 ImGui.Checkbox("##usevfxrendering", ref p.Config.UseVfxRendering);
                 ImGuiComponents.HelpMarker("If possible, render elements with in-game omen VFX. Some donut and cone sizes are not supported; these will fall back to DirectX rendering.".Loc());
+                if(S.RenderManager.DirectX11Renderer.VfxUnavailable)
+                {
+                    ImGui.SameLine();
+                    ImGuiEx.Text(EColor.OrangeBright, "Unavailable in this game version; DirectX rendering is used instead.".Loc());
+                }
 
                 ImGuiUtils.SizedText("Alpha Blend Mode:".Loc(), WidthLayout);
                 ImGui.SameLine();
@@ -94,7 +204,7 @@ internal partial class CGui
                 ImGuiUtils.EnumCombo("##alphablendmode", ref p.Config.AlphaBlendMode, AlphaBlendModes.Names, AlphaBlendModes.Tooltips);
                 if(ImGui.IsItemHovered())
                 {
-                    ImGui.SetTooltip("Change how overlapping elements' transparency is blended");
+                    ImGui.SetTooltip("Change how overlapping elements' transparency is blended".Loc());
                 }
 
                 ImGui.Checkbox("Automatically clip Splatoon's elements around native UI elements and windows".Loc(), ref P.Config.AutoClipNativeUI);
@@ -148,10 +258,10 @@ internal partial class CGui
                         ImGui.PopStyleColor();
 
                         ImGui.SameLine();
-                        ImGui.Checkbox("Override##" + name, ref enableOverride);
+                        ImGui.Checkbox("Override".Loc() + "##" + name, ref enableOverride);
                         ImGui.SameLine();
                         ImGui.PushStyleColor(ImGuiCol.Text, style.strokeColor);
-                        if(ImGui.Button("Reset To Default##" + name))
+                        if(ImGui.Button("Reset To Default".Loc() + "##" + name))
                         {
                             style = MechanicTypes.DefaultMechanicColors[mech];
                         }
@@ -179,7 +289,7 @@ internal partial class CGui
                 ImGuiComponents.HelpMarker("Higher - smoother circle, higher cpu usage".Loc());
 
                 ImGui.Checkbox("Disable circle fix while enabling drawing circles above your point of view".Loc(), ref P.Config.NoCircleFix);
-                ImGuiComponents.HelpMarker("Do not enable it unless you actually need it. Large circles may be rendered incorrectly under certain camera angle with this option enabled.");
+                ImGuiComponents.HelpMarker("Do not enable it unless you actually need it. Large circles may be rendered incorrectly under certain camera angle with this option enabled.".Loc());
 
                 ImGuiUtils.SizedText("Line segments:".Loc(), WidthLayout);
                 ImGui.SameLine();

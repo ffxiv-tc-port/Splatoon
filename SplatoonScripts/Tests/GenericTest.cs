@@ -5,7 +5,7 @@ using ECommons.DalamudServices;
 using ECommons.DalamudServices.Legacy;
 using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,7 @@ namespace SplatoonScriptsOfficial.Tests
 {
     public unsafe class GenericTest : SplatoonScript
     {
+        public override Metadata Metadata => new(2, "NightmareXIV");
         public override HashSet<uint> ValidTerritories => [];
         //bool __fastcall sub_1400AA130(__int16 a1)
         //NumberArrayData_SetValueIfDifferentAndNotify(__int64 a1, int a2, int a3)
@@ -53,6 +54,9 @@ namespace SplatoonScriptsOfficial.Tests
 
         public override void OnDisable()
         {
+            // 先 Disable() 把函式序言還原,擋掉「新的」呼叫進入 detour,再 Dispose()。
+            // 🔴 刻意不把欄位設成 null:仍在飛的 detour 讀到 null 會把 NullReferenceException
+            //    擲回原生呼叫端,比留著已 Dispose 的物件更糟。
             Hook?.Disable();
             Hook?.Dispose();
             Hook2?.Disable();
@@ -63,7 +67,19 @@ namespace SplatoonScriptsOfficial.Tests
 
         private byte Detour2(nint a1, uint a2)
         {
-            var ret = Hook2.Original(a1, a2);
+            // 🔴 OnDisable() 會 Dispose 這個 hook,但 detour 仍可能在飛(自己的 in-flight 呼叫,或別的外掛把 hook
+            //    疊在同一位址上、經由它的 trampoline 轉進來)。Dispose 之後裸讀 .Original 會把例外擲回原生呼叫端,
+            //    MinHook 後端還是 use-after-free(AVE 攔不到)⇒ 用 .OriginalDisposeSafe(改用函式位址本身重建委派)。
+            // ⚠️ 只對 [Signature] → Hook<T>.FromAddress 型的 hook 成立(Hook.address ＝目標函式位址本身);
+            //    FromImport／FromFunctionPointerVariable 型(address ＝指標變數位址)絕不可照抄 —— 那會把資料當程式碼跳過去。
+            var hook = Hook2;
+            if(hook == null)
+            {
+                // 理論上到不了:hook 建不起來時 detour 根本不會被掛上。真的發生就要看得見。
+                PluginLog.Information("[GenericTest] Hook2 在呼叫途中消失,本次跳過原函式呼叫。");
+                return 0;
+            }
+            var ret = hook.OriginalDisposeSafe(a1, a2);
             try
             {
                 //if (Debugger.IsAttached) Debugger.Break();
@@ -83,6 +99,9 @@ namespace SplatoonScriptsOfficial.Tests
 
         private void Detour(nint a1, int a2, int a3)
         {
+            // 🔴 同 Detour2:欄位先快照成區域變數,呼叫改用 .OriginalDisposeSafe。
+            //    這裡的 try/catch 只包住診斷輸出,原函式呼叫在 try 之外。
+            var hook = Hook;
             try
             {
 
@@ -102,7 +121,12 @@ namespace SplatoonScriptsOfficial.Tests
             {
                 e.Log();
             }
-            Hook.Original(a1, a2, a3);
+            if(hook == null)
+            {
+                PluginLog.Information("[GenericTest] Hook 在呼叫途中消失,本次跳過原函式呼叫。");
+                return;
+            }
+            hook.OriginalDisposeSafe(a1, a2, a3);
         }
 
         public override void OnSettingsDraw()

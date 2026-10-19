@@ -19,13 +19,13 @@ public class EX2_Projection_of_Triumph : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1201];
 
-    public override Metadata? Metadata => new(3, "NightmareXIV");
+    public override Metadata? Metadata => new(4, "NightmareXIV");
 
-    private IBattleChara[] Donuts => [.. Svc.Objects.OfType<IBattleChara>().Where(x => x.DataId == 16727)];
+    private IBattleChara[] Donuts => [.. Svc.Objects.OfType<IBattleChara>().Where(x => x.BaseId == 16727)];
 
-    private IBattleChara[] Circles => [.. Svc.Objects.OfType<IBattleChara>().Where(x => x.DataId == 16726)];
+    private IBattleChara[] Circles => [.. Svc.Objects.OfType<IBattleChara>().Where(x => x.BaseId == 16726)];
 
-    private IBattleChara[] Towers => [.. Svc.Objects.OfType<IBattleChara>().Where(x => x.DataId == 17079)];
+    private IBattleChara[] Towers => [.. Svc.Objects.OfType<IBattleChara>().Where(x => x.BaseId == 17079)];
 
     private List<uint> RightMovers = [];
     private List<uint> LeftMovers = [];
@@ -83,7 +83,7 @@ public class EX2_Projection_of_Triumph : SplatoonScript
             foreach(var x in Donuts.Concat(Circles))
             {
                 var xPos = RotateRelative(x.Position);
-                var isDonut = x.DataId == 16727;
+                var isDonut = x.BaseId == 16727;
                 if(!xPos.Z.InRange(80, 120)) continue;
                 if(LeftMovers.Contains(x.EntityId))
                 {

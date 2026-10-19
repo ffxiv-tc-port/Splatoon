@@ -41,7 +41,7 @@ Colors:
 ![R4S Witch Hunt Script Instructions](/docs/images/instructions/dawntrail/raids/R4S_1.png)
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R4S%20Witch%20Hunt.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R4S%20Witch%20Hunt.cs
 ```
 
 ### [Script] Electrope Edge
@@ -59,7 +59,7 @@ Configuration:
 ![R4S Electrope Edge Script Instructions](/docs/images/instructions/dawntrail/raids/R4S_2.png)
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R4S%20Electrope%20Edge.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R4S%20Electrope%20Edge.cs
 ```
 
 ### [Script] Electon Stream (Cannon)
@@ -69,7 +69,7 @@ This script displays the side of the Electon Stream (cannon) blast that is unsaf
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R4S%20Unsafe%20Cannon.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R4S%20Unsafe%20Cannon.cs
 ```
 
 ## Phase 1 Presets
@@ -145,7 +145,7 @@ This script shows the 4 safe spots for the Chain Lightning swords in order.
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R4S%20Chain%20Lightning.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R4S%20Chain%20Lightning.cs
 ```
 
 ### [Script] Midnight Sabbath
@@ -156,7 +156,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/
 This script shows the AOE of the adds and safe spots for Midnight Sabbath. A preset handles the spread / stack portion of this mechanic.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R4S%20Midnight%20Sabbath.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R4S%20Midnight%20Sabbath.cs
 ```
 
 ### [Script] Sunrise Sabbath
@@ -174,7 +174,7 @@ Configuration:
 ![R4S Sunrise Sabbath Script Instructions](/docs/images/instructions/dawntrail/raids/R4S_3.png)
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R4S%20Sunrise%20Sabbath.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R4S%20Sunrise%20Sabbath.cs
 ```
 
 ### [Script] [Modification] Sunrise Sabbath Uptime Bait Markers

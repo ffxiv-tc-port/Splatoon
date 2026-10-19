@@ -9,7 +9,7 @@ using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System;
@@ -22,7 +22,7 @@ public unsafe class M5S_Disco_Infernal_Universal : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1257];
 
-    public override Metadata? Metadata => new(7, "NightmareXIV");
+    public override Metadata? Metadata => new(8, "NightmareXIV");
 
     TileDescriptor? TargetedTile = null;
     Element Early => Controller.GetElementByName("Prepare")!;
@@ -89,7 +89,7 @@ public unsafe class M5S_Disco_Infernal_Universal : SplatoonScript
         MechanicStarted = true;
         IsLong = BasePlayer.StatusList.Any(x => x.StatusId == Debuff && x.RemainingTime > 25f);
         //DuoLog.Information($"{Svc.Objects.Where(x => x.DataId == 18363).Select(x => x.Position).Print("\n")}");
-        MeleeInverted = !Svc.Objects.Where(x => x.DataId == 18363).Any(x => Vector2.Distance(x.Position.ToVector2(), new(92.5f, 97.5f)) < 0.5f);
+        MeleeInverted = !Svc.Objects.Where(x => x.BaseId == 18363).Any(x => Vector2.Distance(x.Position.ToVector2(), new(92.5f, 97.5f)) < 0.5f);
 
         var safe = ValidTiles
             .Where(x => !(FloorInverted ? RangedUnsafe1 : RangedUnsafe2).Contains(x))

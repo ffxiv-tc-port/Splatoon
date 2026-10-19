@@ -11,7 +11,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SharpDX.DXGI;
 using Splatoon.SplatoonScripting;
 using System;
@@ -25,7 +25,7 @@ namespace SplatoonScriptsOfficial.Duties.Dawntrail;
 public unsafe class M6S_Target_Enforcer : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [1259];
-    public override Metadata? Metadata => new(6, "NightmareXIV");
+    public override Metadata? Metadata => new(7, "NightmareXIV");
 
     public override Dictionary<int, string> Changelog => new()
     {
@@ -153,7 +153,12 @@ public unsafe class M6S_Target_Enforcer : SplatoonScript
                 }
                 else if(Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.DutyRecorderPlayback])
                 {
-                    DuoLog.Information($"Would use action \"{ExcelActionHelper.GetActionName(useAction)}\" ({Framework.Instance()->FrameCounter})");
+                    // Framework.Instance() 宣告成 [StaticAddress(..., isPointer: true)]，它真的會回 null。
+                    // 裸讀 FrameCounter 等於對 null 加偏移解參考 ＝ AccessViolationException，try/catch 攔不到
+                    // ⇒ 只能事前判空。這裡只是重播模式下的診斷字串，取不到就印 0，不影響任何行為。
+                    var framework = Framework.Instance();
+                    var frameCounter = framework == null ? 0u : framework->FrameCounter;
+                    DuoLog.Information($"Would use action \"{ExcelActionHelper.GetActionName(useAction)}\" ({frameCounter})");
                 }
             }
         }

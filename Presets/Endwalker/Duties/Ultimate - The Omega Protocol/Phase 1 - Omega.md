@@ -7,17 +7,17 @@
 - Explicitly highlights your designated tether drop spot once you have picked up your tether, according to the priority you have set before.
 - Everything is configurable. You can disable individual functions, change colors of elements, remove things you don't want to see. By default, all functions are enabled.
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Program%20Loop%20Priority.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Program%20Loop%20Priority.cs
 ```
 
 [International] [Script] Pantoraktor. Simply displays upcoming line AOE and bomb AOE. If it's your - it will be red (by default)
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Pantokrator.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Pantokrator.cs
 ```
 
 [International] [Script] Pantoraktor. Tank invincible Timing Reminder. Displays when tank invincible is about to expire. 
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/refs/heads/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Pantokrator%20invincible%20Reminder.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Pantokrator%20invincible%20Reminder.cs
 ```
 
 [International] P1 Basic Mulipreset / 基本繪制 (Some circles instead of ranges)
@@ -33,5 +33,5 @@ https://raw.githubusercontent.com/PunishXIV/Splatoon/refs/heads/main/SplatoonScr
 # Archive
 These presets or scripts are currently obsolete and are displayed for archiving purposes
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Program%20Loop.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/Program%20Loop.cs
 ```

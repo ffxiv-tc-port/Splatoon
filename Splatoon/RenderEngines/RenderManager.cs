@@ -56,7 +56,7 @@ public class RenderManager : IDisposable
 
     internal void ClearDisplayObjects()
     {
-        DirectX11Renderer.DisplayObjects.Clear();
+        DirectX11Renderer.BeginFrame();
         ImGuiLegacyRenderer.DisplayObjects.Clear();
     }
 

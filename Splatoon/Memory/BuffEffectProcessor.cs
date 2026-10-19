@@ -79,6 +79,8 @@ internal unsafe class BuffEffectProcessor : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
+        // Also reached from the finalizer and from a second Dispose(): nothing allocated means nothing to free.
+        if(_CharacterStatusInfoPtr == null) return;
         for(var i = 0; i < MAX_OBJECT_NUM; ++i)
         {
             if(_CharacterStatusInfoPtr[i].StatusPtr != null)
@@ -122,25 +124,35 @@ internal unsafe class BuffEffectProcessor : IDisposable
             if(gameObject->EntityId == INVALID_OBJECTID) continue;
             var character = (Character*)gameObject;
             var sm = (StatusManager*)character->GetStatusManager();
-            var statusArray = (Status*)((byte*)sm + 0x08);
             if(sm == null) continue;
-            if(statusArray == null) continue;
+            var statusArray = (Status*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(sm->Status));
+
+            // NumValidStatuses 是遊戲寫入的未夾 byte（0..255），但來源與目的地都只有 60 格：
+            // 來源是 CS 的 StatusManager._status（FixedSizeArray60<Status>），目的地是本類在
+            // 建構時自己 AllocHGlobal 的 MAX_STATUS_NUM 格。直接拿它當複製長度，計數異常時
+            // 會越界寫入自配緩衝＝堆積毀損（表現成別處隨機崩潰，現場指不回這裡），
+            // 同時也會越界讀出遊戲結構之外。故先夾上界，寫入與比對迴圈都用夾後值。
+            var statusCount = Math.Min((int)sm->NumValidStatuses, MAX_STATUS_NUM);
 
             // New object
             if(_CharacterStatusInfoPtr[i].ObjectID != gameObject->EntityId)
             {
-                Unsafe.InitBlock(_CharacterStatusInfoPtr[i].StatusPtr, 0, (uint)sizeof(CharacterStatusInfo));
+                // 要清的是「本槽位的狀態快取緩衝」，大小是 sizeof(Status) * MAX_STATUS_NUM（見建構式），
+                // 不是 CharacterStatusInfo 的大小。沒清乾淨會留著前一個佔用同一個物件表槽位的角色的舊狀態，
+                // 比對迴圈會拿它當「上一幀的狀態」，發出根本沒發生過的 Remove／Gain 事件。
+                Unsafe.InitBlock(_CharacterStatusInfoPtr[i].StatusPtr, 0, (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * MAX_STATUS_NUM);
                 _CharacterStatusInfoPtr[i].ObjectID = character->EntityId;
-                Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * sm->NumValidStatuses);
+                Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * (uint)statusCount);
                 continue;
             }
 
             // Existing object
             // Check status change
             Status status;
-            var isChange = false;
-            for(var j = 0; j < sm->NumValidStatuses; ++j)
+            for(var j = 0; j < statusCount; ++j)
             {
+                // 逐格判斷：同一幀別格的得失不能吃掉這一格的層數變化（快取在迴圈後會被覆蓋，漏了就永遠漏）。
+                var isChange = false;
                 if(_CharacterStatusInfoPtr[i].StatusPtr[j].StatusId != statusArray[j].StatusId)
                 {
                     if(_CharacterStatusInfoPtr[i].StatusPtr[j].StatusId == 0)
@@ -179,7 +191,7 @@ internal unsafe class BuffEffectProcessor : IDisposable
             }
 
             // Update status
-            Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * sm->NumValidStatuses);
+            Unsafe.CopyBlock(&_CharacterStatusInfoPtr[i].StatusPtr[0], &statusArray[0], (uint)sizeof(FFXIVClientStructs.FFXIV.Client.Game.Status) * (uint)statusCount);
         }
     }
 
@@ -205,9 +217,9 @@ internal unsafe class BuffEffectProcessor : IDisposable
             ElementTrigger = $"[{prefix}]{gameObjectCharactor->NameId}:{data->StatusId}";
         }
 
-        if(gameObjectCharactor->EntityId == Svc.ClientState.LocalPlayer?.EntityId)
+        if(gameObjectCharactor->EntityId == Svc.Objects.LocalPlayer?.EntityId)
         {
-            text = $"You gains the effect of {data->StatusId} Param: {data->Param} ([{prefix}]You:{data->StatusId}:{Svc.ClientState.LocalPlayer.GetJob().ToString()})";
+            text = $"You gains the effect of {data->StatusId} Param: {data->Param} ([{prefix}]You:{data->StatusId}:{Svc.Objects.LocalPlayer.GetJob().ToString()})";
             P.ChatMessageQueue.Enqueue(text);
         }
 

@@ -15,7 +15,7 @@ public unsafe sealed class UWU_Feather_Rain : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [Raids.the_Weapons_Refrain_Ultimate];
 
-    public override Metadata? Metadata => new(2, "NightmareXIV");
+    public override Metadata? Metadata => new(3, "NightmareXIV");
 
     public override void OnSetup()
     {
@@ -42,7 +42,7 @@ public unsafe sealed class UWU_Feather_Rain : SplatoonScript
 
     public override void OnActorControl(uint sourceId, uint command, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, ulong targetId, byte replaying)
     {
-        if(sourceId.GetObject() is IBattleNpc n && n.DataId.EqualsAny(8722u, 8723u))
+        if(sourceId.GetObject() is IBattleNpc n && n.BaseId.EqualsAny(8722u, 8723u))
         {
             if(command == 407 && p1 == 7738)
             {

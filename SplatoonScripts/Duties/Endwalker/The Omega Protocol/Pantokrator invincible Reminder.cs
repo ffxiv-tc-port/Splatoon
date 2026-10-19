@@ -3,7 +3,7 @@ using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.SplatoonAPI;
 using ECommons.Throttlers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 internal class Pantokrator_invincible_Reminder : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(1, "Redmoon");
+    public override Metadata? Metadata => new(2, "Redmoon");
 
     private const uint kPantokrator = 31499;
     private const uint kAtomicRay = 31480;
@@ -36,7 +36,7 @@ internal class Pantokrator_invincible_Reminder : SplatoonScript
         var sourceObj = source.GetObject();
         if(sourceObj == null)
             return;
-        if(sourceObj.DataId != 15708)
+        if(sourceObj.BaseId != 15708)
             return;
 
         if(castId == kPantokrator)

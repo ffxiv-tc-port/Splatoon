@@ -1,6 +1,6 @@
 [Script] Feather Rain 
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Stormblood/UWU%20Feather%20Rain.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Stormblood/UWU%20Feather%20Rain.cs
 ```
 
 Marks BOTH potential safespots for Titan's Upheaval Knockback. You will still have to determine the correct one yourself.

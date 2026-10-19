@@ -7,10 +7,11 @@ using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.Hooks;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.MathHelpers;
 using ECommons.PartyFunctions;
 using ECommons.Schedulers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 public unsafe class Program_Loop : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(15, "NightmareXIV");
+    public override Metadata? Metadata => new(17, "NightmareXIV");
     private Config Conf => Controller.GetConfig<Config>();
     private HashSet<uint> TetheredPlayers = [];
     private List<uint> Towers = [];
@@ -118,7 +119,7 @@ public unsafe class Program_Loop : SplatoonScript
             {
                 if(Controller.TryGetElementByName("SelfTetherReminder", out var e))
                 {
-                    if(IsTakingCurrentTether(Svc.ClientState.LocalPlayer.EntityId))
+                    if(IsTakingCurrentTether(Svc.Objects.LocalPlayer.EntityId))
                     {
                         e.Enabled = true;
                         myTether = 0;
@@ -138,7 +139,7 @@ public unsafe class Program_Loop : SplatoonScript
                             SwitchTetherSafeSpots(false);
                         }
 
-                        if(tetheredPlayers.Contains(Svc.ClientState.LocalPlayer.EntityId))
+                        if(tetheredPlayers.Contains(Svc.Objects.LocalPlayer.EntityId))
                         {
                             e.overlayBGColor = Conf.ValidTetherColor.ToUint();
                             e.overlayTextColor = Conf.OverlayTextColor.ToUint();
@@ -244,7 +245,7 @@ public unsafe class Program_Loop : SplatoonScript
             {
                 if(Conf.Towers != TowerStartPoint.Disable_towers && Controller.TryGetElementByName("SelfTower", out var e))
                 {
-                    if(IsTakingCurrentTower(Svc.ClientState.LocalPlayer.EntityId))
+                    if(IsTakingCurrentTower(Svc.Objects.LocalPlayer.EntityId))
                     {
                         e.Enabled = true;
                         e.color = GradientColor.Get(Conf.TowerColor1, Conf.TowerColor2).ToUint();
@@ -358,7 +359,7 @@ public unsafe class Program_Loop : SplatoonScript
                 {
                     //PluginLog.Information($"Event obj spawn: {obj} {obj.DataId}");
                 }
-                if(obj.DataId == 2013244 && GetOmega() != null)
+                if(obj.BaseId == 2013244 && GetOmega() != null)
                 {
                     Towers.Add(obj.EntityId);
                     if(TowerOrder.Count == 0)
@@ -518,7 +519,7 @@ public unsafe class Program_Loop : SplatoonScript
             ImGui.SetNextItemWidth(150f);
             ImGui.InputTextWithHint("##newplayer", "Name without world", ref NewPlayer, 50);
             ImGui.SameLine();
-            if(ImGui.Button("Add"))
+            if(ImGui.Button("Add".Loc()))
             {
                 Conf.Swappers.Add(NewPlayer);
                 NewPlayer = "";

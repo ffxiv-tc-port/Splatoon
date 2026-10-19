@@ -5,7 +5,7 @@ Contributions by `constmar`, `.leathen.`, and `limiana`.
 ## [Script] Projection of Triumph
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/EX2%20Projection%20of%20Triumph.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/EX2%20Projection%20of%20Triumph.cs
 ```
 
 ## [International] Multidirectional Divide

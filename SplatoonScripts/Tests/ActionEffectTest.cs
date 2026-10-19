@@ -6,7 +6,7 @@ using ECommons.GameHelpers;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -18,6 +18,7 @@ namespace SplatoonScriptsOfficial.Tests;
 public unsafe class ActionEffectTest : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories { get; } = [];
+    public override Metadata Metadata => new(1, "NightmareXIV");
 
     public override void OnActionEffectEvent(ActionEffectSet set)
     {
@@ -25,13 +26,13 @@ public unsafe class ActionEffectTest : SplatoonScript
         {
             PluginLog.Information($"Cast {set.Action?.RowId} on {set.Source}");
         }
-        if(set.Target?.Address == Player.Object.Address)
+        //if(set.Target?.Address == Player.Object.Address)
         {
             foreach(var effect in set.TargetEffects)
             {
                 for(var i = 0; i < set.Header.TargetCount; i++)
                 {
-                    //PluginLog.Information($"{effect[i]}={effect[i].Damage}/{effect[i].mult}");
+                    PluginLog.Information($"{effect[i]}={effect[i].Damage}/{effect[i].mult}");
                 }
             }
         }

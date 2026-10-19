@@ -166,7 +166,6 @@ internal unsafe partial class CGui
         ImGuiUtils.SizedText("Conditional:".Loc(), WidthElement);
         ImGui.SameLine();
 
-        ImGui.SameLine();
         ImGui.Checkbox("##Conditional", ref el.Conditional);
         ImGuiEx.HelpMarker("""
             Conditional element will serve as conditional trigger for any elements lower than this in current layout. 
@@ -181,12 +180,19 @@ internal unsafe partial class CGui
             - - AND mode will display nothing at all. 
 
             Conditional elements may serve as normal elements and display information on their own, or simply be hidden service elements.
-            """);
+            """.Loc());
         ImGui.SameLine();
-        ImGui.Checkbox("Invert condition", ref el.ConditionalInvert);
+        ImGui.Checkbox("Invert condition".Loc(), ref el.ConditionalInvert);
         ImGui.SameLine();
-        ImGui.Checkbox("Reset condition", ref el.ConditionalReset);
-        ImGuiEx.HelpMarker("Upon reaching this element, previous conditions will be reset");
+        ImGui.Checkbox("Reset condition".Loc(), ref el.ConditionalReset);
+        ImGuiEx.HelpMarker("Upon reaching this element, previous conditions will be reset".Loc());
+
+
+        ImGuiUtils.SizedText("Attributes:".Loc(), WidthElement);
+        ImGui.SameLine();
+        ImGui.Checkbox("Capturing".Loc(), ref el.IsCapturing);
+        ImGui.SameLine();
+        ImGui.Checkbox("No Draw".Loc(), ref el.Nodraw);
 
         ImGuiUtils.SizedText("Name:".Loc(), WidthElement);
         ImGui.SameLine();
@@ -325,7 +331,7 @@ internal unsafe partial class CGui
                     {
                         for(var s = 1; s <= 8; s++)
                         {
-                            if(ImGui.Selectable($"<{s}>", false, ImGuiSelectableFlags.DontClosePopups)) el.refActorPlaceholder.Add($"<{s}>");
+                            if(ImGui.Selectable($"<{s}>", el.refActorPlaceholder.Contains("<{s}>"), ImGuiSelectableFlags.DontClosePopups)) el.refActorPlaceholder.Toggle($"<{s}>");
                         }
                         if(ImGui.Selectable("2-8", false, ImGuiSelectableFlags.DontClosePopups))
                         {
@@ -414,7 +420,7 @@ internal unsafe partial class CGui
                     ImGuiEx.InputUint("##nameplateiconid", ref el.refActorNamePlateIconID);
                     if(ImGui.IsItemHovered())
                     {
-                        ImGui.SetTooltip("Decimal input");
+                        ImGui.SetTooltip("Decimal input".Loc());
                     }
                 }
 
@@ -424,7 +430,7 @@ internal unsafe partial class CGui
                     if(ImGui.Button("Target".Loc() + "##btarget"))
                     {
                         el.refActorNameIntl.CurrentLangString = Svc.Targets.Target.Name.ToString();
-                        el.refActorDataID = Svc.Targets.Target.DataId;
+                        el.refActorDataID = Svc.Targets.Target.BaseId;
                         el.refActorObjectID = Svc.Targets.Target.EntityId;
                         if(Svc.Targets.Target is ICharacter c)
                         {
@@ -435,6 +441,12 @@ internal unsafe partial class CGui
                         el.refActorNamePlateIconID = Svc.Targets.Target.Struct()->NamePlateIconId;
                     }
                 }
+
+                ImGuiUtils.SizedText("Target alteration:".Loc(), WidthElement);
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(200f);
+                ImGuiEx.EnumCombo("##alter", ref el.TargetAlteration, names: LocEnum.Names<TargetAlteration>());
+
                 ImGuiUtils.SizedText("Targetability: ".Loc(), WidthElement);
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(100f);
@@ -486,7 +498,7 @@ internal unsafe partial class CGui
                 if(ImGui.Selectable("While casting".Loc())) el.refActorCastReverse = false;
                 if(ImGui.Selectable("While NOT casting".Loc())) el.refActorCastReverse = true;
                 ImGui.Separator();
-                if(ImGui.Selectable("Paste from clipboard##castinfo"))
+                if(ImGui.Selectable("Paste from clipboard".Loc() + "##castinfo"))
                 {
                     try
                     {
@@ -624,45 +636,75 @@ internal unsafe partial class CGui
             if(el.LimitDistance)
             {
                 ImGui.SameLine();
-                ImGuiEx.Text("X:");
+                ImGuiEx.ButtonCheckbox(FontAwesomeIcon.Bullseye, ref el.UseDistanceSourcePlaceholder);
+                ImGuiEx.Tooltip($"Check distance against placeholder instead of fixed coordinates. Multiple entries are treated as combined with \"or\".".Loc());
+
                 ImGui.SameLine();
-                ImGui.SetNextItemWidth(60f);
-                ImGui.DragFloat("##distX", ref el.DistanceSourceX, 0.02f, float.MinValue, float.MaxValue);
-                ImGui.SameLine();
-                ImGuiEx.Text("Y:");
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(60f);
-                ImGui.DragFloat("##distY", ref el.DistanceSourceY, 0.02f, float.MinValue, float.MaxValue);
-                ImGui.SameLine();
-                ImGuiEx.Text("Z:");
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(60f);
-                ImGui.DragFloat("##distZ", ref el.DistanceSourceZ, 0.02f, float.MinValue, float.MaxValue);
-                ImGui.SameLine();
-                if(ImGuiEx.IconButton(FontAwesomeIcon.Circle, "0 0 0##dist"))
+
+                if(el.UseDistanceSourcePlaceholder)
                 {
-                    el.DistanceSourceX = 0;
-                    el.DistanceSourceY = 0;
-                    el.DistanceSourceZ = 0;
+                    ImGui.SetNextItemWidth(200f);
+                    ImGuiEx.InputListString("##pholder2", el.DistanceSourcePlaceholder);
+                    ImGui.SameLine();
+                    if(ImGuiEx.IconButton(FontAwesomeIcon.AngleDoubleDown))
+                    {
+                        ImGui.OpenPopup("PlaceholderFastSelect2");
+                    }
+                    if(ImGui.BeginPopup("PlaceholderFastSelect2"))
+                    {
+                        foreach(var option in FaceOptions)
+                        {
+                            if(ImGui.Selectable(option, el.DistanceSourcePlaceholder.Contains(option), ImGuiSelectableFlags.DontClosePopups))
+                            {
+                                el.DistanceSourcePlaceholder.Toggle(option);
+                            }
+                        }
+                        ImGui.EndPopup();
+                    }
                 }
-                ImGuiEx.Tooltip("0 0 0");
-                ImGui.SameLine();
-                if(ImGuiEx.IconButton(FontAwesomeIcon.MapMarked, "My position".Loc() + "##dist"))
+                else
                 {
-                    el.DistanceSourceX = Utils.GetPlayerPositionXZY().X;
-                    el.DistanceSourceY = Utils.GetPlayerPositionXZY().Y;
-                    el.DistanceSourceZ = Utils.GetPlayerPositionXZY().Z;
+                    ImGuiEx.Text("X:");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(60f);
+                    ImGui.DragFloat("##distX", ref el.DistanceSourceX, 0.02f, float.MinValue, float.MaxValue);
+                    ImGui.SameLine();
+                    ImGuiEx.Text("Y:");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(60f);
+                    ImGui.DragFloat("##distY", ref el.DistanceSourceY, 0.02f, float.MinValue, float.MaxValue);
+                    ImGui.SameLine();
+                    ImGuiEx.Text("Z:");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(60f);
+                    ImGui.DragFloat("##distZ", ref el.DistanceSourceZ, 0.02f, float.MinValue, float.MaxValue);
+                    ImGui.SameLine();
+                    if(ImGuiEx.IconButton(FontAwesomeIcon.Circle, "0 0 0##dist"))
+                    {
+                        el.DistanceSourceX = 0;
+                        el.DistanceSourceY = 0;
+                        el.DistanceSourceZ = 0;
+                    }
+                    ImGuiEx.Tooltip("0 0 0");
+                    ImGui.SameLine();
+                    if(ImGuiEx.IconButton(FontAwesomeIcon.MapMarked, "My position".Loc() + "##dist"))
+                    {
+                        el.DistanceSourceX = Utils.GetPlayerPositionXZY().X;
+                        el.DistanceSourceY = Utils.GetPlayerPositionXZY().Y;
+                        el.DistanceSourceZ = Utils.GetPlayerPositionXZY().Z;
+                    }
+                    ImGuiEx.Tooltip("My position");
+                    ImGui.SameLine();
+                    if(ImGuiEx.IconButton(FontAwesomeIcon.MousePointer, "Screen2World".Loc() + "##dist"))
+                    {
+                        SetCursorTo(el.DistanceSourceX, el.DistanceSourceY, el.DistanceSourceZ);
+                        p.BeginS2W(el, "DistanceSourceX", "DistanceSourceY", "DistanceSourceZ");
+                    }
+                    ImGuiEx.Tooltip("Select on screen".Loc());
+                    ImGui.SameLine();
+                    DrawRounding(ref el.DistanceSourceX, ref el.DistanceSourceY, ref el.DistanceSourceZ);
                 }
-                ImGuiEx.Tooltip("My position");
-                ImGui.SameLine();
-                if(ImGuiEx.IconButton(FontAwesomeIcon.MousePointer, "Screen2World".Loc() + "##dist"))
-                {
-                    SetCursorTo(el.DistanceSourceX, el.DistanceSourceY, el.DistanceSourceZ);
-                    p.BeginS2W(el, "DistanceSourceX", "DistanceSourceY", "DistanceSourceZ");
-                }
-                ImGuiEx.Tooltip("Select on screen".Loc());
-                ImGui.SameLine();
-                DrawRounding(ref el.DistanceSourceX, ref el.DistanceSourceY, ref el.DistanceSourceZ);
+
                 ImGuiUtils.SizedText("", WidthElement);
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(50f);
@@ -701,6 +743,23 @@ internal unsafe partial class CGui
                 {
                     el.RotationMax = (180 - rot2).DegreesToRadians();
                 }
+            }
+
+            ImGuiUtils.SizedText("Hitbox radius".Loc(), WidthElement);
+            ImGui.SameLine();
+            ImGui.Checkbox("##hitboxR", ref el.UseHitboxRadius);
+            if(el.UseHitboxRadius)
+            {
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(50f);
+                ImGui.DragFloat("##hitboxRmin", ref el.HitboxRadiusMin);
+
+                ImGui.SameLine();
+                ImGuiEx.Text("-");
+                ImGui.SameLine();
+
+                ImGui.SetNextItemWidth(50f);
+                ImGui.DragFloat("##hitboxRmax", ref el.HitboxRadiusMax);
             }
 
             if(el.refActorType == 0)
@@ -776,43 +835,76 @@ internal unsafe partial class CGui
             if(el.refActorTether)
             {
                 ImGui.SameLine();
-                ImGui.SetNextItemWidth(50f);
-                ImGui.DragFloat("##tetherlife1", ref el.refActorTetherTimeMin, 0.1f, 0f, float.MaxValue);
-                ImGui.SameLine();
-                ImGuiEx.Text("-");
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(50f);
-                ImGui.DragFloat("##tetherlife2", ref el.refActorTetherTimeMax, 0.1f, 0f, float.MaxValue);
-                ImGui.SameLine();
-                ImGuiEx.Text("(in seconds)".Loc());
+                ImGui.Checkbox("Realtime".Loc(), ref el.refActorIsTetherLive);
+                ImGuiEx.HelpMarker("Instead of historical tether, checks for tether that is present in real time. Only param 2 (tether id) is available; additionally, no time limits can be set.".Loc());
+                if(!el.refActorIsTetherLive)
+                {
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(50f);
+                    ImGui.DragFloat("##tetherlife1", ref el.refActorTetherTimeMin, 0.1f, 0f, float.MaxValue);
+                    ImGui.SameLine();
+                    ImGuiEx.Text("-");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(50f);
+                    ImGui.DragFloat("##tetherlife2", ref el.refActorTetherTimeMax, 0.1f, 0f, float.MaxValue);
+                    ImGui.SameLine();
+                    ImGuiEx.Text("(in seconds)".Loc());
+                }
 
                 ImGuiUtils.SizedText("         " + "Params:".Loc(), WidthElement);
+                if(el.refActorIsTetherLive)
+                {
+                    ImGui.BeginDisabled();
+                    ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 0.25f);
+                }
                 ImGui.SameLine();
                 ImGuiEx.InputInt(100f, "##param1", ref el.refActorTetherParam1);
+                if(el.refActorIsTetherLive)
+                {
+                    ImGui.PopStyleVar();
+                    ImGui.EndDisabled();
+                }
                 ImGui.SameLine();
                 ImGuiEx.InputInt(100f, "##param2", ref el.refActorTetherParam2);
                 ImGui.SameLine();
+                if(el.refActorIsTetherLive)
+                {
+                    ImGui.BeginDisabled();
+                    ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 0.25f);
+                }
                 ImGuiEx.InputInt(100f, "##param3", ref el.refActorTetherParam3);
+                if(el.refActorIsTetherLive)
+                {
+                    ImGui.PopStyleVar();
+                    ImGui.EndDisabled();
+                }
 
                 ImGuiUtils.SizedText("", WidthElement);
                 ImGui.SameLine();
-                ImGuiEx.Checkbox("Source", ref el.refActorIsTetherSource);
-                ImGuiEx.HelpMarker("Checked - only check if object is tether source; unchecked - only check if object is tether target; dot - check if object is either tether source or target.");
+                ImGuiEx.Checkbox("Source".Loc(), ref el.refActorIsTetherSource);
+                ImGuiEx.HelpMarker("Checked - only check if object is tether source; unchecked - only check if object is tether target; dot - check if object is either tether source or target.".Loc());
                 ImGui.SameLine();
-                ImGui.Checkbox("Invert condition##tether", ref el.refActorIsTetherInvert);
+                ImGui.Checkbox("Invert condition".Loc() + "##tether", ref el.refActorIsTetherInvert);
 
                 ImGuiUtils.SizedText("         " + "Connected with:".Loc(), WidthElement);
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(200f);
                 ImGuiEx.InputListString("##pholderConnectedWith", el.refActorTetherConnectedWithPlayer);
                 ImGui.SameLine();
-                ImGuiEx.Text("Empty = with any");
+                ImGuiEx.Text("Empty = with any".Loc());
             }
         }
 
         if(el.type.EqualsAny(0, 2, 3, 5))
         {
             ImGuiUtils.SizedText((el.type == 2 || el.type == 3) ? "Point A".Loc() : "Reference position: ".Loc(), WidthElement);
+            if((el.type == 2 || el.type == 3) && el.offX == el.refX && el.offY == el.refY && el.offZ == el.refZ)
+            {
+                if(el.coneAngleMin >= el.coneAngleMax)
+                {
+                    ImGuiEx.HelpMarker("Point A equals Point B. Nothing will be drawn. ".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+                }
+            }
             ImGui.SameLine();
             ImGuiEx.Text("X:");
             ImGui.SameLine();
@@ -976,6 +1068,10 @@ internal unsafe partial class CGui
         if(el.type.EqualsAny(4, 5))
         {
             ImGuiUtils.SizedText("Angle:".Loc(), WidthElement);
+            if(el.coneAngleMin >= el.coneAngleMax)
+            {
+                ImGuiEx.HelpMarker("Minimum cone angle is higher than maximum cone angle; nothing will be drawn. Please correct this issue".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+            }
             ImGui.SameLine();
             ImGui.SetNextItemWidth(50f);
             ImGui.DragInt("##angle", ref el.coneAngleMin, 0.1f);
@@ -1008,122 +1104,135 @@ internal unsafe partial class CGui
             DrawRounding(ref el.offX, ref el.offY, ref el.offZ);
         }
 
-        var style = el.GetDisplayStyle();
-        if(ImGuiUtils.StyleEdit("Style", ref style))
+        if(!el.Nodraw)
         {
-            el.SetDisplayStyle(style);
-        }
-        using(ImRaii.Disabled(!el.Filled))
-        {
-            if(el.type.EqualsAny(1, 3, 4) && el.Filled)
+            var style = el.GetDisplayStyle();
+            if(ImGuiUtils.StyleEdit("Style", ref style))
             {
-                var canSetCastAnimation = el.refActorRequireCast && el.ConfiguredRenderEngineKind() == RenderEngineKind.DirectX11;
-                using(ImRaii.Disabled(!canSetCastAnimation))
+                el.SetDisplayStyle(style);
+            }
+            using(ImRaii.Disabled(!el.Filled))
+            {
+                if(el.type.EqualsAny(1, 3, 4) && el.Filled)
                 {
-                    ImGuiUtils.SizedText("Cast Animation:".Loc(), WidthElement);
-                    ImGui.SameLine();
-                }
-                ImGuiEx.HelpMarker("Choose a cast animation for this element. Requires 'While Casting' checked.\nUnsupported in ImGui Legacy renderer");
-                ImGui.SameLine();
-                using(ImRaii.Disabled(!canSetCastAnimation))
-                {
-                    ImGui.SetNextItemWidth(WidthElement);
-                    ImGuiUtils.EnumCombo("##castanimation", ref el.castAnimation, CastAnimations.Names, CastAnimations.Tooltips);
-                    using(ImRaii.Disabled(el.castAnimation is CastAnimationKind.Unspecified))
+                    var canSetCastAnimation = el.refActorRequireCast && el.ConfiguredRenderEngineKind() == RenderEngineKind.DirectX11;
+                    using(ImRaii.Disabled(!canSetCastAnimation))
                     {
+                        ImGuiUtils.SizedText("Cast Animation:".Loc(), WidthElement);
                         ImGui.SameLine();
-                        ImGuiEx.Text("Color:".Loc());
-                        ImGui.SameLine();
-                        var v4 = ImGui.ColorConvertU32ToFloat4(el.animationColor);
-                        if(ImGui.ColorEdit4("##animationcolorbutton", ref v4, ImGuiColorEditFlags.NoInputs))
+                    }
+                    ImGuiEx.HelpMarker("Choose a cast animation for this element. Requires 'While Casting' checked.\nUnsupported in ImGui Legacy renderer".Loc());
+                    ImGui.SameLine();
+                    using(ImRaii.Disabled(!canSetCastAnimation))
+                    {
+                        ImGui.SetNextItemWidth(WidthElement);
+                        ImGuiUtils.EnumCombo("##castanimation", ref el.castAnimation, CastAnimations.Names, CastAnimations.Tooltips);
+                        using(ImRaii.Disabled(el.castAnimation is CastAnimationKind.Unspecified))
                         {
-                            el.animationColor = ImGui.ColorConvertFloat4ToU32(v4);
-                        }
-                        ImGui.SameLine();
-                        if(ImGui.Button("Copy".Loc() + "##copyfromstroke"))
-                        {
-                            el.animationColor = style.strokeColor;
-                        }
-                        if(ImGui.IsItemHovered())
-                        {
-                            ImGui.SetTooltip("Copy Stroke Color".Loc());
-                        }
-                        if(el.castAnimation is CastAnimationKind.Pulse)
-                        {
-                            ImGuiUtils.SizedText("Pulse:".Loc(), WidthElement);
                             ImGui.SameLine();
+                            ImGuiEx.Text("Color:".Loc());
+                            ImGui.SameLine();
+                            var v4 = ImGui.ColorConvertU32ToFloat4(el.animationColor);
+                            if(ImGui.ColorEdit4("##animationcolorbutton", ref v4, ImGuiColorEditFlags.NoInputs))
+                            {
+                                el.animationColor = ImGui.ColorConvertFloat4ToU32(v4);
+                            }
+                            ImGui.SameLine();
+                            if(ImGui.Button("Copy".Loc() + "##copyfromstroke"))
+                            {
+                                el.animationColor = style.strokeColor;
+                            }
+                            if(ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+                            {
+                                // 這裡還在 ImRaii.Disabled 區段內，不把 Alpha 推回 1 說明框會跟著變淡。
+                                // ImRaii.PushStyle 的多載牽涉 ImPlot 組件（本專案沒參考），所以直接 new ImRaii.Style()。
+                                using var tooltipAlpha = new ImRaii.Style().Push(ImGuiStyleVar.Alpha, 1f);
+                                ImGui.SetTooltip("Copy Stroke Color".Loc());
+                            }
+                            if(el.castAnimation is CastAnimationKind.Pulse)
+                            {
+                                ImGuiUtils.SizedText("Pulse:".Loc(), WidthElement);
+                                ImGui.SameLine();
 
-                            ImGuiEx.Text("Size:".Loc());
-                            ImGui.SameLine();
-                            ImGui.SetNextItemWidth(60f);
-                            el.pulseSize = MathF.Min(el.pulseSize, el.EffectiveLength());
-                            ImGui.DragFloat("##animationsize", ref el.pulseSize, 0.01f, 0.1f, el.EffectiveLength());
-                            ImGui.SameLine();
+                                ImGuiEx.Text("Size:".Loc());
+                                ImGui.SameLine();
+                                ImGui.SetNextItemWidth(60f);
+                                el.pulseSize = MathF.Min(el.pulseSize, el.EffectiveLength());
+                                ImGui.DragFloat("##animationsize", ref el.pulseSize, 0.01f, 0.1f, el.EffectiveLength());
+                                ImGui.SameLine();
 
-                            ImGuiEx.Text("Frequency (s):".Loc());
-                            ImGui.SameLine();
-                            ImGui.SetNextItemWidth(60f);
-                            ImGui.DragFloat("##animationfreq", ref el.pulseFrequency, 0.01f, 1, 10);
+                                ImGuiEx.Text("Frequency (s):".Loc());
+                                ImGui.SameLine();
+                                ImGui.SetNextItemWidth(60f);
+                                ImGui.DragFloat("##animationfreq", ref el.pulseFrequency, 0.01f, 1, 10);
+                            }
                         }
                     }
                 }
             }
         }
-        if((el.type != 3) || el.includeRotation)
+        if(!el.Nodraw)
         {
-            if(!(el.type == 3 && !el.includeRotation))
+            ImGuiUtils.SizedText("Radius:".Loc(), WidthElement);
+
+            if(el.radius == 0.35f)
             {
-                ImGuiUtils.SizedText("Radius:".Loc(), WidthElement);
+                ImGuiEx.HelpMarker("Radius is not changed; is this intended?".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+            }
+            else if(!el.type.EqualsAny(0,1) && el.radius == 0f)
+            {
+                ImGuiEx.HelpMarker("Radius is not changed; is this intended?".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString(), preserveCursor: true);
+            }
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(60f);
+            ImGui.DragFloat("##radius", ref el.radius, 0.01f, 0, float.MaxValue);
+            if(ImGui.IsItemHovered())
+                ImGui.SetTooltip("Leave at 0 to draw single dot".Loc());
+            if(el.type == 1 || el.type == 3 || el.type == 4)
+            {
+                if(el.refActorType != 1)
+                {
+                    ImGui.SameLine();
+                    ImGui.Checkbox("+target hitbox".Loc(), ref el.includeHitbox);
+                }
+                ImGui.SameLine();
+                ImGui.Checkbox("+your hitbox".Loc(), ref el.includeOwnHitbox);
+                ImGui.SameLine();
+                ImGuiEx.Text("(?)");
+                if(ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip(("When the game tells you that ability A has distance D,\n" +
+                        "in fact it means that you are allowed to execute\n" +
+                        "ability A if distance between edge of your hitbox\n" +
+                        "and enemy's hitbox is less or equal than distance D,\n" +
+                        "that is for targeted abilities.\n" +
+                        "If an ability is AoE, such check is performed between\n" +
+                        "middle point of your character and edge of enemy's hitbox.\n\n" +
+                        "Summary: if you are trying to make targeted ability indicator -\n" +
+                        "enable both \"+your hitbox\" and \"+target hitbox\".\n" +
+                        "If you are trying to make AoE ability indicator - \n" +
+                        "enable only \"+target hitbox\" to make indicators valid.").Loc());
+                }
+            }
+            if(el.type.EqualsAny(0, 1, 4, 5))
+            {
+                ImGui.SameLine();
+                ImGuiEx.Text("Donut:".Loc());
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(60f);
-                ImGui.DragFloat("##radius", ref el.radius, 0.01f, 0, float.MaxValue);
+                ImGui.DragFloat("##radiusdonut", ref el.Donut, 0.01f, 0, float.MaxValue);
                 if(ImGui.IsItemHovered())
-                    ImGui.SetTooltip("Leave at 0 to draw single dot".Loc());
-                if(el.type == 1 || (el.type == 3 && el.includeRotation) || el.type == 4)
-                {
-                    if(el.refActorType != 1)
-                    {
-                        ImGui.SameLine();
-                        ImGui.Checkbox("+target hitbox".Loc(), ref el.includeHitbox);
-                    }
-                    ImGui.SameLine();
-                    ImGui.Checkbox("+your hitbox".Loc(), ref el.includeOwnHitbox);
-                    ImGui.SameLine();
-                    ImGuiEx.Text("(?)");
-                    if(ImGui.IsItemHovered())
-                    {
-                        ImGui.SetTooltip(("When the game tells you that ability A has distance D,\n" +
-                            "in fact it means that you are allowed to execute\n" +
-                            "ability A if distance between edge of your hitbox\n" +
-                            "and enemy's hitbox is less or equal than distance D,\n" +
-                            "that is for targeted abilities.\n" +
-                            "If an ability is AoE, such check is performed between\n" +
-                            "middle point of your character and edge of enemy's hitbox.\n\n" +
-                            "Summary: if you are trying to make targeted ability indicator -\n" +
-                            "enable both \"+your hitbox\" and \"+target hitbox\".\n" +
-                            "If you are trying to make AoE ability indicator - \n" +
-                            "enable only \"+target hitbox\" to make indicators valid.").Loc());
-                    }
-                }
-                if(el.type.EqualsAny(0, 1, 4, 5))
-                {
-                    ImGui.SameLine();
-                    ImGuiEx.Text("Donut:".Loc());
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(60f);
-                    ImGui.DragFloat("##radiusdonut", ref el.Donut, 0.01f, 0, float.MaxValue);
-                    if(ImGui.IsItemHovered())
-                        ImGui.SetTooltip("Leave at 0 to not draw a donut.\n" +
-                            "If greater than 0, the radius is the donut hole radius\n" +
-                            "and this is the thickness of the donut.".Loc());
-                    el.Donut.ValidateRange(0, float.MaxValue);
-                }
+                    ImGui.SetTooltip("Leave at 0 to not draw a donut.\n" +
+                        "If greater than 0, the radius is the donut hole radius\n" +
+                        "and this is the thickness of the donut.".Loc());
+                el.Donut.ValidateRange(0, float.MaxValue);
             }
+
             if(el.type != 2 && el.type != 3)
             {
                 ImGuiUtils.SizedText("Tether:".Loc(), WidthElement);
                 ImGui.SameLine();
-                ImGui.Checkbox("Enable##TetherEnable", ref el.tether);
+                ImGui.Checkbox("Enable".Loc() + "##TetherEnable", ref el.tether);
                 ImGui.SameLine();
                 ImGuiEx.Text("Extra Length:".Loc());
                 ImGui.SameLine();
@@ -1132,96 +1241,101 @@ internal unsafe partial class CGui
                 if(ImGui.IsItemHovered())
                     ImGui.SetTooltip("Add extra length to the tether to visualize knockbacks.".Loc());
             }
-            var canSetLineEnds = el.tether ||
-                ((el.type == 2 || el.type == 3) && el.radius == 0);
-            if(!canSetLineEnds) ImGui.BeginDisabled();
-            ImGuiUtils.SizedText("Line End Style:".Loc(), WidthElement);
-            ImGui.SameLine();
-            ImGuiEx.Text("A: ".Loc());
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(60f);
-            ImGuiUtils.EnumCombo("##LineEndA", ref el.LineEndA, LineEnds.Names, LineEnds.Tooltips);
-            ImGui.SameLine();
-            ImGuiEx.Text("B: ".Loc());
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(60f);
-            ImGuiUtils.EnumCombo("##LineEndB", ref el.LineEndB, LineEnds.Names, LineEnds.Tooltips);
-            if(!canSetLineEnds) ImGui.EndDisabled();
-        }
-        if(el.type == 0 || el.type == 1 || el.type == 4 || el.type == 5)
-        {
-            ImGuiUtils.SizedText("Overlay text:".Loc(), WidthElement);
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            el.overlayTextIntl.ImGuiEdit(ref el.overlayText, "Text to display as overlay".Loc());
-            if(el.overlayPlaceholders && el.type == 1)
-            {
-                ImGuiUtils.SizedText("", WidthElement);
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$NAME");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$OBJECTID");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$DATAID");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$MODELID");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$HITBOXR");
-                ImGuiUtils.SizedText("", WidthElement);
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$KIND");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$NPCID");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$LIFE");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$NAMEID");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$DISTANCE");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("$TRANSFORM");
-                ImGui.SameLine();
-                ImGuiEx.TextCopy("\\n");
-            }
-            if(!el.overlayTextIntl.IsEmpty() || el.overlayText.Length > 0)
-            {
-                ImGuiUtils.SizedText("", WidthElement);
-                ImGui.SameLine();
-                ImGuiEx.Text("Vertical offset:".Loc());
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(60f);
-                ImGui.DragFloat("##vtextadj", ref el.overlayVOffset, 0.02f);
-                ImGui.SameLine();
-                ImGuiEx.Text("Font scale:".Loc());
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(60f);
-                ImGui.DragFloat("##vtextsize", ref el.overlayFScale, 0.02f, 0.1f, 50f);
-                if(el.overlayFScale < 0.1f) el.overlayFScale = 0.1f;
-                if(el.overlayFScale > 50f) el.overlayFScale = 50f;
 
-                ImGuiUtils.SizedText("", WidthElement);
-                ImGui.SameLine();
-                ImGuiEx.Text("BG color:".Loc());
-                ImGui.SameLine();
-                var v4b = ImGui.ColorConvertU32ToFloat4(el.overlayBGColor);
-                if(ImGui.ColorEdit4("##colorbuttonbg", ref v4b, ImGuiColorEditFlags.NoInputs))
-                {
-                    el.overlayBGColor = ImGui.ColorConvertFloat4ToU32(v4b);
-                }
-                ImGui.SameLine();
-                ImGuiEx.Text("Text color:".Loc());
-                ImGui.SameLine();
-                var v4t = ImGui.ColorConvertU32ToFloat4(el.overlayTextColor);
-                if(ImGui.ColorEdit4("##colorbuttonfg", ref v4t, ImGuiColorEditFlags.NoInputs))
-                {
-                    el.overlayTextColor = ImGui.ColorConvertFloat4ToU32(v4t);
-                }
-            }
-            if(el.type == 1)
+            if(((el.type == 2 || el.type == 3 ) && el.radius == 0) || el.tether)
             {
-                ImGuiUtils.SizedText("", WidthElement);
+                ImGuiUtils.SizedText("Line End Style:".Loc(), WidthElement);
                 ImGui.SameLine();
-                ImGui.Checkbox("Enable placeholders".Loc(), ref el.overlayPlaceholders);
+                ImGuiEx.Text("A: ".Loc());
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(60f);
+                ImGuiUtils.EnumCombo("##LineEndA", ref el.LineEndA, LineEnds.Names, LineEnds.Tooltips);
+                ImGui.SameLine();
+                ImGuiEx.Text("B: ".Loc());
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(60f);
+                ImGuiUtils.EnumCombo("##LineEndB", ref el.LineEndB, LineEnds.Names, LineEnds.Tooltips);
+            }
+        }
+        if(!el.Nodraw)
+        {
+            if(el.type == 0 || el.type == 1 || el.type == 4 || el.type == 5)
+            {
+                ImGuiUtils.SizedText("Overlay text:".Loc(), WidthElement);
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                el.overlayTextIntl.ImGuiEdit(ref el.overlayText, "Text to display as overlay".Loc());
+                if(el.overlayPlaceholders && el.type == 1)
+                {
+                    ImGuiUtils.SizedText("", WidthElement);
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$NAME");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$OBJECTID");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$DATAID");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$MODELID");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$HITBOXR");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$TETHER");
+                    ImGuiUtils.SizedText("", WidthElement);
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$KIND");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$NPCID");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$LIFE");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$NAMEID");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$DISTANCE");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("$TRANSFORM");
+                    ImGui.SameLine();
+                    ImGuiEx.TextCopy("\\n");
+                }
+                if(!el.overlayTextIntl.IsEmpty() || el.overlayText.Length > 0)
+                {
+                    ImGuiUtils.SizedText("", WidthElement);
+                    ImGui.SameLine();
+                    ImGuiEx.Text("Vertical offset:".Loc());
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(60f);
+                    ImGui.DragFloat("##vtextadj", ref el.overlayVOffset, 0.02f);
+                    ImGui.SameLine();
+                    ImGuiEx.Text("Font scale:".Loc());
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(60f);
+                    ImGui.DragFloat("##vtextsize", ref el.overlayFScale, 0.02f, 0.1f, 50f);
+                    if(el.overlayFScale < 0.1f) el.overlayFScale = 0.1f;
+                    if(el.overlayFScale > 50f) el.overlayFScale = 50f;
+
+                    ImGuiUtils.SizedText("", WidthElement);
+                    ImGui.SameLine();
+                    ImGuiEx.Text("BG color:".Loc());
+                    ImGui.SameLine();
+                    var v4b = ImGui.ColorConvertU32ToFloat4(el.overlayBGColor);
+                    if(ImGui.ColorEdit4("##colorbuttonbg", ref v4b, ImGuiColorEditFlags.NoInputs))
+                    {
+                        el.overlayBGColor = ImGui.ColorConvertFloat4ToU32(v4b);
+                    }
+                    ImGui.SameLine();
+                    ImGuiEx.Text("Text color:".Loc());
+                    ImGui.SameLine();
+                    var v4t = ImGui.ColorConvertU32ToFloat4(el.overlayTextColor);
+                    if(ImGui.ColorEdit4("##colorbuttonfg", ref v4t, ImGuiColorEditFlags.NoInputs))
+                    {
+                        el.overlayTextColor = ImGui.ColorConvertFloat4ToU32(v4t);
+                    }
+                }
+                if(el.type == 1)
+                {
+                    ImGuiUtils.SizedText("", WidthElement);
+                    ImGui.SameLine();
+                    ImGui.Checkbox("Enable placeholders".Loc(), ref el.overlayPlaceholders);
+                }
             }
         }
 
@@ -1230,11 +1344,11 @@ internal unsafe partial class CGui
         ImGuiUtils.SizedText("Renderer:".Loc(), WidthElement);
         ImGui.SameLine();
         ImGui.SetNextItemWidth(150f);
-        ImGuiEx.EnumCombo("##renderer", ref el.RenderEngineKind);
+        ImGuiEx.EnumCombo("##renderer", ref el.RenderEngineKind, names: LocEnum.Names<RenderEngineKind>());
 
-        ImGuiUtils.SizedText("Mechanic type:", WidthElement);
-        ImGuiEx.HelpMarker("Choose a mechanic type that best represents this element.\n" +
-                "This is used for automatically setting default colors.\nOnly for DirectX11 renderer.");
+        ImGuiUtils.SizedText("Mechanic type:".Loc(), WidthElement);
+        ImGuiEx.HelpMarker(("Choose a mechanic type that best represents this element.\n" +
+                "This is used for automatically setting default colors.\nOnly for DirectX11 renderer.").Loc());
         ImGui.SameLine();
         ImGui.SetNextItemWidth(WidthElement);
         ImGuiUtils.EnumCombo("##mechtype", ref el.mechanicType, MechanicTypes.Names, MechanicTypes.Tooltips);
@@ -1242,7 +1356,7 @@ internal unsafe partial class CGui
         if((el.type.EqualsAny(0, 1) && el.Donut > 0) || el.type == 4 || (el.type.EqualsAny(2, 3) && (el.radius > 0 || el.includeHitbox || el.includeOwnHitbox)))
         {
             ImGuiUtils.SizedText("Fill step:".Loc(), WidthElement);
-            ImGuiEx.HelpMarker("Only for ImGui Legacy renderer");
+            ImGuiEx.HelpMarker("Only for ImGui Legacy renderer".Loc());
             ImGui.SameLine();
             ImGui.SetNextItemWidth(60f);
             ImGui.DragFloat("##fillstep", ref el.FillStep, 0.001f, 0, float.MaxValue);

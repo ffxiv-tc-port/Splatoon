@@ -1,16 +1,16 @@
 [International] [Script] Classical Concept solver (doesn't includes PS solver)
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P12S%20Classical%20Concepts.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P12S%20Classical%20Concepts.cs
 ```
 
 [International] [Script] Pangenesis helper
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/main/SplatoonScripts/Duties/Endwalker/P12S%20Pangenesis.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P12S%20Pangenesis.cs
 ```
 
 [International] [Script] Caloric theory helper. Displays remaining movement distance (don't push it to the very limit - may be variance due to ping and server ticks)
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/P12S%20Caloric%20Theory.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P12S%20Caloric%20Theory.cs
 ```
 
 

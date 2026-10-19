@@ -12,6 +12,15 @@ namespace Splatoon.Modules;
 internal class Loader
 {
     private const string url = "";
+
+    /// <summary>
+    /// 相容性清單與撤銷清單的來源。撤銷清單是每次啟動都會抓的停用開關 ——
+    /// 指向上游等於把「停用我們這份外掛」的權限交給上游(雙方版本號規則不同,
+    /// 3.x vs 7.20.x 目前不會撞,但那是巧合不是保證)。
+    /// 同樣用 "HEAD" 跟著預設分支,避免分支改名後 404。
+    /// </summary>
+    private const string CompatInfoBaseURL = "https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD";
+
     private Splatoon p;
     private HttpClient client;
     internal volatile Verdict verdict = Verdict.Unknown;
@@ -23,12 +32,12 @@ internal class Loader
     internal Loader(Splatoon p)
     {
         PluginLog.Information("Splatoon loader started");
-        client = new()
-        {
-            Timeout = TimeSpan.FromSeconds(10)
-        };
+        // 自家 repo 轉私有後,這兩份清單要帶 Dalamud 設定裡的 GitHub 權杖才抓得到。
+        // 這個 client 由呼叫端持有,只有下面那條載入執行緒用得到,跑完就 Dispose。
+        client = Svc.PluginInterface.CreateGitHubHttpClient();
+        client.Timeout = TimeSpan.FromSeconds(10);
         this.p = p;
-        Svc.Commands.AddHandler("/loadsplatoon", new(delegate { Load(Svc.Framework); }) { HelpMessage = "Manually load Splatoon" });
+        Svc.Commands.AddHandler("/loadsplatoon", new(delegate { Load(Svc.Framework); }) { HelpMessage = "Manually load Splatoon".Loc() });
         splatoonVersion = p.GetType().Assembly.GetName().Version;
         file = Path.Combine(Svc.PluginInterface.GetPluginConfigDirectory(), "safeVersion.nfo");
         if(DalamudReflector.TryGetDalamudStartInfo(out var startInfo, Svc.PluginInterface))
@@ -52,7 +61,8 @@ internal class Loader
                     if(verdict != Verdict.Confirmed)
                     {
                         PluginLog.Debug("Obtaining version list");
-                        var res = client.GetAsync("https://raw.githubusercontent.com/PunishXIV/Splatoon/main/versions.txt").Result;
+                        var res = client.GetAsync($"{CompatInfoBaseURL}/versions.txt").Result;
+                        OrgDownloadLog.Report("相容性清單", $"{CompatInfoBaseURL}/versions.txt", res);
                         res.EnsureSuccessStatusCode();
                         foreach(var x in res.Content.ReadAsStringAsync().Result.Split("\n"))
                         {
@@ -71,7 +81,8 @@ internal class Loader
                     try
                     {
                         PluginLog.Debug("Obtaining revocation list");
-                        var res = client.GetAsync("https://raw.githubusercontent.com/PunishXIV/Splatoon/main/revocationList.txt").Result;
+                        var res = client.GetAsync($"{CompatInfoBaseURL}/revocationList.txt").Result;
+                        OrgDownloadLog.Report("撤銷清單", $"{CompatInfoBaseURL}/revocationList.txt", res);
                         res.EnsureSuccessStatusCode();
                         foreach(var x in res.Content.ReadAsStringAsync().Result.Split("\n"))
                         {
@@ -113,6 +124,8 @@ internal class Loader
                         Svc.PluginInterface.UiBuilder.Draw += Draw;
                     }
                 });
+                // 兩份清單都抓完了,這個 client 再也沒有使用者 —— 持有權杖的 handler 不要留到 GC。
+                Safe(client.Dispose);
             }).Start();
         }
         else

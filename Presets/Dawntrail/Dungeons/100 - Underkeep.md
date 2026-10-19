@@ -5,5 +5,5 @@ Most of the attacks of bosses 1, 2 and 3
 
 [Script] [Beta] Valia Pira spheres
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/Underkeep_ValiaPira.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/Underkeep_ValiaPira.cs
 ```

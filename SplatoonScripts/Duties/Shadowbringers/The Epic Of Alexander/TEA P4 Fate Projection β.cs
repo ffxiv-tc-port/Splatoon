@@ -34,7 +34,7 @@ public class TEA_P4_Fate_Projection_β : SplatoonScript
     private bool _myDefuffIsYellow;
     private uint? _myFuturePlayer;
 
-    public override Metadata? Metadata => new(2, "Garume");
+    public override Metadata? Metadata => new(3, "Garume");
     public override HashSet<uint>? ValidTerritories => [887];
 
     public override void OnStartingCast(uint source, uint castId)
@@ -167,7 +167,7 @@ public class TEA_P4_Fate_Projection_β : SplatoonScript
     public override void OnActionEffectEvent(ActionEffectSet set)
     {
         if(!_isStartFateProjectionCasting) return;
-        if(set.Source is not { DataId: 0x2C55 }) return;
+        if(set.Source is not { BaseId: 0x2C55 }) return;
         switch(set.Action)
         {
             case { RowId: 18592 }:

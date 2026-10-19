@@ -17,6 +17,7 @@ namespace SplatoonScriptsOfficial.Tests
 {
     public class OmegaMFResearch : SplatoonScript
     {
+        public override Metadata Metadata => new(2, "NightmareXIV");
         private delegate void ProcessActorControlPacket(uint a1, uint a2, uint a3, uint a4, uint a5, uint a6, int a7, uint a8, long a9, byte a10);
         [Signature("40 55 53 41 55 41 56 41 57 48 8D AC 24", DetourName = nameof(ProcessActorControlPacketDetour))]
         private Hook<ProcessActorControlPacket> ProcessActorControlPacketHook;
@@ -35,8 +36,12 @@ namespace SplatoonScriptsOfficial.Tests
 
         public override void OnDisable()
         {
-            ProcessActorControlPacketHook.Disable();
-            ProcessActorControlPacketHook.Dispose();
+            // 先 Disable() 把函式序言還原,擋掉「新的」呼叫進入 detour,再 Dispose()。
+            // 🔴 刻意不把欄位設成 null:仍在飛的 detour 讀到 null 會把 NullReferenceException
+            //    擲回原生呼叫端,比留著已 Dispose 的物件更糟。
+            //    ⚠️ ?. 不能省:特徵碼失配時 SignatureHelper 會讓欄位留在 null。
+            ProcessActorControlPacketHook?.Disable();
+            ProcessActorControlPacketHook?.Dispose();
         }
 
         public override void OnMessage(string Message)
@@ -73,6 +78,12 @@ namespace SplatoonScriptsOfficial.Tests
 
         private void ProcessActorControlPacketDetour(uint a1, uint a2, uint a3, uint a4, uint a5, uint a6, int a7, uint a8, long a9, byte a10)
         {
+            // 🔴 OnDisable() 會 Dispose 這個 hook,但 detour 仍可能在飛(自己的 in-flight 呼叫,或別的外掛把 hook
+            //    疊在同一位址上、經由它的 trampoline 轉進來)。Dispose 之後裸讀 .Original 會把例外擲回原生呼叫端,
+            //    MinHook 後端還是 use-after-free(AVE 攔不到)⇒ 用 .OriginalDisposeSafe(改用函式位址本身重建委派)。
+            // ⚠️ 只對 [Signature] → Hook<T>.FromAddress 型的 hook 成立(Hook.address ＝目標函式位址本身);
+            //    FromImport／FromFunctionPointerVariable 型(address ＝指標變數位址)絕不可照抄 —— 那會把資料當程式碼跳過去。
+            var hook = ProcessActorControlPacketHook;
             try
             {
                 if(a2 == 0x3F)
@@ -87,7 +98,13 @@ namespace SplatoonScriptsOfficial.Tests
                 Values[a1].Add($"{Environment.TickCount64} - {a1:X8}, {a2:X8}, {a3:X8}, {a4:X8}, {a5:X8}, {a6:X8}, {a7:X8}, {a8:X8}, {a9:X16}, {a10:X2}");
             }
             catch(Exception e) { e.Log(); }
-            ProcessActorControlPacketHook.Original(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+            if(hook == null)
+            {
+                // 理論上到不了:hook 建不起來時 detour 根本不會被掛上。真的發生就要看得見。
+                PluginLog.Information("[OmegaMFResearch] hook 在呼叫途中消失,本次跳過原函式呼叫。");
+                return;
+            }
+            hook.OriginalDisposeSafe(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
         }
     }
 }

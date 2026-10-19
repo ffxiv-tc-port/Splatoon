@@ -17,30 +17,37 @@ internal unsafe class ObjectEffectProcessor
     {
         try
         {
-            if(P.Config.Logging)
+            // 🔴 a1 是遊戲直接傳進 detour 的原生指標，下面會對它解參考（Name／EntityId／BaseId／ObjectKind）。
+            // null 時解參考是 AccessViolation —— corrupted-state exception，外層的 catch 攔不到；
+            // (nint)a1 為 0 時還會在 ObjectEffectInfos 裡註冊一筆 key=0 的假紀錄。
+            // 所以 a1 為 null 就整段跳過（不記錄、不派事件），原函式照樣呼叫，不改變遊戲行為。
+            if(a1 != null)
             {
-                var text = $"ObjectEffect: on {a1->Name.Read()} {a1->EntityId.Format()}/{a1->BaseId.Format()} data {a2}, {a3}";
-                Logger.Log(text);
-                if(a1->ObjectKind != FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.Pc) P.LogWindow.Log(text);
+                if(P.Config.Logging)
+                {
+                    var text = $"ObjectEffect: on {a1->Name.Read()} {a1->EntityId.Format()}/{a1->BaseId.Format()} data {a2}, {a3}";
+                    Logger.Log(text);
+                    if(a1->ObjectKind != FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.Pc) P.LogWindow.Log(text);
+                }
+                var ptr = (nint)a1;
+                if(!AttachedInfo.ObjectEffectInfos.ContainsKey(ptr))
+                {
+                    AttachedInfo.ObjectEffectInfos[ptr] = [];
+                }
+                AttachedInfo.ObjectEffectInfos[ptr].Add(new()
+                {
+                    StartTime = Environment.TickCount64,
+                    data1 = a2,
+                    data2 = a3
+                });
+                ScriptingProcessor.OnObjectEffect(a1->EntityId, a2, a3);
             }
-            var ptr = (nint)a1;
-            if(!AttachedInfo.ObjectEffectInfos.ContainsKey(ptr))
-            {
-                AttachedInfo.ObjectEffectInfos[ptr] = [];
-            }
-            AttachedInfo.ObjectEffectInfos[ptr].Add(new()
-            {
-                StartTime = Environment.TickCount64,
-                data1 = a2,
-                data2 = a3
-            });
-            ScriptingProcessor.OnObjectEffect(a1->EntityId, a2, a3);
         }
         catch(Exception e)
         {
             e.Log();
         }
-        return ProcessObjectEffectHook.Original(a1, a2, a3, a4);
+        return ProcessObjectEffectHook.OriginalDisposeSafe(a1, a2, a3, a4);
     }
 
     internal ObjectEffectProcessor()

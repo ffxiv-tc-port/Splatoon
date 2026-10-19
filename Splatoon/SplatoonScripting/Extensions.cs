@@ -59,6 +59,24 @@ public static unsafe class Extensions
     /// <returns></returns>
     public static string GetUniqueId(this Element e, IGameObject? maybeGameObject = null)
     {
-        return e.GUID + maybeGameObject?.GameObjectId;
+        if(maybeGameObject == null) return e.GUID + maybeGameObject?.GameObjectId;
+        // Same string as e.GUID + GameObjectId, kept per element for the last few objects it matched: an attached element asks every frame.
+        var guid = e.GUID;
+        var objectId = maybeGameObject.GameObjectId;
+        var slots = e.UniqueIdCache ??= new UniqueIdEntry[UniqueIdSlots];
+        for(var i = 0; i < slots.Length; i++)
+        {
+            var entry = slots[i];
+            if(entry != null && entry.ObjectId == objectId && ReferenceEquals(entry.Guid, guid)) return entry.Value;
+        }
+        var value = guid + objectId;
+        var next = (uint)e.UniqueIdCacheNext % (uint)slots.Length;
+        slots[next] = new UniqueIdEntry(guid, objectId, value);
+        e.UniqueIdCacheNext = (int)next + 1;
+        return value;
     }
+
+    private const int UniqueIdSlots = 4;
 }
+
+internal sealed record UniqueIdEntry(string? Guid, ulong ObjectId, string Value);

@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.Gui.Dtr;
 using Dalamud.Plugin.Services;
 using ECommons.DalamudServices;
+using ECommons.Reflection;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,23 @@ public class StatusbarFpsSwitcher : SplatoonScript
 
     private IDtrBarEntry Entry;
 
+    public override Metadata? Metadata => new(2, "NightmareXIV");
+
     public override void OnEnable()
     {
         Entry = Svc.DtrBar.Get("Splatoon.FpsSwitcher", "");
         Entry.Shown = true;
-        Entry.OnClick = () =>
+        Entry.Tooltip = "左鍵：切換 30／60 FPS" + "\n" + "右鍵：開啟／關閉 Splatoon 設定";
+        Entry.OnClick = (x) =>
         {
-            Toggle();
+            if(x.ClickType == MouseClickType.Left)
+            {
+                Toggle();
+            }
+            else
+            {
+                ToggleSplatoonSettings();
+            }
         };
         Update();
     }
@@ -53,6 +64,13 @@ public class StatusbarFpsSwitcher : SplatoonScript
         var cfg = Svc.GameConfig.System.GetUInt("Fps");
         Svc.GameConfig.System.Set("Fps", cfg == 3 ? 2u : 3u);
         Update();
+    }
+
+    // 腳本可能比插件先更新，所以不呼叫插件新增的成員；Splatoon 設定視窗的開關是 internal 欄位 ConfigGui.Open。
+    private static void ToggleSplatoonSettings()
+    {
+        var gui = Splatoon.Splatoon.P.GetFoP("ConfigGui");
+        gui.SetFoP("Open", !(bool)gui.GetFoP("Open"));
     }
 
     public override void OnDisable()

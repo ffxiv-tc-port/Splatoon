@@ -22,7 +22,7 @@ internal static class Freezing
             ImGuiEx.HelpMarker("Interval in seconds between creation of new frozen elements.\nA lower number means more elements spawned.".Loc());
             if(layout.IntervalBetweenFreezes < 0.5f)
             {
-                ImGuiEx.HelpMarker("Warning: your interval between freezes is very low. Please ensure that this is intentional.", EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString());
+                ImGuiEx.HelpMarker("Warning: your interval between freezes is very low. Please ensure that this is intentional.".Loc(), EColor.RedBright, FontAwesomeIcon.ExclamationTriangle.ToIconString());
             }
 
             ImGuiEx.Text("Display delay:".Loc());

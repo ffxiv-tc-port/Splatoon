@@ -50,7 +50,7 @@ internal unsafe class TetherProcessor
 
     private long ProcessTetherDetour(VfxContainer* a1, byte a2, ushort a3, long targetOID, byte a5)
     {
-        var ret = ProcessTetherHook.Original(a1, a2, a3, targetOID, a5);
+        var ret = ProcessTetherHook.OriginalDisposeSafe(a1, a2, a3, targetOID, a5);
         try
         {
             if(a1->OwnerObject == null)
@@ -83,7 +83,7 @@ internal unsafe class TetherProcessor
                             break;
                         }
                     }
-                    var targetText = isTargetYou ? "YOU" : (targetObj is IPlayerCharacter pc ? pc.GetJob().ToString() : targetObj?.DataId.ToString() ?? targetOID.ToString());
+                    var targetText = isTargetYou ? "YOU" : (targetObj is IPlayerCharacter pc ? pc.GetJob().ToString() : targetObj?.BaseId.ToString() ?? targetOID.ToString());
                     var text = $"Tether create: TetherSource:{sourceText} TetherParam:({a2}, {a3}, {a5}) TetherTarget:{targetText}";
                     PluginLog.Verbose(text);
                     Logger.Log(text);
@@ -102,7 +102,7 @@ internal unsafe class TetherProcessor
 
     private long ProcessTetherRemovalDetour(VfxContainer* a1, byte a2, ushort a3, byte a4, byte a5)
     {
-        var ret = ProcessTetherRemovalHook.Original(a1, a2, a3, a4, a5);
+        var ret = ProcessTetherRemovalHook.OriginalDisposeSafe(a1, a2, a3, a4, a5);
         try
         {
             if(a1 != null && a1->OwnerObject != null)

@@ -44,7 +44,7 @@ internal static class CGuiConfigurations
         ImGuiEx.SetNextItemFullWidth();
         if(ImGui.BeginCombo("##switchAll", "Switch all displayed layouts/scripts to configuration, if supported:".Loc(), ImGuiComboFlags.HeightLarge))
         {
-            if(ImGui.Selectable("Default Configuration"))
+            if(ImGui.Selectable("Default Configuration".Loc()))
             {
                 requestedConfiguration = Guid.Empty.ToString();
             }

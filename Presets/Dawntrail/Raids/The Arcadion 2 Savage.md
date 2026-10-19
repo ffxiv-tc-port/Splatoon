@@ -11,7 +11,7 @@ Draws a green or red circle around players depending on what mechanic the boss s
 No configuration required.
 
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/R2S%20Venom%20Love%20Pair%20Split.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/R2S%20Venom%20Love%20Pair%20Split.cs
 ```
 
 ## Presets

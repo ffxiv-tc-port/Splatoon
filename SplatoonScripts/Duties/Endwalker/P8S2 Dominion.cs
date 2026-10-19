@@ -11,7 +11,7 @@ using ECommons.Hooks;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P8S2_Dominion : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1088];
-        public override Metadata? Metadata => new(8, "NightmareXIV");
+        public override Metadata? Metadata => new(9, "NightmareXIV");
         private int Stage = 0;
         private List<uint> FirstPlayers = [];
         private List<uint> SecondPlayers = [];
@@ -46,7 +46,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
             //tower cast: 31196
             //debuff:   Earth Resistance Down II (3372)
 
-            if(Svc.ClientState.LocalPlayer == null) return;
+            if(Svc.Objects.LocalPlayer == null) return;
 
             if(Stage == 1)
             {
@@ -117,15 +117,15 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         private void Process(IBattleChara[] towers, List<uint> players)
         {
-            if(players.Contains(Svc.ClientState.LocalPlayer!.EntityId) && Controller.TryGetElementByName("MyTower", out var e))
+            if(players.Contains(Svc.Objects.LocalPlayer!.EntityId) && Controller.TryGetElementByName("MyTower", out var e))
             {
                 var prio = GetPriority().Where(x => players.Select(z => z.GetObject()!.Name.ToString()).Contains(x)).ToArray();
                 if(prio.Length == 2)
                 {
-                    if(prio[0] == Svc.ClientState.LocalPlayer.Name.ToString())
+                    if(prio[0] == Svc.Objects.LocalPlayer.Name.ToString())
                     {
                         e.Enabled = true;
-                        var pos = ((Svc.ClientState.LocalPlayer.GetRole() == CombatRole.DPS) != Controller.GetConfig<Config>().Reverse) ? 2 : 0;
+                        var pos = ((Svc.Objects.LocalPlayer.GetRole() == CombatRole.DPS) != Controller.GetConfig<Config>().Reverse) ? 2 : 0;
                         e.refX = towers[pos].Position.X;
                         e.refY = towers[pos].Position.Z;
                         e.refZ = towers[pos].Position.Y;
@@ -134,7 +134,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
                     else
                     {
                         e.Enabled = true;
-                        var pos = ((Svc.ClientState.LocalPlayer.GetRole() == CombatRole.DPS) != Controller.GetConfig<Config>().Reverse) ? 3 : 1;
+                        var pos = ((Svc.Objects.LocalPlayer.GetRole() == CombatRole.DPS) != Controller.GetConfig<Config>().Reverse) ? 3 : 1;
                         e.refX = towers[pos].Position.X;
                         e.refY = towers[pos].Position.Z;
                         e.refZ = towers[pos].Position.Y;
@@ -146,7 +146,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         private bool IsRoleMatching(IPlayerCharacter pc)
         {
-            if(Svc.ClientState.LocalPlayer.GetRole() == CombatRole.DPS)
+            if(Svc.Objects.LocalPlayer.GetRole() == CombatRole.DPS)
             {
                 return pc.GetRole() == CombatRole.DPS;
             }
@@ -158,7 +158,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         private List<string> GetPriority(bool verbose = false)
         {
-            var x = Controller.GetConfig<Config>().Priorities.FirstOrDefault(z => z.All(n => Svc.Objects.Any(e => e is IPlayerCharacter pc && pc.Name.ToString() == n && (pc.GetRole() == CombatRole.DPS) == (Svc.ClientState.LocalPlayer?.GetRole() == CombatRole.DPS))));
+            var x = Controller.GetConfig<Config>().Priorities.FirstOrDefault(z => z.All(n => Svc.Objects.Any(e => e is IPlayerCharacter pc && pc.Name.ToString() == n && (pc.GetRole() == CombatRole.DPS) == (Svc.Objects.LocalPlayer?.GetRole() == CombatRole.DPS))));
             if(x != null)
             {
                 var t = $"Got priority list: {x.Print()}";

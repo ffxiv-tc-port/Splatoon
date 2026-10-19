@@ -10,7 +10,7 @@
 
 [Script] Limitless Desolation tower highlight. Assumes that tanks and healers take left, and dps - right half.
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/P8S2%20Limitless%20Desolation.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P8S2%20Limitless%20Desolation.cs
 ```
 
 [International] Early see Dominion towers (mechanic after high concept 2)
@@ -20,7 +20,7 @@ https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/
 
 [Script] Highlight your dominion tower. **Requires configuration.**
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Endwalker/P8S2%20Dominion.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/P8S2%20Dominion.cs
 ```
 
 # Untested section

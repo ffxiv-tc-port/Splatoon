@@ -3,11 +3,13 @@ using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -20,7 +22,7 @@ public unsafe class ForceSetDirection : SplatoonScript
     private Vector3 _lastPosition = Vector3.Zero;
     private static ActionManager* ActionManager => FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
     public override HashSet<uint>? ValidTerritories => [];
-    public override Metadata? Metadata => new(4, "Garume");
+    public override Metadata? Metadata => new(6, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -96,13 +98,15 @@ public unsafe class ForceSetDirection : SplatoonScript
                 MathF.Sin((C.Angle <= 270f ? C.Angle - 90f : C.Angle + 270f) * MathF.PI / 180f)),
             Mode.Direction => C.Direction,
             Mode.ToTarget => C.Target - Player.Position.ToVector2(),
-            Mode.Camera => new Vector2(-MathF.Sin(Camera.GetRadianX()), -MathF.Cos(Camera.GetRadianX())),
+            Mode.Camera => CameraAngle.GetRadianX() is float x ? new Vector2(-MathF.Sin(x), -MathF.Cos(x)) : (Vector2?)null,
             _ => Vector2.Zero
         };
+        // 攝影機取不到時不轉向，不拿預設角度硬轉。
+        if(direction is not Vector2 dir) return;
 
         if(EzThrottler.Throttle("FaceDirection", 50))
         {
-            FaceDirection(direction);
+            FaceDirection(dir);
             _lastPosition = Player.Position;
         }
     }
@@ -111,7 +115,7 @@ public unsafe class ForceSetDirection : SplatoonScript
     public override void OnSettingsDraw()
     {
         ImGui.Text("Force the player to face a specific direction.");
-        ImGui.Checkbox("Enabled", ref C.Enabled);
+        ImGui.Checkbox("Enabled".Loc(), ref C.Enabled);
         if(!C.Enabled)
             return;
         ImGui.Indent();
@@ -143,14 +147,8 @@ public unsafe class ForceSetDirection : SplatoonScript
             "Only force the player to face the direction when the player is stopped. \nIt is always recommended to turn it on because it is dangerous!",
             EColor.Red);
         ImGui.Unindent();
-        ImGui.Checkbox("Debug", ref C.Debug);
+        ImGui.Checkbox("Debug".Loc(), ref C.Debug);
     }
-
-    public override void OnSetup()
-    {
-        Camera.Init();
-    }
-
 
     private enum Mode : byte
     {
@@ -173,24 +171,13 @@ public unsafe class ForceSetDirection : SplatoonScript
     }
 }
 
-internal static unsafe class Camera
+internal static unsafe class CameraAngle
 {
-    private static float* _xPtr;
-
-    public static void Init()
+    // 不保存攝影機指標：每次從 CameraManager 重取。取不到（位址沒解出或攝影機還沒建立）回 null。
+    internal static float? GetRadianX()
     {
-        var cameraAddressPtr =
-            *(nint*)Svc.SigScanner.GetStaticAddressFromSig(
-                "48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 8B ?? ?? ?? ?? 48 85 C9 74 11 48 8B 01");
-        if(cameraAddressPtr == nint.Zero)
-            throw new Exception("Camera address was zero");
-        _xPtr = (float*)(cameraAddressPtr + 0x130);
-    }
-
-    internal static float GetRadianX()
-    {
-        if(_xPtr == null)
-            return 0;
-        return *_xPtr;
+        if(Control.StaticAddressPointers.pInstance == null) return null;
+        var camera = CameraManager.Instance()->Camera;
+        return camera == null ? null : camera->DirH;
     }
 }

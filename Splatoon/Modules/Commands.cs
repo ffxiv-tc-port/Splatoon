@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.Command;
 using ECommons;
 using ECommons.GameFunctions;
+using ECommons.LanguageHelpers;
 using Splatoon.Memory;
 using Splatoon.Structures;
 
@@ -43,6 +44,7 @@ internal class Commands : IDisposable
                 AttachedInfo.CastInfos.Clear();
                 AttachedInfo.VFXInfos.Clear();
                 AttachedInfo.TetherInfos.Clear();
+                SplatoonScripting.ScriptingProcessor.ResetEnabledScripts();
             }
             else if(arguments.StartsWith("enable "))
             {
@@ -93,7 +95,7 @@ internal class Commands : IDisposable
                         var name = arguments.Substring(arguments.IndexOf("settarget ") + 10).Split('~');
                         var el = P.Config.LayoutsL.First(x => x.Name == name[0]).GetElementsWithSubconfiguration().First(x => x.Name == name[1]);
                         el.refActorNameIntl.CurrentLangString = Svc.Targets.Target.Name.ToString();
-                        el.refActorDataID = Svc.Targets.Target.DataId;
+                        el.refActorDataID = Svc.Targets.Target.BaseId;
                         el.refActorObjectID = Svc.Targets.Target.EntityId;
                         if(Svc.Targets.Target is ICharacter c) el.refActorModelID = (uint)c.Struct()->ModelContainer.ModelCharaId;
                         Notify.Success("Successfully set target");
@@ -117,12 +119,14 @@ internal class Commands : IDisposable
         })
         {
             HelpMessage = """
-            open Splatoon configuration menu 
-            /splatoon toggle <PresetName> → toggle specified preset 
-            /splatoon disable <PresetName> → disable specified preset 
+            open Splatoon configuration menu
+            /splatoon toggle <PresetName> → toggle specified preset
+            /splatoon disable <PresetName> → disable specified preset
             /splatoon enable <PresetName> → enable specified preset
             /splatoon p → open script priority editor
-            """
+            /splatoon log → open log window
+            /splatoon reset → reset layout and script states
+            """.Loc()
         });
 
         Svc.Commands.AddHandler("/sf", new CommandInfo(delegate (string command, string args)
@@ -183,7 +187,7 @@ internal class Commands : IDisposable
             }
         })
         {
-            HelpMessage = "highlight objects containing specified phrase"
+            HelpMessage = "highlight objects containing specified phrase".Loc()
         });
     }
 

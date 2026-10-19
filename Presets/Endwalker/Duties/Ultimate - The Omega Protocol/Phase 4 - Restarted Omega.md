@@ -2,11 +2,11 @@
 Set counterclockwise from NorthWest.
 The fourth and fifth people set will be responsible for adjustments.
 ```
-https://raw.githubusercontent.com/PunishXIV/Splatoon/refs/heads/main/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/BSOD%20Adjuster.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Endwalker/The%20Omega%20Protocol/BSOD%20Adjuster.cs
 ```
 
 [International] Wave repeater
-- Import from phase 3 page: https://github.com/PunishXIV/Splatoon/blob/main/Presets/Endwalker%20content/Duties/Ultimate%20-%20The%20Omega%20Protocol/Phase%203%20-%20Final%20omega.md#intermission
+- Import from phase 3 page: https://github.com/ffxiv-tc-port/Splatoon/blob/HEAD/Presets/Endwalker/Duties/Ultimate%20-%20The%20Omega%20Protocol/Phase%203%20-%20Final%20omega.md#intermission
 
 [International] Dispersal position display. A strategy will be displayed where one healer stands due south and the other stands to the west.
 ```

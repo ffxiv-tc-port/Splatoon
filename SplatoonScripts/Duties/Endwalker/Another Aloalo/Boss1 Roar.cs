@@ -13,10 +13,11 @@ using ECommons.GameHelpers;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
 using ECommons.Logging;
 using ECommons.MathHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System;
@@ -52,7 +53,7 @@ public class Boss1_Roar : SplatoonScript
     private State _state = State.None;
 
     public override HashSet<uint>? ValidTerritories => [1179, 1180];
-    public override Metadata? Metadata => new(1, "Garume");
+    public override Metadata? Metadata => new(3, "Garume");
 
     private Config C => Controller.GetConfig<Config>();
 
@@ -145,7 +146,7 @@ public class Boss1_Roar : SplatoonScript
                 break;
             default:
                 {
-                    if(sourceId.GetObject() is IBattleChara { DataId: 0x40A1 } or { DataId: 0x40A8 })
+                    if(sourceId.GetObject() is IBattleChara { BaseId: 0x40A1 } or { BaseId: 0x40A8 })
                     {
                         var enemy = (IBattleChara)sourceId.GetObject()!;
                         if(enemy.Position.X < -5)
@@ -331,9 +332,9 @@ public class Boss1_Roar : SplatoonScript
             ImGui.Unindent();
         }
 
-        if(ImGuiEx.CollapsingHeader("Debug"))
+        if(ImGuiEx.CollapsingHeader("Debug".Loc()))
         {
-            if(ImGui.Button("Reset")) Reset();
+            if(ImGui.Button("Reset".Loc())) Reset();
 
             ImGui.Text($"State: {_state}");
             ImGui.Text("Player Debuffs");

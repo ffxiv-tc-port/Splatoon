@@ -17,9 +17,9 @@ public static unsafe class LayoutUtils
             return (e.refActorNameIntl.Get(e.refActorName) == String.Empty || IsNameMatches(e, o)) &&
              (e.refActorModelID == 0 || (o is ICharacter c && c.Struct()->ModelContainer.ModelCharaId == e.refActorModelID)) &&
              (e.refActorObjectID == 0 || o.EntityId == e.refActorObjectID) &&
-             (e.refActorDataID == 0 || o.DataId == e.refActorDataID) &&
+             (e.refActorDataID == 0 || o.BaseId == e.refActorDataID) &&
              (e.refActorNPCID == 0 || o.Struct()->GetNameId() == e.refActorNPCID) &&
-             (e.refActorPlaceholder.Count == 0 || e.refActorPlaceholder.Any(x => ResolvePlaceholder(x) == o.Address)) &&
+             (e.refActorPlaceholder.Count == 0 || IsPlaceholderMatches(e, o)) &&
              (e.refActorNPCNameID == 0 || (o is ICharacter c2 && c2.NameId == e.refActorNPCNameID)) &&
              (e.refActorVFXPath == "" || (AttachedInfo.TryGetSpecificVfxInfo(o, e.refActorVFXPath, out var info) && info.Age.InRange(e.refActorVFXMin, e.refActorVFXMax))) &&
              ((e.refActorObjectEffectData1 == 0 && e.refActorObjectEffectData2 == 0) || (AttachedInfo.ObjectEffectInfos.TryGetValue(o.Address, out var einfo) && IsObjectEffectMatches(e, o, einfo)) &&
@@ -30,15 +30,26 @@ public static unsafe class LayoutUtils
             if(e.refActorComparisonType == 0 && IsNameMatches(e, o)) return true;
             if(e.refActorComparisonType == 1 && o is ICharacter c && c.Struct()->ModelContainer.ModelCharaId == e.refActorModelID) return true;
             if(e.refActorComparisonType == 2 && o.EntityId == e.refActorObjectID) return true;
-            if(e.refActorComparisonType == 3 && o.DataId == e.refActorDataID) return true;
+            if(e.refActorComparisonType == 3 && o.BaseId == e.refActorDataID) return true;
             if(e.refActorComparisonType == 4 && o.Struct()->GetNameId() == e.refActorNPCID) return true;
-            if(e.refActorComparisonType == 5 && e.refActorPlaceholder.Any(x => ResolvePlaceholder(x) == o.Address)) return true;
+            if(e.refActorComparisonType == 5 && IsPlaceholderMatches(e, o)) return true;
             if(e.refActorComparisonType == 6 && o is ICharacter c2 && c2.NameId == e.refActorNPCNameID) return true;
             if(e.refActorComparisonType == 7 && AttachedInfo.TryGetSpecificVfxInfo(o, e.refActorVFXPath, out var info) && info.Age.InRange(e.refActorVFXMin, e.refActorVFXMax)) return true;
             if(e.refActorComparisonType == 8 && AttachedInfo.ObjectEffectInfos.TryGetValue(o.Address, out var einfo) && IsObjectEffectMatches(e, o, einfo)) return true;
             if(e.refActorComparisonType == 9 && o.Struct()->NamePlateIconId == e.refActorNamePlateIconID) return true;
             return false;
         }
+    }
+
+    // 不用 lambda：捕捉參數 o 會讓每一次 IsAttributeMatches（每個元素×每個物件）都在入口配置閉包。
+    private static bool IsPlaceholderMatches(Element e, IGameObject o)
+    {
+        var placeholders = e.refActorPlaceholder;
+        for(var i = 0; i < placeholders.Count; i++)
+        {
+            if(ResolvePlaceholder(placeholders[i]) == o.Address) return true;
+        }
+        return false;
     }
 
     public static bool IsObjectEffectMatches(Element e, IGameObject o, List<CachedObjectEffectInfo> info)
@@ -54,13 +65,49 @@ public static unsafe class LayoutUtils
         }
         else
         {
-            return info.Any(last => last.data1 == e.refActorObjectEffectData1 && last.data2 == e.refActorObjectEffectData2 && last.Age.InRange(e.refActorObjectEffectMin, e.refActorObjectEffectMax));
+            // Plain loop, same order and short-circuit as Any(): the lambda captured e and was allocated on every call.
+            for(var i = 0; i < info.Count; i++)
+            {
+                var last = info[i];
+                if(last.data1 == e.refActorObjectEffectData1 && last.data2 == e.refActorObjectEffectData2 && last.Age.InRange(e.refActorObjectEffectMin, e.refActorObjectEffectMax)) return true;
+            }
+            return false;
         }
     }
 
     public static bool IsNameMatches(Element e, IGameObject o)
     {
-        return !string.IsNullOrEmpty(e.refActorNameIntl.Get(e.refActorName)) && (e.refActorNameIntl.Get(e.refActorName) == "*" || o.Name.ToString().ContainsIgnoreCase(e.refActorNameIntl.Get(e.refActorName)));
+        return !string.IsNullOrEmpty(e.refActorNameIntl.Get(e.refActorName)) && (e.refActorNameIntl.Get(e.refActorName) == "*" || GetObjectName(o).ContainsIgnoreCase(e.refActorNameIntl.Get(e.refActorName)));
+    }
+
+    // 名字快取只在 Tick 的繪製段開著（Begin／End 夾住），且只給開啟它的執行緒用：
+    // 那段期間遊戲不會更新物件表，同一格（ObjectIndex）的物件與名字都不變。
+    // 只存格號與字串，不存物件或指標；每次開啟與關閉都清空。
+    private static readonly Dictionary<ushort, string> ObjectNameCache = [];
+    private static int ObjectNameCacheThread;
+
+    internal static void BeginObjectNameCache()
+    {
+        ObjectNameCache.Clear();
+        ObjectNameCacheThread = Environment.CurrentManagedThreadId;
+    }
+
+    internal static void EndObjectNameCache()
+    {
+        ObjectNameCacheThread = 0;
+        ObjectNameCache.Clear();
+    }
+
+    private static string GetObjectName(IGameObject o)
+    {
+        if(ObjectNameCacheThread != Environment.CurrentManagedThreadId) return o.Name.ToString();
+        var index = o.ObjectIndex;
+        if(!ObjectNameCache.TryGetValue(index, out var name))
+        {
+            name = o.Name.ToString();
+            ObjectNameCache[index] = name;
+        }
+        return name;
     }
 
     public static nint ResolvePlaceholder(string ph)
@@ -71,7 +118,7 @@ public static unsafe class LayoutUtils
         }
         else
         {
-            var result = (nint)FakePronoun.Resolve(ph);
+            var result = (nint)ExtendedPronoun.Resolve(ph);
             PlaceholderCache[ph] = result;
             return result;
         }
@@ -81,50 +128,81 @@ public static unsafe class LayoutUtils
     {
         if(e.refTargetYou)
         {
-            return ((e.refActorTargetingYou == 1 && a.TargetObjectId != Svc.ClientState.LocalPlayer.EntityId) || (e.refActorTargetingYou == 2 && a.TargetObjectId == Svc.ClientState.LocalPlayer.EntityId));
+            return ((e.refActorTargetingYou == 1 && a.TargetObjectId != Svc.Objects.LocalPlayer.EntityId) || (e.refActorTargetingYou == 2 && a.TargetObjectId == Svc.Objects.LocalPlayer.EntityId));
         }
 
         return false;
     }
 
-    public static bool CheckCharacterAttributes(Element e, IGameObject a, bool ignoreVisibility = false)
+    public static bool CheckCharacterAttributes(Element element, IGameObject gameObject, bool ignoreVisibility = false)
     {
         return
-            (ignoreVisibility || !e.onlyVisible || (a is ICharacter chr && chr.IsCharacterVisible()))
-            && (!e.refActorRequireCast || (a is IBattleChara chr2 && IsCastingMatches(e, chr2) != e.refActorCastReverse))
-            && (!e.refActorRequireBuff || (e.refActorBuffId.Count > 0 && a is IBattleChara chr3 && CheckEffect(e, chr3)))
-            && (!e.refActorUseTransformation || (a is IBattleChara chr4 && CheckTransformationID(e, chr4)))
-            && (!e.refMark || (a is IBattleChara chr5 && Marking.HaveMark(chr5, (uint)e.refMarkID)))
-            && (!e.LimitRotation || (a.Rotation >= e.RotationMax && a.Rotation <= e.RotationMin))
-            && (!e.refActorTether || IsTetherMatches(e, a) == !e.refActorIsTetherInvert);
+            (ignoreVisibility || !element.onlyVisible || (gameObject is ICharacter chr && chr.IsCharacterVisible()))
+            && (!element.refActorRequireCast || (gameObject is IBattleChara chr2 && IsCastingMatches(element, chr2) != element.refActorCastReverse))
+            && (!element.refActorRequireBuff || (element.refActorBuffId.Count > 0 && gameObject is IBattleChara chr3 && CheckEffect(element, chr3)))
+            && (!element.refActorUseTransformation || (gameObject is IBattleChara chr4 && CheckTransformationID(element, chr4)))
+            && (!element.refMark || (gameObject is IBattleChara chr5 && Marking.HaveMark(chr5, (uint)element.refMarkID)))
+            && (!element.refActorTether || IsTetherMatches(element, gameObject) == !element.refActorIsTetherInvert);
     }
 
     public static bool IsTetherMatches(Element e, IGameObject obj)
     {
         if(e.refActorIsTetherSource == null || e.refActorIsTetherSource == true)
         {
-            if(AttachedInfo.TetherInfos.TryGetValue(obj.Address, out var tethers))
+            if(e.refActorIsTetherLive)
             {
-                foreach(var t in tethers)
+                if(obj is ICharacter chr)
                 {
-                    if(t.AgeF >= e.refActorTetherTimeMin && t.AgeF <= e.refActorTetherTimeMax
-                        && (e.refActorTetherParam1 == null || e.refActorTetherParam1 == t.Param1)
-                        && (e.refActorTetherParam2 == null || e.refActorTetherParam2 == t.Param2)
-                        && (e.refActorTetherParam3 == null || e.refActorTetherParam3 == t.Param3)
-                        )
+                    var c = chr.Struct();
+                    for(int i = 0; i < c->Vfx.Tethers.Length; i++)
                     {
-                        if(e.refActorTetherConnectedWithPlayer.Count == 0)
+                        var t = c->Vfx.Tethers[i];
+                        if(e.refActorTetherParam2 == null || e.refActorTetherParam2 == t.Id)
                         {
-                            return true;
-                        }
-                        else
-                        {
-                            foreach(var p in e.refActorTetherConnectedWithPlayer)
+                            if(e.refActorTetherConnectedWithPlayer.Count == 0)
                             {
-                                var tar = FakePronoun.Resolve(p);
-                                if(tar != null)
+                                return true;
+                            }
+                            else
+                            {
+                                foreach(var p in e.refActorTetherConnectedWithPlayer)
                                 {
-                                    if(t.Target == tar->EntityId) return true;
+                                    var tar = ExtendedPronoun.Resolve(p);
+                                    if(tar != null)
+                                    {
+                                        if(t.TargetId.ObjectId == tar->EntityId) return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if(AttachedInfo.TetherInfos.TryGetValue(obj.Address, out var tethers))
+                {
+                    foreach(var t in tethers)
+                    {
+                        if(t.AgeF >= e.refActorTetherTimeMin && t.AgeF <= e.refActorTetherTimeMax
+                            && (e.refActorTetherParam1 == null || e.refActorTetherParam1 == t.Param1)
+                            && (e.refActorTetherParam2 == null || e.refActorTetherParam2 == t.Param2)
+                            && (e.refActorTetherParam3 == null || e.refActorTetherParam3 == t.Param3)
+                            )
+                        {
+                            if(e.refActorTetherConnectedWithPlayer.Count == 0)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                foreach(var p in e.refActorTetherConnectedWithPlayer)
+                                {
+                                    var tar = ExtendedPronoun.Resolve(p);
+                                    if(tar != null)
+                                    {
+                                        if(t.Target == tar->EntityId) return true;
+                                    }
                                 }
                             }
                         }
@@ -135,30 +213,66 @@ public static unsafe class LayoutUtils
         if(e.refActorIsTetherSource == null || e.refActorIsTetherSource == false)
         {
             //reverse lookup goes brrrrr
-            foreach(var x in AttachedInfo.TetherInfos)
+            if(e.refActorIsTetherLive)
             {
-                if(x.Key == obj.Address) continue;
-                foreach(var t in x.Value)
+                foreach(var o in Svc.Objects)
                 {
-                    if(t.AgeF >= e.refActorTetherTimeMin && t.AgeF <= e.refActorTetherTimeMax
-                        && (e.refActorTetherParam1 == null || e.refActorTetherParam1 == t.Param1)
-                        && (e.refActorTetherParam2 == null || e.refActorTetherParam2 == t.Param2)
-                        && (e.refActorTetherParam3 == null || e.refActorTetherParam3 == t.Param3)
-                        && t.Target == obj.EntityId
-                        )
+                    if(o.Address == obj.Address) continue;
+                    if(o is ICharacter chr)
                     {
-                        if(e.refActorTetherConnectedWithPlayer.Count == 0)
+                        var c = chr.Struct();
+                        for(int i = 0; i < c->Vfx.Tethers.Length; i++)
                         {
-                            return true;
-                        }
-                        else
-                        {
-                            foreach(var p in e.refActorTetherConnectedWithPlayer)
+                            var t = c->Vfx.Tethers[i];
+                            if(t.TargetId.ObjectId == obj.EntityId && (e.refActorTetherParam2 == null || e.refActorTetherParam2 == t.Id))
                             {
-                                var tar = FakePronoun.Resolve(p);
-                                if(tar != null)
+                                if(e.refActorTetherConnectedWithPlayer.Count == 0)
                                 {
-                                    if(x.Key == (nint)tar) return true;
+                                    return true;
+                                }
+                                else
+                                {
+                                    foreach(var p in e.refActorTetherConnectedWithPlayer)
+                                    {
+                                        var tar = ExtendedPronoun.Resolve(p);
+                                        if(tar != null)
+                                        {
+                                            if(tar->EntityId == chr.EntityId) return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach(var x in AttachedInfo.TetherInfos)
+                {
+                    if(x.Key == obj.Address) continue;
+                    foreach(var t in x.Value)
+                    {
+                        if(t.AgeF >= e.refActorTetherTimeMin && t.AgeF <= e.refActorTetherTimeMax
+                            && (e.refActorTetherParam1 == null || e.refActorTetherParam1 == t.Param1)
+                            && (e.refActorTetherParam2 == null || e.refActorTetherParam2 == t.Param2)
+                            && (e.refActorTetherParam3 == null || e.refActorTetherParam3 == t.Param3)
+                            && t.Target == obj.EntityId
+                            )
+                        {
+                            if(e.refActorTetherConnectedWithPlayer.Count == 0)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                foreach(var p in e.refActorTetherConnectedWithPlayer)
+                                {
+                                    var tar = ExtendedPronoun.Resolve(p);
+                                    if(tar != null)
+                                    {
+                                        if(x.Key == (nint)tar) return true;
+                                    }
                                 }
                             }
                         }
@@ -290,7 +404,13 @@ public static unsafe class LayoutUtils
         if(!layout.Group.IsNullOrEmpty() && P.Config.DisabledGroups.Contains(layout.Group)) return false;
         if(layout.DisableInDuty && Svc.Condition[ConditionFlag.BoundByDuty]) return false;
         if((layout.ZoneLockH.Count > 0 && !layout.ZoneLockH.Contains(Svc.ClientState.TerritoryType)).Invert(layout.IsZoneBlacklist)) return false;
-        if(layout.Scenes.Count > 0 && !layout.Scenes.Contains(*Scene.ActiveScene)) return false;
+        // 場景過濾：環境管理器還沒建立時場景是「不知道」，照本函式其餘條件的語意
+        // （不符合就 return false）一律當成不符合 —— 失敗方向是「不畫」，不是崩潰。
+        if(layout.Scenes.Count > 0)
+        {
+            var activeScene = Scene.Current;
+            if(activeScene == null || !layout.Scenes.Contains(activeScene.Value)) return false;
+        }
         if(layout.Phase != 0 && layout.Phase != P.Phase) return false;
         if(layout.JobLockH.Count > 0 && !layout.JobLockH.Contains(Player.Job)) return false;
         var inCombat = Svc.Condition[ConditionFlag.InCombat];
@@ -305,7 +425,7 @@ public static unsafe class LayoutUtils
         {
             if(Svc.Targets.Target != null)
             {
-                var dist = Vector3.Distance(Svc.Targets.Target.GetPositionXZY(), Utils.GetPlayerPositionXZY()) - (layout.DistanceLimitTargetHitbox ? Svc.Targets.Target.HitboxRadius : 0) - (layout.DistanceLimitMyHitbox ? Svc.ClientState.LocalPlayer.HitboxRadius : 0);
+                var dist = Vector3.Distance(Svc.Targets.Target.GetPositionXZY(), Utils.GetPlayerPositionXZY()) - (layout.DistanceLimitTargetHitbox ? Svc.Targets.Target.HitboxRadius : 0) - (layout.DistanceLimitMyHitbox ? Svc.Objects.LocalPlayer.HitboxRadius : 0);
                 if(!(dist >= layout.MinDistance && dist < layout.MaxDistance)) return false;
             }
             else
@@ -317,6 +437,7 @@ public static unsafe class LayoutUtils
         {
             foreach(var t in layout.Triggers)
             {
+                if(t.UserDisabled) continue;
                 if(t.FiredState == 2) continue;
                 if((t.Type == 2 || t.Type == 3) && !t.Disabled)
                 {

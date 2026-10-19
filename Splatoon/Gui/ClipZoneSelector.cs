@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface.Windowing;
+using ECommons.LanguageHelpers;
 using Splatoon.Utility;
 
 namespace Splatoon.Gui;
@@ -13,6 +14,10 @@ internal class ClipZoneSelector : Window
 
     public override void PreDraw()
     {
+        // Dalamud Window 基底類別的 PreDraw() 負責推每視窗不透明度(標題列右鍵選單那個滑桿)。
+        // 覆寫而不呼叫 base 會讓那個內建功能對本視窗靜默半失效;base 的 push 要在最外層,
+        // 才能與 PostDraw 結尾的 base.PostDraw() 構成後進先出的成對 pop。
+        base.PreDraw();
         ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         ImGui.SetNextWindowSize(ImGuiHelpers.MainViewport.Size);
@@ -108,7 +113,7 @@ internal class ClipZoneSelector : Window
 
                     HandlePopupMenu();
                     ImGui.Separator();
-                    if(ImGui.Selectable("Delete this zone"))
+                    if(ImGui.Selectable("Delete this zone".Loc()))
                     {
                         toRem = i;
                         //DuoLog.Information($"to remove: {toRem} ({i})");
@@ -141,6 +146,7 @@ internal class ClipZoneSelector : Window
             P.Config.ClipZones.RemoveAt(toRem);
         }
         ImGui.PopStyleVar(2);
+        base.PostDraw();
     }
 
     public override void Draw()
@@ -167,7 +173,7 @@ internal class ClipZoneSelector : Window
     {
         if(P.Config.ClipZones.Count < MAX_CONFIGURABLE_CLIP_ZONES)
         {
-            if(ImGui.Selectable("Add new zone"))
+            if(ImGui.Selectable("Add new zone".Loc()))
             {
                 P.Config.ClipZones.Add(new(100, 100, 300, 300));
             }
@@ -178,7 +184,7 @@ internal class ClipZoneSelector : Window
             if(ImGui.Selectable($"Select zone {i}")) bringToFront = i;
         }
         ImGui.Separator();
-        if(ImGui.Selectable("Save configuration and exit"))
+        if(ImGui.Selectable("Save configuration and exit".Loc()))
         {
             IsOpen = false;
             P.Config.Save();

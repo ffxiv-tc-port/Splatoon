@@ -1,6 +1,6 @@
 **[Script]** Escelon's Fall
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/EX4%20Escelons%20Fall.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/EX4%20Escelons%20Fall.cs
 ```
 
 *The following presets were translated from https://tooleroflight.blog.jp/*

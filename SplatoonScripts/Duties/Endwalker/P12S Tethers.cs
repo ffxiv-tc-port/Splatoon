@@ -2,7 +2,7 @@
 using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P12S_Tethers : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1154];
-        public override Metadata? Metadata => new(2, "Zeffuro");
+        public override Metadata? Metadata => new(3, "Zeffuro");
 
         private List<TetherData> _tethers = [];
 
@@ -52,13 +52,13 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
 
         public override void OnTetherCreate(uint source, uint target, uint data2, uint data3, uint data5)
         {
-            if(Svc.Objects.Any(x => x.DataId == 16172))
+            if(Svc.Objects.Any(x => x.BaseId == 16172))
             {
                 if(source.TryGetObject(out var sourceObject))
                 {
 
                     //PluginLog.Information($"{sourceObject.DataId} Data2: {data2} Data3: {data3} Data5:{data5}");
-                    if(sourceObject.DataId != 16172) return;
+                    if(sourceObject.BaseId != 16172) return;
                     if(_tethers.Exists(tether => tether.Target == target))
                     {
                         _tethers = _tethers.Where(tether => tether.Target != target).ToList();

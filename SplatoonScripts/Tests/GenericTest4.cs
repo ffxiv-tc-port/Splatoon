@@ -12,20 +12,133 @@ using ECommons.UIHelpers;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Callback = ECommons.Automation.Callback;
+using CSFramework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 #pragma warning disable
 namespace SplatoonScriptsOfficial.Tests;
 public unsafe class GenericTest4 : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => new();
-    public override Metadata? Metadata { get; } = new(4, "NightmareXIV");
+    public override Metadata? Metadata { get; } = new(9, "NightmareXIV");
+
+    public override Dictionary<int, string> Changelog => new()
+    {
+        [9] = """
+        逃生口從牆鐘改成遊戲幀：卡頓時牆鐘照樣前進，會讓「同一扇視窗只送一次」的封鎖
+        在最危險的那一刻提早放行（卡一次 300 毫秒的頓，250 毫秒的逃生口只撐一幀就開門）。
+        改成數遊戲幀之後，遊戲沒有推進封鎖就不會解開；取不到幀序時這一輪不送（fail-closed）。
+        """,
+        [8] = """
+        修正：對「任務搜尋器」視窗送 callback 之後有「正在關閉中」的幾幀，
+        這期間視窗仍然通過就緒檢查，此時再送一次就是攔不到的原生存取違規（遊戲當場關閉）。
+        現在同一扇視窗的同一組參數在它收掉之前只送一次。
+        """
+    };
+
     int a1;
     string Filter = "";
+
+    /// <summary>
+    /// 每個視窗名字底下、「已經送過 callback 的那一組參數」對應的實例位址與送出的時刻。
+    /// </summary>
+    /// <remarks>
+    /// 🔴 <b>位址只拿來做等值比較，永遠不解參</b>——所以 <see cref="TryBeginPress"/> 收的是
+    /// <see cref="nint"/> 而不是指標，讓「不解參」變成型別上就辦不到的事。
+    /// <para>
+    /// ⚠️ 粒度刻意是（視窗名字，實例位址，<b>參數組</b>）而不是「一扇視窗只按一次」：
+    /// <see cref="ClearDuty"/> 送的是 <c>(12, 1)</c>、<see cref="SelectDuty"/> 送的是 <c>(3, cnt)</c>，
+    /// 兩者會在同一扇視窗上前後接力，併成同一個鍵會把正常流程擋掉。
+    /// </para>
+    /// </remarks>
+    private readonly Dictionary<string, Dictionary<string, (nint Address, uint AtFrame)>> Pressed = new(StringComparer.Ordinal);
+
+    /// <summary>多次互動窗（按下去視窗<b>不會</b>消失）的逃生口：15 個<b>遊戲幀</b>，60fps 下約 250 毫秒。</summary>
+    /// <remarks>
+    /// 這一類視窗本來就要連續按，逃生口取太長會把正常流程變成慢動作。
+    /// <para>
+    /// 🔴 用遊戲幀而不是牆鐘：牆鐘在卡頓時照樣前進，會讓封鎖在最危險的那一刻提早放行。
+    /// 這不是繪製幀計數器 —— <see cref="CurrentFrame"/> 取的是遊戲主迴圈的
+    /// <c>Framework.FrameCounter</c>，畫面隱藏（過場／隱藏 UI 熱鍵）期間照樣前進，
+    /// 逃生口不會永不到期。
+    /// </para>
+    /// </remarks>
+    private const uint RoutineRePressTimeoutFrames = 15;
+
+    /// <summary>目前的遊戲幀序；取不到 <c>Framework</c> 時回 <see langword="null"/>。</summary>
+    /// <remarks>
+    /// 🔴 <c>Framework.Instance()</c> 宣告成 <c>[StaticAddress(..., isPointer: true)]</c>：登入前、登出後、
+    /// 關閉流程中它真的會是 null，裸解參考就是 AccessViolationException（<c>try/catch</c> 攔不到）
+    /// ⇒ 只能事前判空。<c>FrameCounter</c> 由遊戲主迴圈遞增，<b>不是</b>繪製幀計數器。
+    /// </remarks>
+    private static uint? CurrentFrame()
+    {
+        var framework = CSFramework.Instance();
+        if(framework == null) return null;
+        return framework->FrameCounter;
+    }
+
+    /// <summary>這扇視窗在 <see cref="Pressed"/> 裡的鍵，同時也是查詢用的 addon 名字。</summary>
+    private const string ContentsFinderAddon = "ContentsFinder";
+
+    /// <summary>
+    /// 登記「即將對這扇視窗送出這一組參數」。<b>回 <see langword="false"/> ＝這一輪絕對不能送。</b>
+    /// </summary>
+    /// <remarks>
+    /// 🔴🔴 <c>IsAddonReady</c> 三關（非 null／<c>IsVisible</c>／<c>UldManager.LoadedState == Loaded</c>）
+    /// <b>擋不住「送出之後正在關閉中」的那幾幀</b>：那期間三關全過，而視窗其實已經在拆，
+    /// 此時再送就是原生 AccessViolationException（.NET Core 的 corrupted-state exception，
+    /// <c>try/catch</c> 攔不到，遊戲當場關閉）。
+    /// <para>
+    /// 一回 <see langword="true"/> 就已經把「送過了」記下去，所以呼叫點必須<b>緊接在送出動作之前</b>；
+    /// 登記完卻不送的話會白白封鎖到逾時為止。
+    /// </para>
+    /// <para>
+    /// 📌 位址不同就放行：同一個名字底下現在掛的是另一個實例，我們送過的那扇已經取不到了。
+    /// （位址被新視窗重用也不成問題：頂多多等到逾時，不會變成崩潰。）
+    /// </para>
+    /// <para>
+    /// 🔴 被擋下時回 <see langword="false"/>，不回 <see langword="null"/>：呼叫端是
+    /// <c>Func&lt;bool?&gt;</c> 型的工作，<see langword="false"/> 的意義就是「這一輪沒做到、下一輪再來」，
+    /// 與「視窗還沒出現」走同一條既有路徑，控制流完全不變；<see langword="null"/> 則會清掉整條佇列。
+    /// </para>
+    /// </remarks>
+    private bool TryBeginPress(string addonName, nint address, string parameters, uint timeoutFrames)
+    {
+        // 🔴 取不到幀序就這一輪不送（fail-closed）：沒有時間基準就判斷不了「這扇視窗是不是正在關閉中」。
+        var now = CurrentFrame();
+        if(now == null) return false;
+        if(!Pressed.TryGetValue(addonName, out var byParameters))
+        {
+            byParameters = new(StringComparer.Ordinal);
+            Pressed[addonName] = byParameters;
+        }
+        // unchecked：FrameCounter 是 uint，溢位回繞時無號減法照樣給出正確的「過了幾幀」。
+        if(byParameters.TryGetValue(parameters, out var prev) && prev.Address == address
+            && unchecked(now.Value - prev.AtFrame) < timeoutFrames)
+        {
+            return false;
+        }
+        byParameters[parameters] = (address, now.Value);
+        return true;
+    }
+
+    /// <summary>視窗真的收掉了 ⇒ 解除封鎖，下一扇同名視窗照樣按。</summary>
+    /// <remarks>
+    /// 解除點刻意用「<c>TryGetAddonByName</c> 取不到」而不是生命週期事件：
+    /// <see cref="ClearDuty"/>／<see cref="SelectDuty"/> 是工作管理器每一輪都會叫到的，
+    /// 視窗消失的那一輪一定看得到，不必額外註冊監聽器。
+    /// <para>
+    /// ⚠️ 刻意<b>不</b>在停用或重置時清空：留著的舊項目是無害的（位址對不上就直接放行），
+    /// 而清空反而會讓一扇正在關閉中的視窗重新變成可按。
+    /// </para>
+    /// </remarks>
+    private void ReleaseContentsFinderGuard() => Pressed.Remove(ContentsFinderAddon);
 
     public override void OnSettingsDraw()
     {
@@ -58,7 +171,12 @@ public unsafe class GenericTest4 : SplatoonScript
         }
         if(GenericHelpers.TryGetAddonByName<AddonContentsFinder>("ContentsFinder", out var addon))
         {
-            var list = addon->AtkUnitBase.GetNodeById(52)->GetAsAtkComponentList();
+            // GetNodeById 找不到節點會回 null,而 GetAsAtkComponentList() 是 [MemberFunction]
+            // 原生呼叫、不是受管理的 null-safe 存取器 —— 對空節點呼叫就是攔不到的 AVE,
+            // 所以先驗節點再呼叫。
+            var listNode = addon->AtkUnitBase.GetNodeById(52);
+            AtkComponentList* list = null;
+            if(listNode != null) list = listNode->GetAsAtkComponentList();
             var length = addon->NumEntries;
             var reader = new ReaderAddonContentsFinder(&addon->AtkUnitBase);
             for(int i = 0; i < length; i++)
@@ -105,7 +223,23 @@ public unsafe class GenericTest4 : SplatoonScript
     {
         if(!GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContentsFinder", out _))
         {
-            AgentContentsFinder.Instance()->OpenRegularDuty(cfc);
+            // 🔴 AgentContentsFinder.Instance() 內部鏈 AgentModule -> UIModule -> Framework,任一層回 null
+            //    整條就回 null(登入前、切場景時是常態),特徵碼失配時則是擲 InvalidOperationException。
+            //    裸解參考 null 原生指標是 AccessViolationException,try/catch 攔不到 ⇒ 只能事前判空。
+            //    fail-closed:取不到 agent 就回 false,讓呼叫端下一輪重試而不是崩潰。
+            AgentContentsFinder* agent;
+            try
+            {
+                agent = AgentContentsFinder.Instance();
+            }
+            catch
+            {
+                return false;
+            }
+
+            if(agent == null) return false;
+
+            agent->OpenRegularDuty(cfc);
             return true;
         }
         return false;
@@ -113,11 +247,28 @@ public unsafe class GenericTest4 : SplatoonScript
 
     public bool? ClearDuty()
     {
-        if(GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContentsFinder", out var addon) && GenericHelpers.IsAddonReady(addon))
+        if(!GenericHelpers.TryGetAddonByName<AtkUnitBase>(ContentsFinderAddon, out var addon))
         {
-            var btn = addon->GetButtonNodeById(73);
+            // 視窗真的收掉了 ⇒ 解除封鎖。與就緒檢查分開判：只有「視窗不見了」才可以清掉按下紀錄，
+            // 「視窗還沒就緒」不行。
+            ReleaseContentsFinderGuard();
+            return false;
+        }
+        if(GenericHelpers.IsAddonReady(addon))
+        {
+            var btn = addon->GetComponentButtonById(73);
+            // 🔴 GetComponentButtonById 找不到會回 null,而 IsEnabled 解的是
+            // OwnerNode->AtkResNode.NodeFlags(FFXIVClientStructs 對 OwnerNode 零空指標檢查),
+            // 兩層都要在讀取前驗。AVE 是 corrupted-state exception,try/catch 攔不到。
+            // 讀不到就回 false(這一幀不做事、下一輪重來)—— 不能當成「按鈕已停用」回 true,
+            // 那會把工作標成完成卻其實什麼都沒做。
+            if(btn == null || btn->OwnerNode == null) return false;
             if(btn->IsEnabled)
             {
+                // 🔴 這是刻意的重試迴圈：送出之後會落到最後那個 return false，於是每一輪都回來重送，
+                // 直到按鈕變停用為止 —— 而「正在關閉中」的那幾幀 IsAddonReady 照樣三關全過。
+                // 守衛擺在送出動作正前方：一回 true 就已經記成「送過了」。
+                if(!TryBeginPress(ContentsFinderAddon, (nint)addon, "12,1", RoutineRePressTimeoutFrames)) return false;
                 Callback.Fire(addon, true, 12, 1);
             }
             else
@@ -130,11 +281,22 @@ public unsafe class GenericTest4 : SplatoonScript
 
     public bool? SelectDuty(uint cfc)
     {
-        if(GenericHelpers.TryGetAddonByName<AddonContentsFinder>("ContentsFinder", out var addon) && GenericHelpers.IsAddonReady(&addon->AtkUnitBase))
+        if(!GenericHelpers.TryGetAddonByName<AddonContentsFinder>(ContentsFinderAddon, out var addon))
+        {
+            // 視窗真的收掉了 ⇒ 解除封鎖。
+            ReleaseContentsFinderGuard();
+            return false;
+        }
+        if(GenericHelpers.IsAddonReady(&addon->AtkUnitBase))
         {
             var cfcData = Svc.Data.GetExcelSheet<ContentFinderCondition>().GetRowOrDefault(cfc);
             if(cfcData == null || cfcData.Value.Name.ExtractText() == "") throw new ArgumentOutOfRangeException(nameof(cfc));
-            var list = addon->AtkUnitBase.GetNodeById(52)->GetAsAtkComponentList();
+            // GetNodeById 找不到節點會回 null,而 GetAsAtkComponentList() 是 [MemberFunction]
+            // 原生呼叫、不是受管理的 null-safe 存取器 —— 對空節點呼叫就是攔不到的 AVE,
+            // 所以先驗節點再呼叫。
+            var listNode = addon->AtkUnitBase.GetNodeById(52);
+            AtkComponentList* list = null;
+            if(listNode != null) list = listNode->GetAsAtkComponentList();
             var length = addon->NumEntries;
             var reader = new ReaderAddonContentsFinder(&addon->AtkUnitBase);
             int cnt = 0;
@@ -146,6 +308,9 @@ public unsafe class GenericTest4 : SplatoonScript
                     cnt++;
                     if(duty.DutyName == cfcData.Value.Name.ExtractText())
                     {
+                        // 與 ClearDuty 送的是不同參數組（3,cnt 對 12,1），鍵刻意分開：
+                        // 併成同一個鍵會讓緊接在 ClearDuty 之後的這一送被自己的守衛擋掉。
+                        if(!TryBeginPress(ContentsFinderAddon, (nint)(&addon->AtkUnitBase), $"3,{cnt}", RoutineRePressTimeoutFrames)) return false;
                         Callback.Fire(&addon->AtkUnitBase, true, 3, cnt);
                         return true;
                     }
@@ -165,16 +330,16 @@ public unsafe class GenericTest4 : SplatoonScript
 
         public class DutyInfo : AtkReader
         {
-            private nint unitBasePtr;
-            private int beginOffset;
             public DutyInfo(nint UnitBasePtr, int BeginOffset = 0) : base(UnitBasePtr, BeginOffset)
             {
-                this.unitBasePtr = UnitBasePtr;
-                this.beginOffset = BeginOffset;
             }
 
             public string DutyName => ReadSeString(0).ExtractText();
-            public string DutyLevel => MemoryHelper.ReadStringNullTerminated((nint)((AtkUnitBase*)unitBasePtr)->AtkValues[beginOffset + 1].String.Value);
+
+            // 🔴 走基底的 ReadString(1) 而不是自己從 AtkValues 裸讀：AtkValues 是指標欄位(可為 null)、
+            //    索引要和 AtkValuesCount 比、型別對也不代表 String.Value 非空,任一條不成立就是攔不到的 AVE。
+            //    ReadString 帶這三道守衛,讀不到回 null(與同類 DutyPF 的失敗語意一致)。
+            public string DutyLevel => ReadString(1);
             public string DutyPF => ReadString(2);
         }
     }

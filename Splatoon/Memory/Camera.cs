@@ -1,54 +1,43 @@
-﻿namespace Splatoon;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using GameCamera = FFXIVClientStructs.FFXIV.Client.Game.Camera;
+
+namespace Splatoon;
 
 internal static unsafe class Camera
 {
-    private static nint cameraAddressPtr;
-    private static float* Xptr;
-    private static float* Yptr;
-    private static float* ZoomPtr;
+    // 不保存 Camera*：遊戲可能換掉或釋放攝影機物件，每次用時從 CameraManager 重取。
+    // Control 位址沒解出來時 CS 的 Instance() 會擲例外；先判 StaticAddressPointers，讓每幀路徑退回預設值。
+    private static GameCamera* GetCamera()
+    {
+        if(Control.StaticAddressPointers.pInstance == null) return null;
+        return CameraManager.Instance()->Camera;
+    }
 
     public static void Init()
     {
-        try
+        if(Control.StaticAddressPointers.pInstance == null)
         {
-            cameraAddressPtr = *(nint*)Svc.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 8B ?? ?? ?? ?? 48 85 C9 74 11 48 8B 01");
-            if(cameraAddressPtr == nint.Zero) throw new Exception("Camera address was zero");
-            PluginLog.Information($"Camera address ptr: {cameraAddressPtr:X16}");
-            Xptr = (float*)(cameraAddressPtr + 0x130);
-            Yptr = (float*)(cameraAddressPtr + 0x134);
-            ZoomPtr = (float*)(cameraAddressPtr + 0x114);
-            PluginLog.Information("Camera initialized successfully");
+            PluginLog.Error("Camera: Control.Instance address was not resolved; camera angle and zoom fall back to defaults");
+            return;
         }
-        catch(Exception e)
-        {
-            e.Log();
-        }
+        PluginLog.Information("Camera initialized successfully");
     }
 
     internal static float GetAngleX()
     {
-        if(Xptr == null)
-        {
-            return 0;
-        }
-        return *Xptr;
+        var camera = GetCamera();
+        return camera == null ? 0 : camera->DirH;
     }
 
     internal static float GetAngleY()
     {
-        if(Yptr == null)
-        {
-            return 0;
-        }
-        return *Yptr;
+        var camera = GetCamera();
+        return camera == null ? 0 : camera->DirV;
     }
 
     internal static float GetZoom()
     {
-        if(ZoomPtr == null)
-        {
-            return 20;
-        }
-        return *ZoomPtr;
+        var camera = GetCamera();
+        return camera == null ? 20 : camera->Distance;
     }
 }

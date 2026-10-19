@@ -6,7 +6,7 @@ using ECommons.DalamudServices;
 using ECommons.GameFunctions;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Data.Parsing.Tex.Buffers;
 using Splatoon.SplatoonScripting;
 using Splatoon.Utility;
@@ -21,7 +21,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
     public class P12S_Superchain : SplatoonScript
     {
         public override HashSet<uint> ValidTerritories => [1154];
-        public override Metadata? Metadata => new(7, "NightmareXIV");
+        public override Metadata? Metadata => new(8, "NightmareXIV");
 
         private enum Spheres : uint
         {
@@ -83,7 +83,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
             {
                 if(C.EnableAOEChecking)
                 {
-                    if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == AOEDebuff && x.RemainingTime < 3.5f))
+                    if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == AOEDebuff && x.RemainingTime < 3.5f))
                     {
                         self.Enabled = true;
                         other.Enabled = false;
@@ -163,12 +163,12 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker
             List<(IBattleNpc obj, Spheres type, float dist)> objs = [];
             foreach(var x in Svc.Objects.Where(z => z is IBattleNpc b && b.IsCharacterVisible()).Cast<IBattleNpc>())
             {
-                if(Enum.GetValues<Spheres>().Contains((Spheres)x.DataId) && x.DataId != (uint)Spheres.Mastersphere)
+                if(Enum.GetValues<Spheres>().Contains((Spheres)x.BaseId) && x.BaseId != (uint)Spheres.Mastersphere)
                 {
                     var master = GetMasterSphereForObject(x);
                     if(master != null)
                     {
-                        objs.Add((master, (Spheres)x.DataId, Vector3.Distance(master.Position, x.Position)));
+                        objs.Add((master, (Spheres)x.BaseId, Vector3.Distance(master.Position, x.Position)));
                     }
                 }
             }

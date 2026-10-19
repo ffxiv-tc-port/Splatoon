@@ -1,7 +1,7 @@
 ## [Script] Fulgent blade dodge spots
 Based on: https://www.youtube.com/watch?v=MSev5gAO7jU
 ```
-https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P5%20Fulgent%20Blade%20Dodge.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P5%20Fulgent%20Blade%20Dodge.cs
 ```
 
 ## Fulgent Blade
@@ -18,7 +18,7 @@ https://github.com/PunishXIV/Splatoon/raw/refs/heads/main/SplatoonScripts/Duties
 ## [JP] [WIP] [Script] Paradise Regained
 !!! Guide pending !!!
 ```
-https://github.com/PunishXIV/Splatoon/raw/main/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P5%20Paradise%20Regained.cs
+https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The%20Futures%20Rewritten/P5%20Paradise%20Regained.cs
 ```
 
 # Outdated

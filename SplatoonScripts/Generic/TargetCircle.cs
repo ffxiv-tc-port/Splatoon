@@ -14,7 +14,7 @@ internal class TargetCircle : SplatoonScript
 {
     public override HashSet<uint>? ValidTerritories => [];
 
-    public override Metadata? Metadata => new(0, "sourpuh");
+    public override Metadata? Metadata => new(1, "sourpuh");
 
     public override void OnSetup()
     {
@@ -91,7 +91,9 @@ internal class TargetCircle : SplatoonScript
     {
         if(obj == null) return false;
         if(TargetHasEffect(obj, 3808)) return false; // Directional Disregard Effect (Patch 7.01)
-        if(Svc.Data.GetExcelSheet<BNpcBase>().TryGetFirst(x => x.RowId == obj.DataId, out var bnpc))
+        // 本方法由同檔 OnUpdate() 每幀呼叫:用 TryGetRow(索引查詢 O(1))而不是
+        // TryGetFirst(x => x.RowId == …)(對整張 BNpcBase 表線性走訪),語意等價。
+        if(Svc.Data.GetExcelSheet<BNpcBase>().TryGetRow(obj.BaseId, out var bnpc))
             return !bnpc.IsOmnidirectional;
         return true;
     }

@@ -11,7 +11,7 @@ using ECommons.Hooks;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon;
 using Splatoon.SplatoonScripting;
 using System;
@@ -28,7 +28,7 @@ public class UCOB_Nael_Quotes : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => [733];
 
-    public override Metadata? Metadata => new(1, "Enthusiastus");
+    public override Metadata? Metadata => new(2, "Enthusiastus");
 
     private List<Element> _elements = [];
     private Element? InDonut;
@@ -41,7 +41,7 @@ public class UCOB_Nael_Quotes : SplatoonScript
     private Config Conf => Controller.GetConfig<Config>();
 
     private string TestOverride = "";
-    private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.ClientState.LocalPlayer!;
+    private IPlayerCharacter PC => TestOverride != "" && FakeParty.Get().FirstOrDefault(x => x.Name.ToString() == TestOverride) is IPlayerCharacter pc ? pc : Svc.Objects.LocalPlayer!;
 
     public override void OnSetup()
     {

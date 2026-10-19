@@ -12,11 +12,37 @@ internal unsafe class DirectX11Scene : IDisposable
     private int uid = 0;
     private DateTime lastErrorLogTime = DateTime.MinValue;
     private DirectX11Renderer DirectX11Renderer;
+
+    private bool vfxInitialized;
+
+    /// <summary>False when the game's VFX functions could not be resolved; filled shapes are then always drawn with DirectX.</summary>
+    internal bool VfxAvailable => vfxInitialized && PictoService.VfxAvailable;
+
     public DirectX11Scene(DirectX11Renderer dx11renderer)
     {
         DirectX11Renderer = dx11renderer;
         Svc.PluginInterface.UiBuilder.Draw += Draw;
-        PictoService.Initialize(Svc.PluginInterface);//, () => S.VbmCamera.ViewProj);
+        try
+        {
+            PictoService.InitializeDxRenderer(Svc.PluginInterface);//, () => S.VbmCamera.ViewProj);
+        }
+        catch
+        {
+            // The caller drops this instance when the constructor throws; don't leave its Draw subscribed.
+            Svc.PluginInterface.UiBuilder.Draw -= Draw;
+            throw;
+        }
+        try
+        {
+            // Does not throw on a missing VFX signature: Pictomancy logs which ones and reports VfxAvailable = false.
+            PictoService.InitializeVfxRenderer(Svc.PluginInterface);
+            vfxInitialized = true;
+        }
+        catch(Exception e)
+        {
+            // VFX rendering is optional; no failure in it may take the whole DirectX11 renderer down.
+            PluginLog.Warning($"[DirectX11] VFX rendering failed to initialize, filled shapes will use DirectX drawing instead: {e.Message}");
+        }
     }
 
     public void Dispose()
@@ -35,7 +61,7 @@ internal unsafe class DirectX11Scene : IDisposable
             // Draw pre-rendered pictomancy texture with shapes and strokes.
             if(texture.HasValue)
             {
-                ImGui.GetWindowDrawList().AddImage((nint)texture?.TextureId, ImGuiHelpers.MainViewport.Pos, ImGuiHelpers.MainViewport.Pos + new Vector2((float)texture?.Width, (float)texture?.Height));
+                ImGui.GetWindowDrawList().AddImage(texture.Value.TextureId, ImGuiHelpers.MainViewport.Pos, ImGuiHelpers.MainViewport.Pos + new Vector2((float)texture?.Width, (float)texture?.Height));
             }
 
             // Draw dots and text last because they are most critical to be legible.
@@ -147,7 +173,7 @@ internal unsafe class DirectX11Scene : IDisposable
     {
         if (fan.style.filled)
         {
-            if (!P.Config.UseVfxRendering || !PictoService.VfxRenderer.AddFan(fan.id, fan.origin, fan.innerRadius, fan.outerRadius, fan.angleMin, fan.angleMax, fan.style.originFillColor.AlphaDXToVFX()))
+            if (!P.Config.UseVfxRendering || !VfxAvailable || !PictoService.VfxRenderer.AddFan(fan.id, fan.origin, fan.innerRadius, fan.outerRadius, fan.angleMin, fan.angleMax, fan.style.originFillColor.AlphaDXToVFX()))
                 drawList.AddFanFilled(
                     fan.origin,
                     fan.innerRadius,
@@ -229,7 +255,7 @@ internal unsafe class DirectX11Scene : IDisposable
         else
         {
             if (line.style.filled)
-                if (P.Config.UseVfxRendering)
+                if (P.Config.UseVfxRendering && VfxAvailable)
                     PictoService.VfxRenderer.AddLine(
                         line.id,
                         line.start,
@@ -296,7 +322,8 @@ internal unsafe class DirectX11Scene : IDisposable
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(5, 5));
         ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 10f);
         ImGui.PushStyleColor(ImGuiCol.ChildBg, ImGui.ColorConvertU32ToFloat4(e.bgcolor));
-        ImGui.BeginChild("##child" + e.text + ++uid, size, false,
+        // Interpolated straight into ImGui's UTF-8 buffer: same id bytes as "##child" + text + uid, without a new string per text per frame.
+        ImGui.BeginChild($"##child{e.text.AsSpan()}{++uid}", size, false,
             ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoNav
             | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysUseWindowPadding
             | ImGuiWindowFlags.NoFocusOnAppearing);

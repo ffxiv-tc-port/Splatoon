@@ -8,7 +8,7 @@ using ECommons.GameFunctions;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.MathHelpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Splatoon.SplatoonScripting;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,11 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 {
     public class Pantokrator : SplatoonScript
     {
-        public override Metadata? Metadata => new(4, "NightmareXIV");
+        public override Metadata? Metadata => new(6, "NightmareXIV");
+        public override Dictionary<int, string> Changelog => new()
+        {
+            [6] = "雷射與飛彈的範圍改為實心填滿；不在全能之主那一段時自動隱藏",
+        };
         public override HashSet<uint> ValidTerritories => [1122];
         private IBattleChara? Omega => Svc.Objects.FirstOrDefault(x => x is IBattleChara o && o.NameId == 7695 && o.IsTargetable()) as IBattleChara;
 
@@ -34,16 +38,21 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
 
         public override void OnSetup()
         {
-            Controller.RegisterElement("Laser1", new(2) { Enabled = false, radius = 4f, refX = 100f, refY = 100f });
-            Controller.RegisterElement("Laser2", new(2) { Enabled = false, radius = 4f, refX = 100f, refY = 100f });
-            Controller.RegisterElement("Rocket1", new(0) { Enabled = false, radius = 5f, Filled = true });
-            Controller.RegisterElement("Rocket2", new(0) { Enabled = false, radius = 5f, Filled = true });
+            Controller.RegisterElement("Laser1", new(2) { Enabled = false, radius = 4f, refX = 100f, refY = 100f, fillIntensity = 1f });
+            Controller.RegisterElement("Laser2", new(2) { Enabled = false, radius = 4f, refX = 100f, refY = 100f, fillIntensity = 1f });
+            Controller.RegisterElement("Rocket1", new(0) { Enabled = false, radius = 5f, Filled = true, fillIntensity = 1f });
+            Controller.RegisterElement("Rocket2", new(0) { Enabled = false, radius = 5f, Filled = true, fillIntensity = 1f });
             Controller.TryRegisterLayoutFromCode("CW", "~Lv2~{\"Enabled\":false,\"Name\":\"Clockwise\",\"Group\":\"\",\"ZoneLockH\":[1122],\"ElementsL\":[{\"Name\":\"1\",\"type\":2,\"refX\":98.0,\"refY\":98.0,\"offX\":98.0,\"offY\":102.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"1\",\"type\":2,\"refX\":98.5,\"refY\":100.0,\"offX\":98.0,\"offY\":98.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"1\",\"type\":2,\"refX\":97.5,\"refY\":100.0,\"offX\":98.0,\"offY\":98.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"2\",\"type\":2,\"refX\":102.0,\"refY\":102.0,\"offX\":98.0,\"offY\":102.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"3\",\"type\":2,\"refX\":102.0,\"refY\":102.0,\"offX\":102.0,\"offY\":98.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"4\",\"type\":2,\"refX\":102.0,\"refY\":98.0,\"offX\":98.0,\"offY\":98.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"2\",\"type\":2,\"refX\":98.0,\"refY\":102.0,\"offX\":100.0,\"offY\":102.5,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"2\",\"type\":2,\"refX\":98.0,\"refY\":102.0,\"offX\":100.0,\"offY\":101.5,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"3\",\"type\":2,\"refX\":102.5,\"refY\":100.0,\"offX\":102.0,\"offY\":102.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"3\",\"type\":2,\"refX\":101.5,\"refY\":100.0,\"offX\":102.0,\"offY\":102.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"4\",\"type\":2,\"refX\":100.0,\"refY\":98.5,\"offX\":102.0,\"offY\":98.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"4\",\"type\":2,\"refX\":100.0,\"refY\":97.5,\"offX\":102.0,\"offY\":98.0,\"radius\":0.0,\"color\":3355508735,\"thicc\":5.0},{\"Name\":\"\",\"refX\":100.0,\"refY\":100.0,\"radius\":0.0,\"color\":3355508735,\"overlayTextColor\":4278255615,\"overlayFScale\":1.5,\"thicc\":0.0,\"overlayText\":\"Clockwise\"}]}", out _);
             Controller.TryRegisterLayoutFromCode("CCW", "~Lv2~{\"Enabled\":false,\"Name\":\"CounterClockwise\",\"Group\":\"\",\"ZoneLockH\":[1122],\"ElementsL\":[{\"Name\":\"1\",\"type\":2,\"refX\":98.0,\"refY\":98.0,\"offX\":98.0,\"offY\":102.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"1\",\"type\":2,\"refX\":98.5,\"refY\":100.0,\"offX\":98.0,\"offY\":102.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"1\",\"type\":2,\"refX\":97.5,\"refY\":100.0,\"offX\":98.0,\"offY\":102.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"2\",\"type\":2,\"refX\":102.0,\"refY\":102.0,\"offX\":98.0,\"offY\":102.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"3\",\"type\":2,\"refX\":102.0,\"refY\":102.0,\"offX\":102.0,\"offY\":98.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"4\",\"type\":2,\"refX\":102.0,\"refY\":98.0,\"offX\":98.0,\"offY\":98.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"2\",\"type\":2,\"refX\":102.0,\"refY\":102.0,\"offX\":100.0,\"offY\":102.5,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"2\",\"type\":2,\"refX\":102.0,\"refY\":102.0,\"offX\":100.0,\"offY\":101.5,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"3\",\"type\":2,\"refX\":102.5,\"refY\":100.0,\"offX\":102.0,\"offY\":98.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"3\",\"type\":2,\"refX\":101.5,\"refY\":100.0,\"offX\":102.0,\"offY\":98.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"4\",\"type\":2,\"refX\":100.0,\"refY\":98.5,\"offX\":98.0,\"offY\":98.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"4\",\"type\":2,\"refX\":100.0,\"refY\":97.5,\"offX\":98.0,\"offY\":98.0,\"radius\":0.0,\"color\":3372155135,\"thicc\":5.0},{\"Name\":\"\",\"refX\":100.0,\"refY\":100.0,\"radius\":0.0,\"overlayTextColor\":4294902015,\"overlayFScale\":1.5,\"thicc\":0.0,\"overlayText\":\"Counter-Clockwise\"}]}", out _);
         }
 
         public override void OnUpdate()
         {
+            if(Controller.Scene != 2)
+            {
+                Controller.Hide();
+                return;
+            }
             if(Omega == null || !ProperOnLogin.PlayerPresent) return;
 
             if(Lasers.Length == 2)
@@ -54,7 +63,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                     var angle = GetRelativeAngleRad(new(100f, 100f), Lasers[which].Position.ToVector2());
                     var point = RotatePoint(100f, 100f, angle, new(100f, 130f, 0f));
                     e.Enabled = true;
-                    if(Lasers[which].Address == Svc.ClientState.LocalPlayer.Address)
+                    if(Lasers[which].Address == Svc.Objects.LocalPlayer.Address)
                     {
                         e.color = Controller.GetConfig<Config>().LaserColSelf.ToUint();
                     }
@@ -80,9 +89,9 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol
                 {
                     var e = Controller.GetElementByName($"Rocket{which + 1}");
                     e.Enabled = true;
-                    if(Rockets[which].Address == Svc.ClientState.LocalPlayer.Address)
+                    if(Rockets[which].Address == Svc.Objects.LocalPlayer.Address)
                     {
-                        if(Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3424, 3495, 3496, 3497) && x.RemainingTime < 3f))
+                        if(Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId.EqualsAny<uint>(3424, 3495, 3496, 3497) && x.RemainingTime < 3f))
                         {
                             e.color = GradientColor.Get(Controller.GetConfig<Config>().RocketColSelf, Controller.GetConfig<Config>().RocketColSelf2, 250).ToUint();
                         }

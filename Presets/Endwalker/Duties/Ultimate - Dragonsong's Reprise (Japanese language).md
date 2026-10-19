@@ -1,7 +1,7 @@
 |This page contains triggers localized for Japanese game client|
 |---|
 
-|WARNING, this page is obsolete, Japanese triggers can be found in https://github.com/NightmareXIV/Splatoon/tree/master/Presets/Endwalker%20content/Duties/Ultimate%20-%20Dragonsong's%20Reprise as well. This page ONLY contains triggers for mechanics that are not yet translated.|
+|WARNING, this page is obsolete, Japanese triggers can be found in https://github.com/ffxiv-tc-port/Splatoon/tree/HEAD/Presets/Endwalker/Duties/Ultimate%20-%20Dragonsong's%20Reprise as well. This page ONLY contains triggers for mechanics that are not yet translated.|
 |---|
 
 # Phase 2 - Thordan triggers
