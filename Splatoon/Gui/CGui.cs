@@ -156,7 +156,6 @@ internal unsafe partial class CGui : IDisposable
         {
             ImGui.PopStyleColor(2);
         }
-        ImGui.EndTabBar();
         ImGui.End();
     }
 

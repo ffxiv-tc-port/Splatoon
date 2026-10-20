@@ -81,7 +81,7 @@ internal unsafe class P6_MultiScript : SplatoonScript
     #endregion
 
     #region publicDefine
-    public override Metadata Metadata => new(6, "Redmoon");
+    public override Metadata Metadata => new(7, "Redmoon");
     public override HashSet<uint>? ValidTerritories => [1122];
     #endregion
 
@@ -336,6 +336,7 @@ internal unsafe class P6_MultiScript : SplatoonScript
                     C.spreadMarker = marker;
                 }
             }
+            ImGui.EndCombo();
         }
 
         ImGui.Text("#Cosmo Dive Spread Marker");
@@ -349,6 +350,7 @@ internal unsafe class P6_MultiScript : SplatoonScript
                     C.cosmoSpreadMarker = marker;
                 }
             }
+            ImGui.EndCombo();
         }
 
         ImGui.Dummy(new Vector2(0, 20));
