@@ -311,6 +311,8 @@ public unsafe class Splatoon : IDalamudPlugin
         // 它會拿到 ObjectDisposedException,而各條下載路徑本來就各自有 catch。
         Safe(() => HttpClient?.Dispose());
         Safe(BuffEffectProcessor.Dispose);
+        // 開著戰鬥記錄時 SimpleLogger 的前景執行緒會一直卡在 Take()，連帶留住整份舊版組件。
+        Safe(Logger.EndLogging);
         Safe(EzIpcFailureLog.Disable);
         ECommonsMain.Dispose();
         P = null;

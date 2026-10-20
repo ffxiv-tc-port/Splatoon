@@ -38,10 +38,11 @@ internal static class Logger
 
     internal static void Log(string message)
     {
-        if(currentLogger != null)
+        var logger = currentLogger;
+        if(logger != null)
         {
             var combatTime = Environment.TickCount64 - P.CombatStarted; ;
-            currentLogger.Log($"[{(P.CombatStarted != 0 ? $"Combat: {((float)combatTime / 1000f):F1}s" : "Not in combat")}] {message}");
+            logger.Log($"[{(P.CombatStarted != 0 ? $"Combat: {((float)combatTime / 1000f):F1}s" : "Not in combat")}] {message}");
         }
     }
 
