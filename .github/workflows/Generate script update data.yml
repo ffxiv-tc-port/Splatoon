@@ -60,3 +60,4 @@ jobs:
             # 刻意不用 -a:只提交這個產生出來的檔案,不要順手帶走別的東西。
             git commit -m "自動產生:更新 SplatoonScripts/update.csv" || echo "No changes to commit"
             git push
+# workflow re-registration trigger 2026-10-26T18:43:04Z

@@ -53,3 +53,4 @@ jobs:
       # ⚠️ 不要為了讓它變綠而把腳本專案移出方案,那會退回「腳本零編譯期把關」。
       - name: Build with dotnet
         run: dotnet build Splatoon.sln --configuration Release -p:DalamudLibPath="$env:RUNNER_TEMP\dalamud-pinned\"
+# workflow re-registration trigger 2026-10-26T18:43:04Z
