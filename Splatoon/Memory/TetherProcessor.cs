@@ -53,7 +53,8 @@ internal unsafe class TetherProcessor
         var ret = ProcessTetherHook.OriginalDisposeSafe(a1, a2, a3, targetOID, a5);
         try
         {
-            if(a1->OwnerObject == null)
+            // 先判 a1 再解參考：原生指標為 null 時是 AVE，try/catch 攔不到。
+            if(a1 != null && a1->OwnerObject == null)
             {
                 PluginLog.Warning($"Tether owner object is null");
             }
