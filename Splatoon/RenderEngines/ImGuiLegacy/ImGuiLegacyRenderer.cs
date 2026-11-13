@@ -772,30 +772,37 @@ internal sealed unsafe class ImGuiLegacyRenderer : RenderEngine
         }
     }
 
+    // 填色迴圈的步長下限：設定／匯入的步長可為 0 或負值，迴圈會永不結束；極小的正值也會讓
+    // float 累加卡在同一值。只夾回傳值，不改 UI 與存檔。NaN 原樣放行（迴圈條件恆假＝不填，與原本相同）。
+    private const float MinFillStep = 0.001f;
+
     internal float GetFillStepRect(float original)
     {
         if(P.Config.AltRectStepOverride || original < P.Config.AltRectStep)
         {
-            return P.Config.AltRectStep;
+            return ClampFillStep(P.Config.AltRectStep);
         }
-        return original;
+        return ClampFillStep(original);
     }
 
     internal float GetFillStepDonut(float original)
     {
         if(P.Config.AltDonutStepOverride || original < P.Config.AltDonutStep)
         {
-            return P.Config.AltDonutStep;
+            return ClampFillStep(P.Config.AltDonutStep);
         }
-        return original;
+        return ClampFillStep(original);
     }
 
     internal int GetFillStepCone(float original)
     {
         if(P.Config.AltConeStepOverride || original < P.Config.AltConeStep)
         {
-            return P.Config.AltConeStep;
+            return Math.Max(1, P.Config.AltConeStep);
         }
-        return (int)Math.Max(1f, original);
+        // NaN 轉 int 會變 0，所以轉完再夾一次。
+        return Math.Max(1, (int)Math.Max(1f, original));
     }
+
+    private static float ClampFillStep(float step) => float.IsNaN(step) || step >= MinFillStep ? step : MinFillStep;
 }
