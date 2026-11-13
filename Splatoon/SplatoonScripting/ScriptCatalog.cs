@@ -31,9 +31,23 @@ internal static class ScriptCatalog
     /// <param name="Version">update.csv 第二欄。</param>
     /// <param name="Url">update.csv 第三欄,下載網址。</param>
     /// <param name="SourceUrl">來源清單。<c>null</c> = 本 fork 的官方清單;非 null = 使用者自行加入的 ExtraUpdateLinks 那條網址。</param>
-    internal sealed record CatalogEntry(string FullName, int Version, string Url, string? SourceUrl)
+    /// <param name="Flags">update.csv 第四欄（<c>;</c> 分隔，由 SplatoonScripts/distribution-rules.txt 產生）；沒有就是空字串。</param>
+    /// <param name="Note">update.csv 第五欄，標記的說明；沒有就是空字串。</param>
+    internal sealed record CatalogEntry(string FullName, int Version, string Url, string? SourceUrl, string Flags = "", string Note = "")
     {
         internal bool IsOfficial => SourceUrl == null;
+        // 建構時算一次：繪製路徑每幀每列都會讀。
+        internal bool Actuates { get; } = HasFlag(Flags, "actuates");
+        internal bool IsTest { get; } = HasFlag(Flags, "test");
+
+        private static bool HasFlag(string flags, string flag)
+        {
+            foreach(var f in flags.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                if(f.Equals(flag, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
+        }
 
         /// <summary>FullName 的 '@' 之前的部分。沒有 '@' 時退回空字串,不擲例外。</summary>
         internal string Namespace
@@ -170,7 +184,9 @@ internal static class ScriptCatalog
                 if(data.Length >= 3 && int.TryParse(data[1], out var ver))
                 {
                     if(!seen.Add(data[0])) continue;
-                    builder.Add(new(data[0], ver, data[2], source));
+                    var flags = data.Length > 3 ? data[3] : "";
+                    var note = data.Length > 4 ? string.Join(",", data.Skip(4)) : "";
+                    builder.Add(new(data[0], ver, data[2], source, flags, note));
                 }
                 else
                 {

@@ -171,6 +171,20 @@ internal static class TabScriptBrowser
                 ImGuiEx.Text(ImGuiColors.DalamudOrange, "[custom list]".Loc());
                 ImGuiEx.Tooltip("This entry does not come from the official script repository. It comes from an update list you added yourself:\n??".Loc(entry.SourceUrl ?? ""));
             }
+            if(entry.Actuates)
+            {
+                ImGui.SameLine();
+                ImGuiEx.Text(ImGuiColors.DalamudYellow, "[Operates the game]".Loc());
+                ImGuiEx.Tooltip(entry.Note.Length > 0
+                    ? "Once enabled, this script acts in the game on its own instead of only drawing:\n??".Loc(entry.Note)
+                    : "Once enabled, this script acts in the game on its own instead of only drawing.".Loc());
+            }
+            if(entry.IsTest)
+            {
+                ImGui.SameLine();
+                ImGuiEx.Text(ImGuiColors.DalamudGrey, "[Test]".Loc());
+                ImGuiEx.Tooltip("This is a developer test script. It may be unfinished, may only print debug information, or may act in the game.".Loc());
+            }
 
             ImGui.TableNextColumn();
 
