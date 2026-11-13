@@ -694,8 +694,7 @@ public unsafe class Splatoon : IDalamudPlugin
                     // 🔴 內層 foreach 只負責判定，移除與跳過由外層做。DestroyTime 是 long[]、可以含多筆：
                     // 在內層直接 RemoveAt(i) 時，同一幀有兩個銷毀條件成立就會對同一個 i 移除兩次 ——
                     // i 是最後一格擲 ArgumentOutOfRangeException，否則默默刪掉本來還活著的另一個元素。
-                    // Tick() 整個包在最外層一個 catch 裡：這裡擲例外＝該幀剩下的 prevCombatState 更新與
-                    // ScriptingProcessor.OnUpdate() 全部跳過（所有腳本那一幀完全不跑）。
+                    // 這裡擲例外＝該幀剩下的圖層處理全部跳過（腳本更新在另一段 try，照跑）。
                     var destroyed = false;
                     foreach(var dt in de.DestroyTime)
                     {
@@ -735,6 +734,20 @@ public unsafe class Splatoon : IDalamudPlugin
             else
             {
             }
+        }
+        catch(Exception e)
+        {
+            Log("Caught exception: " + e.Message);
+            Log(e.ToStringFull());
+            ReportTickError("圖層處理", e);
+        }
+        finally
+        {
+            LayoutUtils.EndObjectNameCache();
+        }
+        // 分兩段：圖層處理擲例外不再讓所有腳本整幀停擺。上一段提早 return（LocalPlayer 位址為 0）照舊整幀略過。
+        try
+        {
             prevCombatState = Svc.Condition[ConditionFlag.InCombat];
             CurrentChatMessages.Clear();
             BuffEffectProcessor.ActorEffectUpdate();
@@ -745,11 +758,23 @@ public unsafe class Splatoon : IDalamudPlugin
         {
             Log("Caught exception: " + e.Message);
             Log(e.ToStringFull());
+            ReportTickError("腳本更新", e);
         }
-        finally
+    }
+
+    private readonly HashSet<string> reportedTickErrors = [];
+    private readonly object reportedTickErrorsLock = new();
+    private const int MaxReportedTickErrors = 64;
+
+    /// <summary>同一例外通常每幀重擲 ⇒ 同段＋型別＋訊息＋堆疊只記一次 <c>PluginLog.Error</c>；種類數有上限。</summary>
+    private void ReportTickError(string stage, Exception e)
+    {
+        var key = $"{stage}|{e.GetType().FullName}|{e.Message}|{e.StackTrace}";
+        lock(reportedTickErrorsLock)
         {
-            LayoutUtils.EndObjectNameCache();
+            if(reportedTickErrors.Count >= MaxReportedTickErrors || !reportedTickErrors.Add(key)) return;
         }
+        PluginLog.Error($"[Splatoon] Tick（{stage}）擲例外，同一錯誤之後不再重記：{e.ToStringFull()}");
     }
 
     internal void ProcessLayout(Layout l)
