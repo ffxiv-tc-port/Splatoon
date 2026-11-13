@@ -494,6 +494,12 @@ internal static partial class ScriptingProcessor
                                                             Directory.CreateDirectory(dir);
                                                         }
                                                         var newPath = Path.Combine(dir, $"{instance.InternalData.Name}.cs");
+                                                        // 新安裝預設停用（使用者自己按啟用）；檔案已在＝不是新安裝，啟停狀態不動。
+                                                        if(InstallDefaults.DisableIfNewInstall(P.Config.DisabledScripts, instance.InternalData.FullName, File.Exists(newPath)))
+                                                        {
+                                                            PluginLog.Information($"Script {instance.InternalData.FullName} newly installed, disabled by default");
+                                                            Notify.Info("Script ?? was installed and is disabled by default. To use it, enable it in the script list.".Loc(instance.InternalData.Name.Replace("_", " ")));
+                                                        }
                                                         instance.InternalData.Path = newPath;
                                                         File.WriteAllText(newPath, result.code, Encoding.UTF8);
                                                         // 建構時 Path 還是 null，覆寫是對著相對路徑讀的；換成真路徑後要重讀，
