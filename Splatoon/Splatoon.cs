@@ -46,6 +46,8 @@ public unsafe class Splatoon : IDalamudPlugin
     internal Commands CommandManager;
     internal Configuration Config;
     internal Dictionary<ushort, TerritoryType> Zones;
+    /// <summary>區域資料表讀取失敗時為 false，<see cref="Zones"/> 是空字典；此時不可依它刪改圖層的區域限制。</summary>
+    internal bool ZonesAvailable;
 
     /// <summary>
     /// 錄影回放時要「以誰的視角」解算腳本。空字串＝用本機玩家。
@@ -157,7 +159,8 @@ public unsafe class Splatoon : IDalamudPlugin
         ChatMessageQueue = new Queue<string>();
         //Profiler = new Profiling(this);
         CommandManager = new Commands(this);
-        Zones = Svc.Data.GetExcelSheet<TerritoryType>().ToDictionary(row => (ushort)row.RowId, row => row);
+        ZonesAvailable = LoadStep("區域資料表（圖層區域限制）", () => Zones = Svc.Data.GetExcelSheet<TerritoryType>().ToDictionary(row => (ushort)row.RowId, row => row));
+        if(!ZonesAvailable) Zones = [];
         tickScheduler = new ConcurrentQueue<System.Action>();
         dynamicElements = [];
         SetupShutdownHttp(Config.UseHttpServer);
@@ -173,46 +176,16 @@ public unsafe class Splatoon : IDalamudPlugin
         Svc.Framework.Update += Tick;
         Svc.ClientState.TerritoryChanged += TerritoryChangedEvent;
         Svc.PluginInterface.UiBuilder.DisableUserUiHide = Config.ShowOnUiHide;
-        LimitGaugeResets = Svc.Data.GetExcelSheet<LogMessage>().GetRow(2844).Text.ToString();
-        Task.Run(() =>
+        // Tick 已訂閱：以下功能性步驟失敗只停用該功能、載入繼續，免得半套載入後每幀擲例外。
+        LoadStep("極限槽清零換階段（LogMessage 2844）", () =>
         {
-            var dict = new Dictionary<string, uint>();
-            var dictAll = new Dictionary<string, uint>();
-            foreach(var lang in Enum.GetValues<ClientLanguage>())
-            {
-                foreach(var x in Svc.Data.GetExcelSheet<BNpcName>(lang))
-                {
-                    if(x.Singular != "")
-                    {
-                        var n = x.Singular.ToString().ToLower();
-                        dictAll[n] = x.RowId;
-                        dict[n] = x.RowId;
-                    }
-                }
-            }
-            var bNames = new HashSet<string>();
-            foreach(var lang in Enum.GetValues<ClientLanguage>())
-            {
-                bNames.Clear();
-                foreach(var x in Svc.Data.GetExcelSheet<BNpcName>(lang))
-                {
-                    var n = x.Singular.ToString().ToLower();
-                    if(bNames.Contains(n))
-                    {
-                        dict[n] = 0;
-                    }
-                    else
-                    {
-                        bNames.Add(n);
-                    }
-                }
-            }
-            NameNpcIDs = dict.Where(x => x.Value != 0).ToDictionary(x => x.Key, x => x.Value);
-            NameNpcIDsAll = dictAll;
+            var row = Svc.Data.GetExcelSheet<LogMessage>().GetRowOrDefault(2844) ?? throw new InvalidOperationException("LogMessage row 2844 not found");
+            LimitGaugeResets = row.Text.ToString();
         });
-        StreamDetector.Start();
-        AttachedInfo.Init();
-        Logger.OnTerritoryChanged();
+        Task.Run(() => LoadStep("名稱查 NPC 編號（BNpcName）", BuildNpcNameDictionaries));
+        LoadStep("直播偵測", StreamDetector.Start);
+        LoadStep("施法／特效偵測", AttachedInfo.Init);
+        LoadStep("戰鬥記錄", Logger.OnTerritoryChanged);
         Layout.DisplayConditions = [
             "Always shown".Loc(),
             "Only in combat".Loc(),
@@ -225,12 +198,15 @@ public unsafe class Splatoon : IDalamudPlugin
             "Outside of combat AND instance".Loc(),
             "Outside of combat OR instance".Loc()];
         Element.Init();
-        mapEffectProcessor = new();
-        TetherProcessor = new();
-        ObjectEffectProcessor = new();
-        DirectorUpdate.Init(DirectorUpdateProcessor.ProcessDirectorUpdate);
-        ActionEffect.Init(ActionEffectProcessor.ProcessActionEffect);
-        ActionEffect.ActionEffectEvent += ScriptingProcessor.OnActionEffectEvent;
+        LoadStep("場地效果偵測", () => mapEffectProcessor = new());
+        LoadStep("連線偵測", () => TetherProcessor = new());
+        LoadStep("物件效果偵測", () => ObjectEffectProcessor = new());
+        LoadStep("副本進度偵測", () => DirectorUpdate.Init(DirectorUpdateProcessor.ProcessDirectorUpdate));
+        LoadStep("技能效果偵測", () =>
+        {
+            ActionEffect.Init(ActionEffectProcessor.ProcessActionEffect);
+            ActionEffect.ActionEffectEvent += ScriptingProcessor.OnActionEffectEvent;
+        });
         ProperOnLogin.RegisterAvailable(delegate
         {
             ScriptingProcessor.TerritoryChanged();
@@ -247,11 +223,13 @@ public unsafe class Splatoon : IDalamudPlugin
         EzConfigGui.WindowSystem.AddWindow(RenderableZoneSelector);
         ClipZoneSelector = new();
         EzConfigGui.WindowSystem.AddWindow(ClipZoneSelector);
-        NotificationMasterApi = new(pluginInterface);
-        SingletonServiceManager.Initialize(typeof(S));
-        Archive = EzConfig.LoadConfiguration<Archive>("Archive.json");
-        ActorControlProcessor = new ActorControlProcessor();
-        BuffEffectProcessor = new();
+        LoadStep("系統通知（NotificationMaster）", () => NotificationMasterApi = new(pluginInterface));
+        LoadStep("服務容器", () => SingletonServiceManager.Initialize(typeof(S)));
+        if(S.RenderManager == null) PluginLog.Error("[Splatoon] 繪圖服務沒有建立，圖層與腳本都不會畫出來（原因見上方例外）");
+        // 失敗時 Archive 留 null：封存功能停用，且絕不拿空白封存蓋掉使用者讀不進來的檔。
+        LoadStep("封存（Archive.json）", () => Archive = EzConfig.LoadConfiguration<Archive>("Archive.json"));
+        LoadStep("ActorControl 偵測", () => ActorControlProcessor = new ActorControlProcessor());
+        LoadStep("狀態效果偵測", () => BuffEffectProcessor = new());
         LogWindow = new();
         EzConfigGui.WindowSystem.AddWindow(LogWindow);
         PriorityPopupWindow = new();
@@ -265,6 +243,61 @@ public unsafe class Splatoon : IDalamudPlugin
         ScriptingProcessor.ReloadAll();
         Init = true;
         SplatoonIPC.Init();
+    }
+
+    /// <summary>
+    /// 失敗只停用該功能的一個載入步驟：擲例外記一次 <c>PluginLog.Error</c> 並回 <see langword="false"/>，載入繼續。
+    /// 設定、視窗、腳本處理器等其餘步驟不包，失敗照舊中止載入（Tick 對缺的依賴判空）。
+    /// </summary>
+    private static bool LoadStep(string feature, System.Action step)
+    {
+        try
+        {
+            step();
+            return true;
+        }
+        catch(Exception e)
+        {
+            PluginLog.Error($"[Splatoon] 載入「{feature}」失敗，此功能停用，其餘照常：{e}");
+            return false;
+        }
+    }
+
+    private static void BuildNpcNameDictionaries()
+    {
+        var dict = new Dictionary<string, uint>();
+        var dictAll = new Dictionary<string, uint>();
+        foreach(var lang in Enum.GetValues<ClientLanguage>())
+        {
+            foreach(var x in Svc.Data.GetExcelSheet<BNpcName>(lang))
+            {
+                if(x.Singular != "")
+                {
+                    var n = x.Singular.ToString().ToLower();
+                    dictAll[n] = x.RowId;
+                    dict[n] = x.RowId;
+                }
+            }
+        }
+        var bNames = new HashSet<string>();
+        foreach(var lang in Enum.GetValues<ClientLanguage>())
+        {
+            bNames.Clear();
+            foreach(var x in Svc.Data.GetExcelSheet<BNpcName>(lang))
+            {
+                var n = x.Singular.ToString().ToLower();
+                if(bNames.Contains(n))
+                {
+                    dict[n] = 0;
+                }
+                else
+                {
+                    bNames.Add(n);
+                }
+            }
+        }
+        NameNpcIDs = dict.Where(x => x.Value != 0).ToDictionary(x => x.Key, x => x.Value);
+        NameNpcIDsAll = dictAll;
     }
 
     public void Dispose()
@@ -302,15 +335,16 @@ public unsafe class Splatoon : IDalamudPlugin
             Svc.Chat.ChatMessage -= OnChatMessage;
             Svc.ClientState.Logout -= OnLogout;
         });
-        Safe(mapEffectProcessor.Dispose);
-        Safe(TetherProcessor.Dispose);
-        Safe(ObjectEffectProcessor.Dispose);
+        // 這幾個在 Load 裡失敗只停用該功能，可能是 null。
+        Safe(() => mapEffectProcessor?.Dispose());
+        Safe(() => TetherProcessor?.Dispose());
+        Safe(() => ObjectEffectProcessor?.Dispose());
         Safe(AttachedInfo.Dispose);
         Safe(ScriptingProcessor.Dispose);
         // 持有 GitHub 權杖的 handler 不要活過外掛本身。背景下載執行緒此刻若還在飛,
         // 它會拿到 ObjectDisposedException,而各條下載路徑本來就各自有 catch。
         Safe(() => HttpClient?.Dispose());
-        Safe(BuffEffectProcessor.Dispose);
+        Safe(() => BuffEffectProcessor?.Dispose());
         // 開著戰鬥記錄時 SimpleLogger 的前景執行緒會一直卡在 Take()，連帶留住整份舊版組件。
         Safe(Logger.EndLogging);
         Safe(EzIpcFailureLog.Disable);
@@ -321,7 +355,7 @@ public unsafe class Splatoon : IDalamudPlugin
 
     public void SaveArchive()
     {
-        Archive.SaveConfiguration("Archive.json");
+        Archive?.SaveConfiguration("Archive.json");
     }
 
     public Splatoon(IDalamudPluginInterface pluginInterface)
@@ -372,7 +406,7 @@ public unsafe class Splatoon : IDalamudPlugin
     internal void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
         var inttype = (int)type;
-        if(inttype == 2105 && LimitGaugeResets.Equals(message.ToString()))
+        if(inttype == 2105 && LimitGaugeResets.Length > 0 && LimitGaugeResets.Equals(message.ToString()))
         {
             Phase++;
             CombatStarted = Environment.TickCount64;
@@ -488,7 +522,7 @@ public unsafe class Splatoon : IDalamudPlugin
         AttachedInfo.VFXInfos.Clear();
         Logger.OnTerritoryChanged();
         ScriptingProcessor.TerritoryChanged();
-        S.InfoBar.Update(true);
+        S.InfoBar?.Update(true);
     }
 
     private static void ResetLayout(Layout l)
@@ -553,7 +587,7 @@ public unsafe class Splatoon : IDalamudPlugin
                 action.Invoke();
             }
             PlayerPosCache = null;
-            S.RenderManager.ClearDisplayObjects();
+            S.RenderManager?.ClearDisplayObjects();
             if(Svc.Objects.LocalPlayer != null)
             {
                 PhaseUpdater.UpdatePhaseIfNeeded();
@@ -617,119 +651,123 @@ public unsafe class Splatoon : IDalamudPlugin
 
                 //if (CamAngleY > Config.maxcamY) return;
 
-                LayoutUtils.BeginObjectNameCache();
-                if(PinnedElementEditWindow.Script != null && PinnedElementEditWindow.EditingElement != null && !PinnedElementEditWindow.Script.InternalData.UnconditionalDraw)
+                // 繪圖服務沒建起來（載入時已記 Error）：只跳過圖層與元素處理，聊天、戰鬥事件與腳本照跑，不每幀擲 NRE。
+                if(S.RenderManager != null)
                 {
-                    S.RenderManager.GetRenderer(PinnedElementEditWindow.EditingElement).ProcessElement(PinnedElementEditWindow.EditingElement, null, true);
-                }
-
-                if(SFind.Count > 0)
-                {
-                    foreach(var obj in SFind)
+                    LayoutUtils.BeginObjectNameCache();
+                    if(PinnedElementEditWindow.Script != null && PinnedElementEditWindow.EditingElement != null && !PinnedElementEditWindow.Script.InternalData.UnconditionalDraw)
                     {
-                        var col = GradientColor.Get(Colors.Red.ToVector4(), Colors.Yellow.ToVector4(), 750);
-                        var findEl = new Element(obj.Coords == null ? 1 : 0)
-                        {
-                            Filled = false,
-                            thicc = 3f,
-                            radius = 0f,
-                            refActorName = obj.Name,
-                            refActorObjectID = obj.ObjectID,
-                            refActorComparisonType = obj.SearchAttribute,
-                            overlayText = obj.Coords == null ? "$NAME" : "",
-                            overlayVOffset = 1.7f,
-                            overlayPlaceholders = true,
-                            overlayTextColor = col.ToUint(),
-                            color = col.ToUint(),
-                            includeHitbox = true,
-                            onlyTargetable = !obj.IncludeUntargetable,
-                            tether = Config.TetherOnFind,
-                        };
-                        if(obj.Coords != null) findEl.SetRefPosition(obj.Coords.Value);
-                        S.RenderManager.GetRenderer(findEl).ProcessElement(findEl);
+                        S.RenderManager.GetRenderer(PinnedElementEditWindow.EditingElement).ProcessElement(PinnedElementEditWindow.EditingElement, null, true);
                     }
-                }
 
-                ProcessS2W();
-
-                foreach(var i in Config.LayoutsL)
-                {
-                    ProcessLayout(i);
-                }
-
-                // 刻意不用 Each＋lambda：那樣每幀至少配一個委派，有腳本時每支再多閉包與裝箱的列舉器。
-                // 順序、兩趟各自讀一次腳本清單、例外直接往外傳都與 Each 版相同。
-                var scripts = ScriptingProcessor.Scripts;
-                for(var si = 0; si < scripts.Count; si++)
-                {
-                    var x = scripts[si];
-                    if(x.IsEnabled)
+                    if(SFind.Count > 0)
                     {
-                        foreach(var l in x.Controller.Layouts.Values) ProcessLayout(l);
-                    }
-                }
-                scripts = ScriptingProcessor.Scripts;
-                for(var si = 0; si < scripts.Count; si++)
-                {
-                    var x = scripts[si];
-                    if(x.IsEnabled || x.InternalData.UnconditionalDraw)
-                    {
-                        foreach(var z in x.Controller.Elements)
+                        foreach(var obj in SFind)
                         {
-                            S.RenderManager.GetRenderer(z.Value).ProcessElement(z.Value, null, x.InternalData.UnconditionalDraw && x.InternalData.UnconditionalDrawElements.Contains(z.Key));
+                            var col = GradientColor.Get(Colors.Red.ToVector4(), Colors.Yellow.ToVector4(), 750);
+                            var findEl = new Element(obj.Coords == null ? 1 : 0)
+                            {
+                                Filled = false,
+                                thicc = 3f,
+                                radius = 0f,
+                                refActorName = obj.Name,
+                                refActorObjectID = obj.ObjectID,
+                                refActorComparisonType = obj.SearchAttribute,
+                                overlayText = obj.Coords == null ? "$NAME" : "",
+                                overlayVOffset = 1.7f,
+                                overlayPlaceholders = true,
+                                overlayTextColor = col.ToUint(),
+                                color = col.ToUint(),
+                                includeHitbox = true,
+                                onlyTargetable = !obj.IncludeUntargetable,
+                                tether = Config.TetherOnFind,
+                            };
+                            if(obj.Coords != null) findEl.SetRefPosition(obj.Coords.Value);
+                            S.RenderManager.GetRenderer(findEl).ProcessElement(findEl);
                         }
                     }
-                }
-                foreach(var e in InjectedElements)
-                {
-                    S.RenderManager.GetRenderer(e).ProcessElement(e);
-                    //PluginLog.Information("Processing type " + e.type + JsonConvert.SerializeObject(e, Formatting.Indented));
-                }
-                InjectedElements.Clear();
 
-                for(var i = dynamicElements.Count - 1; i >= 0; i--)
-                {
-                    var de = dynamicElements[i];
+                    ProcessS2W();
 
-                    // 🔴 內層 foreach 只負責判定，移除與跳過由外層做。DestroyTime 是 long[]、可以含多筆：
-                    // 在內層直接 RemoveAt(i) 時，同一幀有兩個銷毀條件成立就會對同一個 i 移除兩次 ——
-                    // i 是最後一格擲 ArgumentOutOfRangeException，否則默默刪掉本來還活著的另一個元素。
-                    // 這裡擲例外＝該幀剩下的圖層處理全部跳過（腳本更新在另一段 try，照跑）。
-                    var destroyed = false;
-                    foreach(var dt in de.DestroyTime)
+                    foreach(var i in Config.LayoutsL)
                     {
-                        if(dt == (long)DestroyCondition.COMBAT_EXIT)
+                        ProcessLayout(i);
+                    }
+
+                    // 刻意不用 Each＋lambda：那樣每幀至少配一個委派，有腳本時每支再多閉包與裝箱的列舉器。
+                    // 順序、兩趟各自讀一次腳本清單、例外直接往外傳都與 Each 版相同。
+                    var scripts = ScriptingProcessor.Scripts;
+                    for(var si = 0; si < scripts.Count; si++)
+                    {
+                        var x = scripts[si];
+                        if(x.IsEnabled)
                         {
-                            if(!Svc.Condition[ConditionFlag.InCombat] && prevCombatState)
-                            {
-                                destroyed = true;
-                                break;
-                            }
+                            foreach(var l in x.Controller.Layouts.Values) ProcessLayout(l);
                         }
-                        else if(dt > 0)
+                    }
+                    scripts = ScriptingProcessor.Scripts;
+                    for(var si = 0; si < scripts.Count; si++)
+                    {
+                        var x = scripts[si];
+                        if(x.IsEnabled || x.InternalData.UnconditionalDraw)
                         {
-                            if(Environment.TickCount64 > dt)
+                            foreach(var z in x.Controller.Elements)
                             {
-                                destroyed = true;
-                                break;
+                                S.RenderManager.GetRenderer(z.Value).ProcessElement(z.Value, null, x.InternalData.UnconditionalDraw && x.InternalData.UnconditionalDrawElements.Contains(z.Key));
                             }
                         }
                     }
-                    if(destroyed)
-                    {
-                        dynamicElements.RemoveAt(i);
-                        continue;
-                    }
-                    foreach(var l in de.Layouts)
-                    {
-                        ProcessLayout(l);
-                    }
-                    foreach(var e in de.Elements)
+                    foreach(var e in InjectedElements)
                     {
                         S.RenderManager.GetRenderer(e).ProcessElement(e);
+                        //PluginLog.Information("Processing type " + e.type + JsonConvert.SerializeObject(e, Formatting.Indented));
                     }
+                    InjectedElements.Clear();
+
+                    for(var i = dynamicElements.Count - 1; i >= 0; i--)
+                    {
+                        var de = dynamicElements[i];
+
+                        // 🔴 內層 foreach 只負責判定，移除與跳過由外層做。DestroyTime 是 long[]、可以含多筆：
+                        // 在內層直接 RemoveAt(i) 時，同一幀有兩個銷毀條件成立就會對同一個 i 移除兩次 ——
+                        // i 是最後一格擲 ArgumentOutOfRangeException，否則默默刪掉本來還活著的另一個元素。
+                        // 這裡擲例外＝該幀剩下的圖層處理全部跳過（腳本更新在另一段 try，照跑）。
+                        var destroyed = false;
+                        foreach(var dt in de.DestroyTime)
+                        {
+                            if(dt == (long)DestroyCondition.COMBAT_EXIT)
+                            {
+                                if(!Svc.Condition[ConditionFlag.InCombat] && prevCombatState)
+                                {
+                                    destroyed = true;
+                                    break;
+                                }
+                            }
+                            else if(dt > 0)
+                            {
+                                if(Environment.TickCount64 > dt)
+                                {
+                                    destroyed = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(destroyed)
+                        {
+                            dynamicElements.RemoveAt(i);
+                            continue;
+                        }
+                        foreach(var l in de.Layouts)
+                        {
+                            ProcessLayout(l);
+                        }
+                        foreach(var e in de.Elements)
+                        {
+                            S.RenderManager.GetRenderer(e).ProcessElement(e);
+                        }
+                    }
+                    LayoutUtils.EndObjectNameCache();
                 }
-                LayoutUtils.EndObjectNameCache();
             }
             else
             {
@@ -750,7 +788,7 @@ public unsafe class Splatoon : IDalamudPlugin
         {
             prevCombatState = Svc.Condition[ConditionFlag.InCombat];
             CurrentChatMessages.Clear();
-            BuffEffectProcessor.ActorEffectUpdate();
+            BuffEffectProcessor?.ActorEffectUpdate();
             ScriptingProcessor.OnUpdate();
             CapturedPositions.Clear();
         }

@@ -390,7 +390,7 @@ internal partial class CGui
                             PopupRename = "";
                         }
                     }
-                    if(ImGui.Selectable("Archive group".Loc()) && ImGui.GetIO().KeyCtrl)
+                    if(P.Archive != null && ImGui.Selectable("Archive group".Loc()) && ImGui.GetIO().KeyCtrl)
                     {
                         foreach(var l in P.Config.LayoutsL)
                         {

@@ -117,7 +117,7 @@ internal static class LayoutDrawSelector
             if(ImGui.BeginPopup("LayoutContext"))
             {
                 ImGuiEx.Text($"Layout ??".Loc(layout.GetName()));
-                if(ImGui.Selectable("Archive layout".Loc()))
+                if(P.Archive != null && ImGui.Selectable("Archive layout".Loc()))
                 {
                     P.Archive.LayoutsL.Add(layout.JSONClone());
                     P.SaveArchive();

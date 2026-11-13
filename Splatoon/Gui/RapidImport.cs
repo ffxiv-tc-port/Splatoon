@@ -49,6 +49,6 @@ internal static class RapidImport
 
     private static void TryNotify(string s)
     {
-        P.NotificationMasterApi.DisplayTrayNotification("Splatoon", s);
+        P.NotificationMasterApi?.DisplayTrayNotification("Splatoon", s);
     }
 }

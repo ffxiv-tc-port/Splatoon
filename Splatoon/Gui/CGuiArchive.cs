@@ -1,4 +1,6 @@
-﻿using Dalamud.Plugin.Ipc.Exceptions;
+﻿using ECommons.LanguageHelpers;
+using Dalamud.Interface.Colors;
+using Dalamud.Plugin.Ipc.Exceptions;
 using ECommons.Configuration;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,11 @@ internal unsafe partial class CGui
 {
     internal void DrawArchive()
     {
+        if(P.Archive == null)
+        {
+            ImGuiEx.TextWrapped(ImGuiColors.DalamudRed, "Archive.json could not be read, so the archive is disabled. The file is left untouched.".Loc());
+            return;
+        }
         ImGuiEx.TextWrapped($"""
             You may archive layouts that you are no longer using. Archived layouts:
             - Are not processed and do not consume any resources;

@@ -1,4 +1,5 @@
-﻿using ECommons;
+﻿using Dalamud.Interface.Colors;
+using ECommons;
 using ECommons.LanguageHelpers;
 using Splatoon.Utility;
 
@@ -10,6 +11,12 @@ internal static class ZlockSelector
     internal static bool zlockcur = false;
     internal static void DrawZlockSelector(this Layout layout)
     {
+        // 區域表沒讀到時 Zones 是空的：下面的 RemoveWhere 會清光圖層的區域限制，所以整段不畫。
+        if(!P.ZonesAvailable)
+        {
+            ImGuiEx.TextWrapped(ImGuiColors.DalamudRed, "The zone list could not be loaded, so zone limits can not be edited. Existing zone limits are kept.".Loc());
+            return;
+        }
         var colorZLock = Svc.ClientState?.TerritoryType != null
             && (layout.ZoneLockH.Count != 0 && !layout.ZoneLockH.Contains(Svc.ClientState.TerritoryType)).Invert(layout.IsZoneBlacklist)
             && Environment.TickCount64 % 1000 < 500;
