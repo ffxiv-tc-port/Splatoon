@@ -136,6 +136,13 @@ internal class Loader
 
     private void Load(IFramework fr)
     {
+        // 載入執行緒可能在 Dispose 之後才訂上 Update；卸載後只退訂、不載入。
+        if(p.Disposed)
+        {
+            fr.Update -= Load;
+            PluginLog.Information("Splatoon has been disposed, skipping queued load");
+            return;
+        }
         PluginLog.Information("Splatoon begins loading process");
         Svc.Framework.Update -= Load;
         p.Load(Svc.PluginInterface);

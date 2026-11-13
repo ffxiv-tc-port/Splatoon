@@ -165,6 +165,8 @@ internal static partial class ScriptingProcessor
 
             Svc.Framework.RunOnFrameworkThread(delegate
             {
+                // 下載期間插件可能已卸載；排進框架執行緒的委派不會隨卸載取消。
+                if(P == null || P.Disposed) return;
                 PluginLog.Information($"Blacklist: {Blacklist.Select(x => $"{x.FullName} v{x.Version}").Print()}");
                 foreach(var x in Scripts)
                 {
