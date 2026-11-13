@@ -13,15 +13,15 @@ SplatoonScriptsOfficial.Duties.Dawntrail.Quantum_40@Spineslash,1,https://raw.git
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P1_Burn_Strike_Tower_Tooler_Party,8,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P1 Burn Strike Tower Full Toolers.cs
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P1_Fall_of_Faith_Full_Tooler_Party,9,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P1 Fall of Faith Full Tooler Party.cs
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P1_Turn_of_the_Heavens_Full_Toolers,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P1 Turn of the Heavens Full Toolers.cs
-SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P2_Diamond_Dust_Full_Toolers,8,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P2 Diamond Dust Full Toolers.cs
+SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P2_Diamond_Dust_Full_Toolers,8,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P2 Diamond Dust Full Toolers.cs,actuates,會自動改變角色面向
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P2_Light_Rampant_Full_Toolers,12,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P2 Light Rampant Full Toolers.cs
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P2_Mirror_Mirror_Full_Toolers,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P2 Mirror Mirror Full Toolers.cs
-SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P3_Apocalypse_Full_Toolers,12,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P3 Apocalypse Full Toolers.cs
+SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P3_Apocalypse_Full_Toolers,12,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P3 Apocalypse Full Toolers.cs,actuates,會送出 /pdrspeed 速度指令與 /mk 目標標記指令
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P3_Ultimate_Relativity_Full_Toolers,7,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P3 Ultimate Relativity Full Toolers.cs
-SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P4_Akh_Morn_Full_Toolers,4,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Akh Morn Full Toolers.cs
-SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P4_Crystallize_Time_Full_Toolers,21,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Crystallize Time Full Toolers.cs
-SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P4_Darklit__Full_Toolers,12,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Darklit  Full Toolers.cs
-SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P5_Fulgent_Blade_Full_Toolers,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P5 Fulgent Blade Full Toolers.cs
+SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P4_Akh_Morn_Full_Toolers,4,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Akh Morn Full Toolers.cs,actuates,暗黑騎士時會自動施放減傷技能
+SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P4_Crystallize_Time_Full_Toolers,21,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Crystallize Time Full Toolers.cs,actuates,會送出 /pdrspeed 速度指令、/mk 目標標記指令與 /vnav moveto 自動移動指令
+SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P4_Darklit__Full_Toolers,12,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Darklit  Full Toolers.cs,actuates,會送出 /pdrspeed 速度指令
+SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P5_Fulgent_Blade_Full_Toolers,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P5 Fulgent Blade Full Toolers.cs,actuates,會送出 /pdrspeed 速度指令
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten.FullToolerPartyOnlyScrtipts@P5_Paradise_Regained_Full_Toolers,6,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P5 Paradise Regained Full Toolers.cs
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten@FRU_Target_Enforcer,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FRU Target Enforcer.cs
 SplatoonScriptsOfficial.Duties.Dawntrail.The_Futures_Rewritten@FRU_Tether_Visualiser,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Duties/Dawntrail/The Futures Rewritten/FRU Tether Visualiser.cs
@@ -182,7 +182,6 @@ SplatoonScriptsOfficial.Generic@AutoFateSync,1,https://raw.githubusercontent.com
 SplatoonScriptsOfficial.Generic@AutoRetainerCreation,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoRetainerCreation.cs
 SplatoonScriptsOfficial.Generic@AutoTargetSwitcher,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoTargetSwitcher.cs
 SplatoonScriptsOfficial.Generic@AutoTeleport,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoTeleport.cs
-SplatoonScriptsOfficial.Generic@AutoUseItem,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/AutoUseItem.cs
 SplatoonScriptsOfficial.Generic@CastExplorer,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CastExplorer.cs
 SplatoonScriptsOfficial.Generic@CheckEmote,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CheckEmote.cs
 SplatoonScriptsOfficial.Generic@CloseReplayWindows,4,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CloseReplayWindows.cs
@@ -192,7 +191,7 @@ SplatoonScriptsOfficial.Generic@DalamudFixer,1,https://raw.githubusercontent.com
 SplatoonScriptsOfficial.Generic@DenyAllTrades,4,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DenyAllTrades.cs
 SplatoonScriptsOfficial.Generic@DisableHandleActionOutHook,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DisableHandleActionOutHook.cs
 SplatoonScriptsOfficial.Generic@EnemyAggro,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/EnemyAggro.cs
-SplatoonScriptsOfficial.Generic@EnforceSettings,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/EnforceSettings.cs
+SplatoonScriptsOfficial.Generic@EnforceSettings,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/EnforceSettings.cs,actuates,啟用時會把遊戲的傳送網使用券設定改成固定值（沒有開關，只能停用腳本）
 SplatoonScriptsOfficial.Generic@ExportBlacklist,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ExportBlacklist.cs
 SplatoonScriptsOfficial.Generic@FateVisualiser,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/FateVisualiser.cs
 SplatoonScriptsOfficial.Generic@ForceSetDirection,6,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ForceSetDirection.cs
@@ -225,46 +224,45 @@ SplatoonScriptsOfficial.Generic@ToggleAutoFaceTarget,1,https://raw.githubusercon
 SplatoonScriptsOfficial.Generic@TurnAroundCmd,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/TurnAroundCmd.cs
 SplatoonScriptsOfficial.Generic@VisibilityTerritoryWhitelistAlter,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/VisibilityTerritoryWhitelistAlter.cs
 SplatoonScriptsOfficial.Generic@VnavmeshAlignCameraUnsetter,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/VnavmeshAlignCameraUnsetter.cs
-SplatoonScriptsOfficial.Generic@WorldWaiter,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/WorldWaiter.cs
+SplatoonScriptsOfficial.Generic@WorldWaiter,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/WorldWaiter.cs,actuates,在腳本設定中選擇伺服器後，抵達該伺服器時會直接關閉遊戲（未選擇時不動作）
 SplatoonScriptsOfficial.Generic@ZoneNameToast,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/ZoneNameToast.cs
-SplatoonScriptsOfficial.Tests@AbilityIdTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/AbilityIdTest.cs
-SplatoonScriptsOfficial.Tests@ActionEffectTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ActionEffectTest.cs
-SplatoonScriptsOfficial.Tests@ActionTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ActionTest.cs
-SplatoonScriptsOfficial.Tests@ActorControlTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ActorControlTest.cs
-SplatoonScriptsOfficial.Tests@CastStartingTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/CastStartingTest.cs
-SplatoonScriptsOfficial.Tests@ContextMenuSubscribers,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ContextMenuSubscribers.cs
-SplatoonScriptsOfficial.Tests@DMParser,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DMParser.cs
-SplatoonScriptsOfficial.Tests@DirectorUpdateTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DirectorUpdateTest.cs
-SplatoonScriptsOfficial.Tests@DisplayMapEffect,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DisplayMapEffect.cs
-SplatoonScriptsOfficial.Tests@DownloadPluginTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DownloadPluginTest.cs
-SplatoonScriptsOfficial.Tests@EffectResultTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/EffectResultTest.cs
-SplatoonScriptsOfficial.Tests@FaceLockTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/FaceLockTest.cs
-SplatoonScriptsOfficial.Tests@GenericTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest.cs
-SplatoonScriptsOfficial.Tests@GenericTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest2.cs
-SplatoonScriptsOfficial.Tests@GenericTest3,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest3.cs
-SplatoonScriptsOfficial.Tests@GenericTest4,9,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest4.cs
-SplatoonScriptsOfficial.Tests@GenericTest5,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest5.cs
-SplatoonScriptsOfficial.Tests@GenericTest6,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest6.cs
-SplatoonScriptsOfficial.Tests@GenericTest7,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest7.cs
-SplatoonScriptsOfficial.Tests@IPCExample,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/IPCExample.cs
-SplatoonScriptsOfficial.Tests@Mk2Waymark,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/Mk2Waymark.cs
-SplatoonScriptsOfficial.Tests@MoveTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/MoveTest.cs
-SplatoonScriptsOfficial.Tests@NumberArrayDataDebug,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/NumberArrayDataDebug.cs
-SplatoonScriptsOfficial.Tests@ObjectEffectTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ObjectEffectTest.cs
-SplatoonScriptsOfficial.Tests@OmegaMFResearch,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/OmegaMFResearch.cs
-SplatoonScriptsOfficial.Tests@OnResetTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/OnResetTest.cs
-SplatoonScriptsOfficial.Tests@PotionTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/PotionTest.cs
-SplatoonScriptsOfficial.Tests@PriorityTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/PriorityTest.cs
-SplatoonScriptsOfficial.Tests@RedmoonTest1,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest1.cs
-SplatoonScriptsOfficial.Tests@RedmoonTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest2.cs
-SplatoonScriptsOfficial.Tests@RedmoonTest3,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest3.cs
-SplatoonScriptsOfficial.Tests@RedmoonTest4,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest4.cs
-SplatoonScriptsOfficial.Tests@SendSpawnedObjects,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/SendSpawnedObjects.cs
-SplatoonScriptsOfficial.Tests@ShowPID,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ShowPID.cs
-SplatoonScriptsOfficial.Tests@StatusListMonitoring,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/StatusListMonitoring.cs
-SplatoonScriptsOfficial.Tests@TestE1N,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TestE1N.cs
-SplatoonScriptsOfficial.Tests@TestHotbarDragdrop,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TestHotbarDragdrop.cs
-SplatoonScriptsOfficial.Tests@TetherProcessor2Test,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TetherProcessor2Test.cs
-SplatoonScriptsOfficial.Tests@TrapTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TrapTest.cs
-SplatoonScriptsOfficial.Tests@VentureOverrideTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/VentureOverrideTest.cs
-SplatoonScriptsOfficial.Tests@VolumeControl,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/VolumeControl.cs
+SplatoonScriptsOfficial.Tests@AbilityIdTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/AbilityIdTest.cs,test,
+SplatoonScriptsOfficial.Tests@ActionEffectTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ActionEffectTest.cs,test,
+SplatoonScriptsOfficial.Tests@ActionTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ActionTest.cs,test,
+SplatoonScriptsOfficial.Tests@ActorControlTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ActorControlTest.cs,test,
+SplatoonScriptsOfficial.Tests@CastStartingTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/CastStartingTest.cs,test,
+SplatoonScriptsOfficial.Tests@ContextMenuSubscribers,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ContextMenuSubscribers.cs,test,
+SplatoonScriptsOfficial.Tests@DMParser,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DMParser.cs,test,
+SplatoonScriptsOfficial.Tests@DirectorUpdateTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DirectorUpdateTest.cs,test,
+SplatoonScriptsOfficial.Tests@DisplayMapEffect,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DisplayMapEffect.cs,test,
+SplatoonScriptsOfficial.Tests@DownloadPluginTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/DownloadPluginTest.cs,test,
+SplatoonScriptsOfficial.Tests@EffectResultTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/EffectResultTest.cs,test,
+SplatoonScriptsOfficial.Tests@FaceLockTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/FaceLockTest.cs,test,
+SplatoonScriptsOfficial.Tests@GenericTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest.cs,test,
+SplatoonScriptsOfficial.Tests@GenericTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest2.cs,test,
+SplatoonScriptsOfficial.Tests@GenericTest3,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest3.cs,test,
+SplatoonScriptsOfficial.Tests@GenericTest4,9,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest4.cs,test,
+SplatoonScriptsOfficial.Tests@GenericTest5,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest5.cs,test,
+SplatoonScriptsOfficial.Tests@GenericTest6,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest6.cs,test,
+SplatoonScriptsOfficial.Tests@GenericTest7,5,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/GenericTest7.cs,test,
+SplatoonScriptsOfficial.Tests@IPCExample,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/IPCExample.cs,test,
+SplatoonScriptsOfficial.Tests@Mk2Waymark,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/Mk2Waymark.cs,test,
+SplatoonScriptsOfficial.Tests@MoveTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/MoveTest.cs,test,
+SplatoonScriptsOfficial.Tests@NumberArrayDataDebug,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/NumberArrayDataDebug.cs,test,
+SplatoonScriptsOfficial.Tests@ObjectEffectTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ObjectEffectTest.cs,test,
+SplatoonScriptsOfficial.Tests@OmegaMFResearch,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/OmegaMFResearch.cs,test,
+SplatoonScriptsOfficial.Tests@OnResetTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/OnResetTest.cs,test,
+SplatoonScriptsOfficial.Tests@PotionTest,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/PotionTest.cs,test,
+SplatoonScriptsOfficial.Tests@PriorityTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/PriorityTest.cs,test,
+SplatoonScriptsOfficial.Tests@RedmoonTest1,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest1.cs,test,
+SplatoonScriptsOfficial.Tests@RedmoonTest2,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest2.cs,test,
+SplatoonScriptsOfficial.Tests@RedmoonTest3,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/RedmoonTest3.cs,test,
+SplatoonScriptsOfficial.Tests@SendSpawnedObjects,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/SendSpawnedObjects.cs,test,
+SplatoonScriptsOfficial.Tests@ShowPID,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/ShowPID.cs,test,
+SplatoonScriptsOfficial.Tests@StatusListMonitoring,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/StatusListMonitoring.cs,test,
+SplatoonScriptsOfficial.Tests@TestE1N,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TestE1N.cs,test,
+SplatoonScriptsOfficial.Tests@TestHotbarDragdrop,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TestHotbarDragdrop.cs,test,
+SplatoonScriptsOfficial.Tests@TetherProcessor2Test,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TetherProcessor2Test.cs,test,
+SplatoonScriptsOfficial.Tests@TrapTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/TrapTest.cs,test,
+SplatoonScriptsOfficial.Tests@VentureOverrideTest,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/VentureOverrideTest.cs,test,
+SplatoonScriptsOfficial.Tests@VolumeControl,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Tests/VolumeControl.cs,test,

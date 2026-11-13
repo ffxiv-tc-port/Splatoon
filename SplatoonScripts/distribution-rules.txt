@@ -1,0 +1,26 @@
+# 腳本派送規則：由 ScriptUpdateFileGenerator 讀取，決定 update.csv（插件的腳本更新清單與「可用腳本」瀏覽器）的內容。
+# 格式：路徑|種類|說明
+#   路徑：相對本資料夾、正斜線；結尾加 / 表示整個資料夾。
+#   種類：exclude  = 不進 update.csv（瀏覽器看不到、已安裝者不再收到更新，但不會被移除）
+#         actuates = 瀏覽器標示「會操作遊戲」，說明顯示在提示框
+#         test     = 瀏覽器標示「測試用」
+#   說明：不可含半形逗號（會寫進 update.csv 的欄位）。
+# 規則對不到任何腳本、種類拼錯、說明含半形逗號 = 產生器失敗（CI 不會提交 update.csv）。
+# 標示依據：~/.claude/tools/splatoon/script_actuation_scan.py 普查後逐支讀碼確認。
+
+# 排除
+Generic/AutoUseItem.cs|exclude|藥品 ID 是佔位值 12345，不是可用的設定
+Tests/RedmoonTest4.cs|exclude|跨幀持有原生介面節點指標
+
+# 測試用
+Tests/|test|
+
+# 會操作遊戲
+Generic/WorldWaiter.cs|actuates|在腳本設定中選擇伺服器後，抵達該伺服器時會直接關閉遊戲（未選擇時不動作）
+Generic/EnforceSettings.cs|actuates|啟用時會把遊戲的傳送網使用券設定改成固定值（沒有開關，只能停用腳本）
+Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P2 Diamond Dust Full Toolers.cs|actuates|會自動改變角色面向
+Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P3 Apocalypse Full Toolers.cs|actuates|會送出 /pdrspeed 速度指令與 /mk 目標標記指令
+Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Akh Morn Full Toolers.cs|actuates|暗黑騎士時會自動施放減傷技能
+Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Crystallize Time Full Toolers.cs|actuates|會送出 /pdrspeed 速度指令、/mk 目標標記指令與 /vnav moveto 自動移動指令
+Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P4 Darklit  Full Toolers.cs|actuates|會送出 /pdrspeed 速度指令
+Duties/Dawntrail/The Futures Rewritten/FullToolerPartyOnlyScrtipts/P5 Fulgent Blade Full Toolers.cs|actuates|會送出 /pdrspeed 速度指令

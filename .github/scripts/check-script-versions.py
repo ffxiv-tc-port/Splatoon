@@ -63,7 +63,8 @@ def parse_versions(csv_path):
         return result
     with open(csv_path, encoding="utf-8") as fh:
         for line in fh.read().split("\n"):
-            parts = line.split(",", 2)
+            # 第四欄起是派送規則加的標記與說明（distribution-rules.txt），只取前三欄。
+            parts = line.split(",")
             if len(parts) < 3:
                 continue
             try:
@@ -143,7 +144,7 @@ def main():
             failures.append((path, old, new))
 
     for path in skipped:
-        print(f"  警告 {path} 解析不到 Metadata 版本,不會出現在 update.csv,無法派送更新")
+        print(f"  警告 {path} 不在 update.csv(解析不到 Metadata 版本,或被 distribution-rules.txt 排除),無法派送更新")
 
     if failures:
         print("")
