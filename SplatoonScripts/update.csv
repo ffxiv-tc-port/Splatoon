@@ -186,7 +186,7 @@ SplatoonScriptsOfficial.Generic@AutoUseItem,2,https://raw.githubusercontent.com/
 SplatoonScriptsOfficial.Generic@CastExplorer,3,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CastExplorer.cs
 SplatoonScriptsOfficial.Generic@CheckEmote,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CheckEmote.cs
 SplatoonScriptsOfficial.Generic@CloseReplayWindows,4,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CloseReplayWindows.cs
-SplatoonScriptsOfficial.Generic@CommandOnLogin,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CommandOnLogin.cs
+SplatoonScriptsOfficial.Generic@CommandOnLogin,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CommandOnLogin.cs
 SplatoonScriptsOfficial.Generic@CustomResolutionSwitcher,2,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/CustomResolutionSwitcher.cs
 SplatoonScriptsOfficial.Generic@DalamudFixer,1,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DalamudFixer.cs
 SplatoonScriptsOfficial.Generic@DenyAllTrades,4,https://raw.githubusercontent.com/ffxiv-tc-port/Splatoon/HEAD/SplatoonScripts/Generic/DenyAllTrades.cs
