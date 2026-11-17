@@ -263,37 +263,33 @@ public unsafe class Splatoon : IDalamudPlugin
         }
     }
 
+    // 只走一張表：本 fork 的 Lumina 丟掉 GetExcelSheet 的語言參數，逐語言各取一次拿到的都是同一張
+    // client 語言表，多走幾趟結果逐鍵相同（splatoon_bnpcname_dict_probe）。
     private static void BuildNpcNameDictionaries()
     {
         var dict = new Dictionary<string, uint>();
         var dictAll = new Dictionary<string, uint>();
-        foreach(var lang in Enum.GetValues<ClientLanguage>())
+        var sheet = Svc.Data.GetExcelSheet<BNpcName>();
+        foreach(var x in sheet)
         {
-            foreach(var x in Svc.Data.GetExcelSheet<BNpcName>(lang))
+            if(x.Singular != "")
             {
-                if(x.Singular != "")
-                {
-                    var n = x.Singular.ToString().ToLower();
-                    dictAll[n] = x.RowId;
-                    dict[n] = x.RowId;
-                }
+                var n = x.Singular.ToString().ToLower();
+                dictAll[n] = x.RowId;
+                dict[n] = x.RowId;
             }
         }
         var bNames = new HashSet<string>();
-        foreach(var lang in Enum.GetValues<ClientLanguage>())
+        foreach(var x in sheet)
         {
-            bNames.Clear();
-            foreach(var x in Svc.Data.GetExcelSheet<BNpcName>(lang))
+            var n = x.Singular.ToString().ToLower();
+            if(bNames.Contains(n))
             {
-                var n = x.Singular.ToString().ToLower();
-                if(bNames.Contains(n))
-                {
-                    dict[n] = 0;
-                }
-                else
-                {
-                    bNames.Add(n);
-                }
+                dict[n] = 0;
+            }
+            else
+            {
+                bNames.Add(n);
             }
         }
         NameNpcIDs = dict.Where(x => x.Value != 0).ToDictionary(x => x.Key, x => x.Value);
