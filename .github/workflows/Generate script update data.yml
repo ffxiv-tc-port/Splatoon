@@ -13,7 +13,7 @@ on:
     # 只在出貨分支上重新產生。update.csv 是直接派送給使用者的清單,
     # 不應該被功能分支或 tag 推送覆寫。
     branches:
-      - 'tc-7.20'
+      - 'tc-7.30'
     paths:
       - SplatoonScripts/**
 
