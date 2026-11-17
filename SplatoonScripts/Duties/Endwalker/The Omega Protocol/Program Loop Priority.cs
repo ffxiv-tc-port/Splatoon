@@ -23,7 +23,7 @@ namespace SplatoonScriptsOfficial.Duties.Endwalker.The_Omega_Protocol;
 public unsafe class Program_Loop_Priority : SplatoonScript
 {
     public override HashSet<uint> ValidTerritories => [1122];
-    public override Metadata? Metadata => new(19, "NightmareXIV, damolitionn");
+    public override Metadata? Metadata => new(20, "NightmareXIV, damolitionn");
     private Config Conf => Controller.GetConfig<Config>();
     private HashSet<uint> TetheredPlayers = [];
     private List<uint> Towers = [];
@@ -218,7 +218,14 @@ public unsafe class Program_Loop_Priority : SplatoonScript
             {
                 if (Controller.TryGetElementByName("Tether1", out var e))
                 {
-                    e.Enabled = true;
+                    if(Conf.HideOtherTether && Conf.EnlargeMyTether)
+                    {
+                        e.Enabled = tetheredPlayers[0] == myTether;
+                    }
+                    else
+                    {
+                        e.Enabled = true;
+                    }
                     e.SetRefPosition(omega.Position);
                     e.SetOffPosition(tetheredPlayers[0].GetObject().Position);
                     e.thicc = tetheredPlayers[0] == myTether ? 12f : 5f;
@@ -489,6 +496,10 @@ public unsafe class Program_Loop_Priority : SplatoonScript
             ImGui.ColorEdit4("Safe spot indicator color", ref Conf.TetherSafeSpotColor, ImGuiColorEditFlags.NoInputs);
         }
         ImGui.Checkbox($"Detect tether that I'm supposed to pick up based on same priority as towers and make it larger", ref Conf.EnlargeMyTether);
+        if(Conf.EnlargeMyTether)
+        {
+            ImGui.Checkbox($"Hide other tether entirely", ref Conf.HideOtherTether);
+        }
 
 
         ImGui.Separator();
@@ -596,6 +607,7 @@ public unsafe class Program_Loop_Priority : SplatoonScript
         public Vector4 TetherSafeSpotColor = 0xFF000000.ToVector4();
         public bool EnlargeMyTether = true;
         public PriorityData PriorityData = new();
+        public bool HideOtherTether = false;
     }
 
     public enum Direction { Clockwise, Counter_clockwise }
