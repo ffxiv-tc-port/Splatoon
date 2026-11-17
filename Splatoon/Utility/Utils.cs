@@ -496,7 +496,6 @@ public static unsafe class Utils
 
     public static bool WorldToScreen(Vector3 worldPos, out Vector2 screenPos)
     {
-        //return S.VbmCamera.WorldToScreen(worldPos, out screenPos);
         /*worldPos = default;
         screenPos = default;
         var cam = CameraManager.Instance();

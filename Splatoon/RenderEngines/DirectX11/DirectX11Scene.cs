@@ -24,7 +24,7 @@ internal unsafe class DirectX11Scene : IDisposable
         Svc.PluginInterface.UiBuilder.Draw += Draw;
         try
         {
-            PictoService.InitializeDxRenderer(Svc.PluginInterface);//, () => S.VbmCamera.ViewProj);
+            PictoService.InitializeDxRenderer(Svc.PluginInterface);
         }
         catch
         {
