@@ -243,7 +243,8 @@ internal partial class CGui
                 {
                     var index = i;
                     var f = P.Config.FileWatcherPathes[i];
-                    ImGuiEx.InputWithRightButtonsArea(() =>
+                    // 各列共用一個寬度鍵，與不給 id 時相同（右側只有一顆固定寬的按鈕）。
+                    ImGuiEx.InputWithRightButtonsArea("SplatoonFileWatcherPathRow", () =>
                     {
                         if(ImGui.InputTextWithHint("##path to folder" + index, "Path to folder...", ref f, 2000))
                         {
@@ -257,7 +258,7 @@ internal partial class CGui
                         }
                     });
                 }
-                ImGuiEx.LineCentered(() =>
+                ImGuiEx.LineCentered("SplatoonFileWatcherButtons", () =>
                 {
                     if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Plus, "Add New"))
                     {

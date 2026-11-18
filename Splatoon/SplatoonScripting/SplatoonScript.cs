@@ -351,7 +351,7 @@ public abstract class SplatoonScript
 
     internal unsafe void DrawConfigurations()
     {
-        ImGuiEx.LineCentered(() =>
+        ImGuiEx.LineCentered("SplatoonScriptConfigurationButtons", () =>
         {
             if(ImGuiEx.IconButtonWithText(FontAwesomeIcon.Plus, "Add new configuration".Loc()))
             {

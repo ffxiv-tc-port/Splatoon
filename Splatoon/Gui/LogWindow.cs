@@ -27,7 +27,7 @@ public class LogWindow : Window
 
     public override void Draw()
     {
-        NuiTools.ButtonTabs([[new("Standard log", InternalLog.PrintImgui), new("Filtered log", PrintFiltered)]]);
+        NuiTools.ButtonTabs("SplatoonLogWindowTabs", [[new("Standard log", InternalLog.PrintImgui), new("Filtered log", PrintFiltered)]]);
     }
 
     private bool Autoscroll = true;

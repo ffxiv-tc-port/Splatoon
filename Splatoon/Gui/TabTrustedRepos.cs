@@ -10,7 +10,7 @@ public static class TabTrustedRepos
 {
     public static void Draw()
     {
-        ref var pass = ref Ref<bool>.Get();
+        ref var pass = ref Ref<bool>.Get("SplatoonTrustedReposAcknowledged");
         var display = pass || P.Config.ExtraTrustedRepos != "" || P.Config.ExtraUpdateLinks != "";
         if(!display)
         {
