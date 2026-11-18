@@ -396,6 +396,8 @@ public unsafe class Splatoon : IDalamudPlugin
     // 清單裡有空字串／null 時捷徑整個停用（原式子會擲例外，要照舊擲），而且型別初始化不能因此失敗。
     private static readonly bool ChatTextFastPath = InvalidSymbols.All(x => !string.IsNullOrEmpty(x));
     private static readonly System.Buffers.SearchValues<char> ChatTextEditChars = System.Buffers.SearchValues.Create([.. InvalidSymbols.Where(x => !string.IsNullOrEmpty(x)).Select(x => x[0]), '\n']);
+    // 每個符號都是單一字元且不是換行時，逐一 Replace 再換掉換行＝逐字刪符號、換行改空白，可以直接寫進 StringBuilder。
+    private static readonly bool ChatTextCharFilter = InvalidSymbols.All(x => x is { Length: 1 } && x[0] != '\n');
     // 用 Interlocked 取走／放回而不是 [ThreadStatic]：處理器不保證只在框架執行緒進來，插件 TLS 在熱重載後有風險。
     private static StringBuilder ChatTextBuilder;
 
@@ -444,12 +446,29 @@ public unsafe class Splatoon : IDalamudPlugin
             {
                 var text = tp.Text;
                 // null 也走原本的式子：照舊在 RemoveSymbols 擲例外，不默默變成空字串。
-                sb.Append(!ChatTextFastPath || text == null || text.AsSpan().ContainsAny(ChatTextEditChars) ? text.RemoveSymbols(InvalidSymbols).Replace("\n", " ") : text);
+                if(!ChatTextFastPath || text == null) sb.Append(text.RemoveSymbols(InvalidSymbols).Replace("\n", " "));
+                else if(!text.AsSpan().ContainsAny(ChatTextEditChars)) sb.Append(text);
+                else if(ChatTextCharFilter) AppendWithoutSymbols(sb, text);
+                else sb.Append(text.RemoveSymbols(InvalidSymbols).Replace("\n", " "));
             }
         }
         var result = sb.ToString();
         if(sb.Capacity <= 1024) System.Threading.Volatile.Write(ref ChatTextBuilder, sb);
         return result;
+    }
+
+    // 只在 ChatTextCharFilter 成立時呼叫：此時 ChatTextEditChars 裡換行以外的字元全是要刪的符號。
+    private static void AppendWithoutSymbols(StringBuilder sb, string text)
+    {
+        var span = text.AsSpan();
+        int i;
+        while((i = span.IndexOfAny(ChatTextEditChars)) >= 0)
+        {
+            sb.Append(span[..i]);
+            if(span[i] == '\n') sb.Append(' ');
+            span = span[(i + 1)..];
+        }
+        sb.Append(span);
     }
 
     internal void SetupShutdownHttp(bool enable)

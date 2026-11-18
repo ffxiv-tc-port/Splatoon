@@ -207,15 +207,6 @@ internal unsafe class BuffEffectProcessor : IDisposable
     {
         var text = "";
         var PositionString = P.Config.LogPosition == true ? $"({gameObjectCharactor->Position.ToString()})" : "";
-        var ElementTrigger = "";
-        if(gameObjectCharactor->ObjectKind == ObjectKind.Pc)
-        {
-            ElementTrigger = $"[{prefix}]PC:{data->StatusId}:{gameObjectCharactor->ClassJob.ToString()}";
-        }
-        else
-        {
-            ElementTrigger = $"[{prefix}]{gameObjectCharactor->NameId}:{data->StatusId}";
-        }
 
         if(gameObjectCharactor->EntityId == Svc.Objects.LocalPlayer?.EntityId)
         {
@@ -223,7 +214,15 @@ internal unsafe class BuffEffectProcessor : IDisposable
             P.ChatMessageQueue.Enqueue(text);
         }
 
-        text = $"{gameObjectCharactor->NameString} ({PositionString}) gains the effect of {data->StatusId} Param: {data->Param} ({ElementTrigger})";
+        // 括號裡的觸發字串直接內插進整行、不另組字串。整行格式是觸發器與腳本比對的對象，一個字都不能改。
+        if(gameObjectCharactor->ObjectKind == ObjectKind.Pc)
+        {
+            text = $"{gameObjectCharactor->NameString} ({PositionString}) gains the effect of {data->StatusId} Param: {data->Param} ([{prefix}]PC:{data->StatusId}:{gameObjectCharactor->ClassJob})";
+        }
+        else
+        {
+            text = $"{gameObjectCharactor->NameString} ({PositionString}) gains the effect of {data->StatusId} Param: {data->Param} ([{prefix}]{gameObjectCharactor->NameId}:{data->StatusId})";
+        }
 
         P.ChatMessageQueue.Enqueue(text);
     }
