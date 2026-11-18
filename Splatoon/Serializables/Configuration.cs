@@ -79,6 +79,10 @@ internal class Configuration : IEzConfig
     public bool AutoClipNativeUI = true;
     public bool RenderableZonesValid = false;
     public bool SplatoonLowerZ = false;
+    /// <summary>All overlay text is drawn at element scale × this. 1 = unchanged; same field name as upstream.</summary>
+    public float OverlayFontScale = 1f;
+    /// <summary>Enlarged overlay text uses a font built at that size instead of a stretched default font.</summary>
+    public bool OverlayFontSharp = true;
     public int ElementMinFillAlpha = 0;
     public int ElementMaxFillAlpha = 255;
     public int MaxAlpha = 0xFF;

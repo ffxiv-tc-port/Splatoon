@@ -315,8 +315,11 @@ internal unsafe class DirectX11Scene : IDisposable
 
     public void DrawText(DisplayObjectText e, Vector2 pos)
     {
-        var scaled = e.fscale != 1f;
-        var size = scaled ? ImGui.CalcTextSize(e.text) * e.fscale : ImGui.CalcTextSize(e.text);
+        var font = OverlayFont.For(e.fscale, out var windowScale);
+        // Pushed before measuring so the child is sized for the glyphs actually drawn; popped after every other pop.
+        using var pushedFont = font?.Push();
+        var scaled = windowScale != 1f;
+        var size = scaled ? ImGui.CalcTextSize(e.text) * windowScale : ImGui.CalcTextSize(e.text);
         size = new Vector2(size.X + 10f, size.Y + 10f);
         ImGui.SetNextWindowPos(new Vector2(pos.X - size.X / 2, pos.Y - size.Y / 2));
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(5, 5));
@@ -328,7 +331,7 @@ internal unsafe class DirectX11Scene : IDisposable
             | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysUseWindowPadding
             | ImGuiWindowFlags.NoFocusOnAppearing);
         ImGui.PushStyleColor(ImGuiCol.Text, e.fgcolor);
-        if(scaled) ImGui.SetWindowFontScale(e.fscale);
+        if(scaled) ImGui.SetWindowFontScale(windowScale);
         ImGuiEx.Text(e.text);
         if(scaled) ImGui.SetWindowFontScale(1f);
         ImGui.PopStyleColor();

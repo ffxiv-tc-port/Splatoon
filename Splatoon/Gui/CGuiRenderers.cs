@@ -116,6 +116,14 @@ internal partial class CGui
                 }
                 ImGuiComponents.HelpMarker("Configure screen zones where Splatoon will draw its elements".Loc());
                 ImGui.Checkbox($"Draw Splatoon's element under other plugins elements and windows".Loc(), ref P.Config.SplatoonLowerZ);
+                ImGui.SetNextItemWidth(150f);
+                if(ImGui.SliderFloat("Overlay text scale".Loc(), ref P.Config.OverlayFontScale, 0.5f, 3f, "%.2f"))
+                {
+                    P.Config.OverlayFontScale = P.Config.OverlayFontScale.ValidateRange(0.5f, 3f);
+                }
+                ImGuiComponents.HelpMarker("Multiplies the size of all text Splatoon draws in the game world, including labels other plugins such as PalacePal show through Splatoon. 1.00 = unchanged.".Loc());
+                ImGui.Checkbox("Use a sharp font for enlarged overlay text".Loc(), ref P.Config.OverlayFontSharp);
+                ImGuiComponents.HelpMarker("When overlay text is drawn larger than normal, draw it with a font built at that size instead of stretching the normal font, which looks blurry. The font is only built while enlarged text is on screen and is released after 60 seconds without any; while in use it takes extra video memory.".Loc());
             })
 
             .Section("Attention Color".Loc())

@@ -17,4 +17,5 @@ public static class S
     // SingletonServiceManager 會在 Splatoon.cs 呼叫 Initialize(typeof(S)) 時建立它,
     // 並在外掛卸載時呼叫它的 Dispose()(它實作了 IDisposable,用來釋放字型 handle)。
     internal static AttentionOverlayWindow AttentionOverlayWindow { get; private set; }
+    internal static OverlayFont OverlayFont { get; private set; }
 }
