@@ -515,7 +515,7 @@ public unsafe class Splatoon : IDalamudPlugin
             var de = dynamicElements[i];
             foreach(var l in de.Layouts)
             {
-                ResetLayout(l);
+                ResetLayoutOnTerritoryChange(l);
             }
             foreach(var dt in de.DestroyTime)
             {
@@ -531,22 +531,26 @@ public unsafe class Splatoon : IDalamudPlugin
         }
         foreach(var l in Config.LayoutsL)
         {
-            ResetLayout(l);
+            ResetLayoutOnTerritoryChange(l);
         }
-        ScriptingProcessor.Scripts.Each(x => x.Controller.Layouts.Values.Each(ResetLayout));
+        ScriptingProcessor.Scripts.Each(x => x.Controller.Layouts.Values.Each(ResetLayoutOnTerritoryChange));
         AttachedInfo.VFXInfos.Clear();
         Logger.OnTerritoryChanged();
         ScriptingProcessor.TerritoryChanged();
         S.InfoBar?.Update(true);
     }
 
-    private static void ResetLayout(Layout l)
+    private static void ResetLayoutOnTerritoryChange(Layout l) => ResetLayout(l, combatEnd: false);
+    private static void ResetLayoutOnCombatEnd(Layout l) => ResetLayout(l, combatEnd: true);
+
+    /// <summary>換區看 ResetOnTChange／FreezeResetTerr，戰鬥結束看 ResetOnCombatExit／FreezeResetCombat。</summary>
+    private static void ResetLayout(Layout l, bool combatEnd)
     {
         if(l.UseTriggers)
         {
             foreach(var t in l.Triggers)
             {
-                if(t.ResetOnTChange)
+                if(combatEnd ? t.ResetOnCombatExit : t.ResetOnTChange)
                 {
                     t.FiredState = 0;
                     l.TriggerCondition = 0;
@@ -556,7 +560,7 @@ public unsafe class Splatoon : IDalamudPlugin
                 }
             }
         }
-        if(l.Freezing && l.FreezeResetTerr)
+        if(l.Freezing && (combatEnd ? l.FreezeResetCombat : l.FreezeResetTerr))
         {
             l.FreezeInfo = new();
         }
@@ -651,16 +655,16 @@ public unsafe class Splatoon : IDalamudPlugin
                         AttachedInfo.VFXInfos.Clear();
                         foreach(var l in Config.LayoutsL)
                         {
-                            ResetLayout(l);
+                            ResetLayoutOnCombatEnd(l);
                         }
                         foreach(var de in dynamicElements)
                         {
                             foreach(var l in de.Layouts)
                             {
-                                ResetLayout(l);
+                                ResetLayoutOnCombatEnd(l);
                             }
                         }
-                        ScriptingProcessor.Scripts.Each(x => x.Controller.Layouts.Values.Each(ResetLayout));
+                        ScriptingProcessor.Scripts.Each(x => x.Controller.Layouts.Values.Each(ResetLayoutOnCombatEnd));
                     }
                 }
 
