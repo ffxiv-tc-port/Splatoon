@@ -1,12 +1,16 @@
 [submodule "ECommons"]
 	path = ECommons
 	url = https://github.com/ffxiv-tc-port/ECommons.git
+	branch = tc-7.30
 [submodule "NightmareUI"]
 	path = NightmareUI
 	url = https://github.com/ffxiv-tc-port/NightmareUI.git
+	branch = tc-7.30
 [submodule "ffxiv_pictomancy"]
 	path = ffxiv_pictomancy
 	url = https://github.com/ffxiv-tc-port/Pictomancy.git
+	branch = tc-7.30
 [submodule "FFXIVClientStructs"]
 	path = FFXIVClientStructs
 	url = https://github.com/ffxiv-tc-port/FFXIVClientStructs.git
+	branch = tc-7.30
